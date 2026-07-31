@@ -1,6 +1,6 @@
 import { scenesConfig } from './scenes.js?v=20260731-desorden';
 
-const OPENING_PORTRAIT = './assets/intro-profile-2160.avif';
+const OPENING_PORTRAIT = window.__OPENING_PROFILE_DATA__ || './assets/intro-profile-1440.avif';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const lerp = (a, b, t) => a + (b - a) * t;
