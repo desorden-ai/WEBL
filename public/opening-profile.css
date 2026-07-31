@@ -58,7 +58,7 @@
   left: 50%;
   opacity: 1;
   visibility: visible;
-  transform: translate3d(50%, 50%, 0) translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 }
 
 .panel--opening-profile {
