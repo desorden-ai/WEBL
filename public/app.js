@@ -37,21 +37,38 @@ const buildRuntimeScenes = () => {
     position: positions[scene.id] || scene.position
   }));
 
-  const ordered = [
+  return [
     {
       id: 'opening-profile',
       kind: 'opening-profile',
+      number: '01',
       sectionLabel: 'INICI',
       position: { x: 0, y: 0, z: 0 },
       html: OPENING_HTML
     },
-    ...currentScenes
+    ...currentScenes.map((scene, index) => ({
+      ...scene,
+      number: String(index + 2).padStart(2, '0')
+    }))
   ];
+};
 
-  return ordered.map((scene, index) => ({
-    ...scene,
-    number: String(index + 1).padStart(2, '0')
-  }));
+const preloadOpeningPortrait = async () => {
+  const image = new Image();
+  image.decoding = 'sync';
+  image.src = OPENING_PORTRAIT;
+
+  try {
+    if (image.decode) await image.decode();
+    else await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+    });
+    return true;
+  } catch (error) {
+    console.warn('[WEBL] El retrat inicial no s’ha pogut descodificar.', error);
+    return false;
+  }
 };
 
 class Loader {
@@ -70,7 +87,9 @@ class Loader {
   finish() {
     window.clearTimeout(window.__WEBL_BOOT_TIMEOUT__);
     this.set(100);
-    window.setTimeout(() => this.root?.classList.add('is-hidden'), 260);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => this.root?.classList.add('is-hidden'));
+    });
   }
 }
 
@@ -126,19 +145,19 @@ class SceneProjector {
   }
 
   updateOpeningProfile(item, distanceZ, camera) {
-    if (distanceZ > 12 || distanceZ < -150) {
+    if (distanceZ > 12 || distanceZ < -125) {
       this.hideItem(item);
       return 0;
     }
 
-    const approach = smoothstep(-44, 8, distanceZ);
-    const farVisibility = smoothstep(-150, -72, distanceZ);
+    const movement = smoothstep(-30, 7, distanceZ);
+    const farVisibility = smoothstep(-125, -44, distanceZ);
     const nearVisibility = 1 - smoothstep(7, 12, distanceZ);
     const opacity = clamp(farVisibility * nearVisibility, 0, 1);
     const depth = Math.max(0.5, -distanceZ);
 
-    const scale = lerp(1, 2.55, approach);
-    const lateralExit = approach * this.width * 0.74;
+    const scale = lerp(1, 2.7, movement);
+    const lateralExit = movement * this.width * 0.78;
     const screenX = this.width / 2 + ((item.x - camera.x) / depth) * this.focal + lateralExit;
     const screenY = this.height / 2 - ((item.y - camera.y) / depth) * this.focal;
 
@@ -210,7 +229,9 @@ class ScrollFlight {
     this.endZ = minZ + 37;
     this.lastTime = performance.now();
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.updateTarget();
+
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 
     window.addEventListener('scroll', () => this.updateTarget(), { passive: true });
     window.addEventListener('resize', () => this.updateTarget(), { passive: true });
@@ -268,17 +289,15 @@ const bindContactForm = () => {
 };
 
 class App {
-  constructor() {
-    this.loader = new Loader();
-    this.loader.set(22);
+  constructor(loader) {
+    this.loader = loader;
     this.projector = new SceneProjector(buildRuntimeScenes());
-    this.loader.set(64);
+    this.loader.set(70);
     this.flight = new ScrollFlight(this.projector.minZ, this.projector.maxZ);
     this.cue = document.getElementById('scroll-cue');
     this.progress = document.getElementById('rail-progress');
     bindContactForm();
     this.tick = this.tick.bind(this);
-    this.loader.set(90);
     this.tick(performance.now());
     this.loader.finish();
     document.documentElement.classList.add('is-ready');
@@ -293,11 +312,17 @@ class App {
   }
 }
 
-try {
-  new App();
-} catch (error) {
+const boot = async () => {
+  const loader = new Loader();
+  loader.set(18);
+  await preloadOpeningPortrait();
+  loader.set(55);
+  new App(loader);
+};
+
+boot().catch((error) => {
   console.error('[WEBL] Error d’inici:', error);
   window.clearTimeout(window.__WEBL_BOOT_TIMEOUT__);
   document.getElementById('loader')?.classList.add('is-hidden');
   document.getElementById('scene-layer')?.classList.add('boot-error');
-}
+});
