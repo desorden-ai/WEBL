@@ -26,11 +26,13 @@ const OPENING_HTML = `
 `;
 
 const buildRuntimeScenes = () => {
+  // The existing 185-unit rhythm between sections is preserved.
+  // The new portrait is inserted before the original first block.
   const positions = {
-    intro: { x: 0, y: 0, z: -240 },
-    about: { x: 0, y: 0, z: -520 },
-    radar: { x: 0, y: 0, z: -810 },
-    contact: { x: 0, y: 0, z: -1080 }
+    intro: { x: 0, y: 0, z: -185 },
+    about: { x: 0, y: 0, z: -370 },
+    radar: { x: 0, y: 0, z: -555 },
+    contact: { x: 0, y: 0, z: -740 }
   };
 
   const normalized = scenesConfig.map((scene) => ({
@@ -130,6 +132,8 @@ class SceneProjector {
     const opacity = clamp(farVisibility * nearVisibility, 0, 1);
     const depth = Math.max(0.5, -distanceZ);
 
+    // The camera approaches the eye and nose, then veers to the left of the subject.
+    // No blur is applied at any point to this image.
     const scale = lerp(1.02, 4.35, approach);
     const dodgeX = approach * this.width * 0.62;
     const dodgeY = approach * this.height * 0.025;
