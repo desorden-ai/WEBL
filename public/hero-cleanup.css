@@ -4,7 +4,7 @@
   background: #000 !important;
 }
 
-/* Elimina completamente cualquier imagen, vídeo, glow, degradado o velo del bloque. */
+/* Elimina completamente cualquier imagen, vídeo, glow, degradado o velo del bloque 2. */
 .scene--intro .panel__media,
 .scene--intro .panel__media--hero,
 .scene--intro .panel__media--hero-start,
@@ -22,7 +22,7 @@
   filter: none !important;
 }
 
-/* Centrado real del contenido en ambos ejes. */
+/* Centrado real del contenido del bloque 2 en ambos ejes. */
 .scene--intro .hero-copy {
   position: absolute !important;
   z-index: 4 !important;
@@ -49,4 +49,34 @@
 .scene--intro .hero-copy .signature {
   width: 100% !important;
   text-align: center !important;
+}
+
+/* Bloque 3: fondo negro puro, sin imagen, degradado ni resplandor. */
+.scene--about,
+.scene--about .panel {
+  background: #000 !important;
+  background-image: none !important;
+}
+
+.scene--about .panel__media,
+.scene--about .panel__media--about,
+.scene--about .panel__orange-glow,
+.scene--about .panel__veil,
+.scene--about .panel__veil--about,
+.scene--about .panel::before,
+.scene--about .panel::after {
+  display: none !important;
+  content: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Mantiene el contenido del bloque 3 limpio y por encima del fondo. */
+.scene--about .about-copy,
+.scene--about .credentials {
+  position: absolute;
+  z-index: 4 !important;
 }
