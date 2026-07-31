@@ -9,22 +9,6 @@ const smoothstep = (edge0, edge1, value) => {
   return t * t * (3 - 2 * t);
 };
 
-const OPENING_HTML = `
-  <article class="panel panel--opening-profile" aria-label="Retrat inicial de DESORDEN">
-    <img
-      class="opening-profile__image"
-      src="${OPENING_PORTRAIT}"
-      width="2160"
-      height="3840"
-      alt="Retrat en blanc i negre de perfil"
-      fetchpriority="high"
-      decoding="sync"
-      draggable="false"
-    >
-    <div class="opening-profile__edge-fade" aria-hidden="true"></div>
-  </article>
-`;
-
 const buildRuntimeScenes = () => {
   const positions = {
     intro: { x: 0, y: 0, z: -185 },
@@ -33,22 +17,10 @@ const buildRuntimeScenes = () => {
     contact: { x: 0, y: 0, z: -740 }
   };
 
-  const normalized = scenesConfig.map((scene) => ({
+  return scenesConfig.map((scene) => ({
     ...scene,
     position: positions[scene.id] || scene.position
   }));
-
-  const introIndex = normalized.findIndex((scene) => scene.id === 'intro');
-  normalized.splice(introIndex >= 0 ? introIndex : 0, 0, {
-    id: 'opening-profile',
-    kind: 'opening-profile',
-    number: '01',
-    sectionLabel: 'INICI',
-    position: { x: 0, y: 0, z: 0 },
-    html: OPENING_HTML
-  });
-
-  return normalized;
 };
 
 class Loader {
@@ -94,15 +66,19 @@ class SceneProjector {
 
       return {
         id: scene.id,
-        kind: scene.kind || 'default',
+        kind: scene.id === 'intro' ? 'intro' : (scene.kind || 'default'),
         element,
         x: Number(scene.position?.x || 0),
         y: Number(scene.position?.y || 0),
         z: Number(scene.position?.z || 0),
         label: scene.sectionLabel || 'SECCIÓ',
-        number: scene.number || String(index + 1).padStart(2, '0')
+        number: scene.number || String(index + 1).padStart(2, '0'),
+        foreground: null
       };
     });
+
+    const introItem = this.items.find((item) => item.id === 'intro');
+    if (introItem) this.decorateIntroScene(introItem);
 
     this.minZ = Math.min(...this.items.map((item) => item.z));
     this.maxZ = Math.max(...this.items.map((item) => item.z));
@@ -116,40 +92,76 @@ class SceneProjector {
     this.focal = Math.min(this.width, this.height) * 1.08;
   }
 
-  updateOpeningProfile(item, distanceZ, camera) {
-    if (distanceZ > 12 || distanceZ < -165) {
-      item.element.style.opacity = '0';
-      item.element.style.visibility = 'hidden';
-      item.element.style.pointerEvents = 'none';
+  decorateIntroScene(item) {
+    const panel = item.element.querySelector('.panel');
+    if (!panel || panel.querySelector('.intro-foreground')) return;
+
+    const layer = document.createElement('div');
+    layer.className = 'intro-foreground';
+    layer.setAttribute('aria-hidden', 'true');
+    layer.innerHTML = `
+      <img
+        class="intro-foreground__image"
+        src="${OPENING_PORTRAIT}"
+        width="2160"
+        height="3840"
+        alt=""
+        fetchpriority="high"
+        decoding="async"
+        draggable="false"
+      >
+      <div class="intro-foreground__shade"></div>
+    `;
+
+    panel.appendChild(layer);
+    item.foreground = layer;
+  }
+
+  hideItem(item) {
+    item.element.style.opacity = '0';
+    item.element.style.visibility = 'hidden';
+    item.element.style.pointerEvents = 'none';
+    if (item.foreground) item.foreground.style.opacity = '0';
+  }
+
+  updateIntroScene(item, distanceZ, camera) {
+    if (distanceZ > 10 || distanceZ < -205) {
+      this.hideItem(item);
       return 0;
     }
 
-    const approach = smoothstep(-48, 7, distanceZ);
-    const farVisibility = smoothstep(-165, -82, distanceZ);
-    const nearVisibility = 1 - smoothstep(8, 12, distanceZ);
-    const opacity = clamp(farVisibility * nearVisibility, 0, 1);
+    const safeDistance = Math.max(0.5, Math.abs(distanceZ));
     const depth = Math.max(0.5, -distanceZ);
-
-    const scale = lerp(1.02, 4.35, approach);
-    const dodgeX = approach * this.width * 0.62;
-    const dodgeY = approach * this.height * 0.025;
-    const screenX = this.width / 2 + ((item.x - camera.x) / depth) * this.focal + dodgeX;
-    const screenY = this.height / 2 - ((item.y - camera.y) / depth) * this.focal + dodgeY;
+    const screenX = this.width / 2 + ((item.x - camera.x) / depth) * this.focal;
+    const screenY = this.height / 2 - ((item.y - camera.y) / depth) * this.focal;
+    const scale = clamp(35 / safeDistance, 0.17, 16);
+    const farFade = smoothstep(-200, -105, distanceZ);
+    const nearFade = 1 - smoothstep(-28, 8, distanceZ);
+    const opacity = clamp(farFade * nearFade, 0, 1);
 
     item.element.style.visibility = opacity > 0.002 ? 'visible' : 'hidden';
     item.element.style.opacity = opacity.toFixed(4);
-    item.element.style.pointerEvents = 'none';
+    item.element.style.pointerEvents = opacity > 0.72 ? 'auto' : 'none';
     item.element.style.filter = 'none';
     item.element.style.transform = `translate3d(${screenX}px, ${screenY}px, 0) translate(-50%, -50%) scale(${scale.toFixed(4)})`;
+
+    if (item.foreground) {
+      const shift = smoothstep(-145, -24, distanceZ);
+      const fgScale = lerp(1.02, 1.55, shift);
+      const fgX = lerp(0, this.width * 0.64, shift);
+      const fgY = lerp(0, this.height * 0.028, shift);
+      const fgOpacity = clamp(1 - smoothstep(1, 10, distanceZ), 0, 1);
+
+      item.foreground.style.opacity = (opacity * fgOpacity).toFixed(4);
+      item.foreground.style.transform = `translate3d(${fgX}px, ${fgY}px, 0) scale(${fgScale.toFixed(4)})`;
+    }
 
     return opacity;
   }
 
   updateDefaultScene(item, distanceZ, camera) {
     if (distanceZ > 10 || distanceZ < -205) {
-      item.element.style.opacity = '0';
-      item.element.style.visibility = 'hidden';
-      item.element.style.pointerEvents = 'none';
+      this.hideItem(item);
       return 0;
     }
 
@@ -178,8 +190,8 @@ class SceneProjector {
 
     for (const item of this.items) {
       const distanceZ = item.z - camera.z;
-      const opacity = item.kind === 'opening-profile'
-        ? this.updateOpeningProfile(item, distanceZ, camera)
+      const opacity = item.kind === 'intro'
+        ? this.updateIntroScene(item, distanceZ, camera)
         : this.updateDefaultScene(item, distanceZ, camera);
 
       const candidateDistance = Math.abs(distanceZ + 38);
