@@ -1,7 +1,7 @@
-/* DESORDEN — imagen inicial nítida y transición de cámara por delante del rostro */
+/* DESORDEN — bloque inicial estable, nítido y sin efectos visuales */
 
 .loader {
-  z-index: 20;
+  z-index: 999;
   display: block;
   padding: 0;
   overflow: hidden;
@@ -21,20 +21,7 @@
   image-rendering: auto;
   backface-visibility: hidden;
   transform: translateZ(0);
-}
-
-.loader__portrait-shade {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, transparent 14%, transparent 82%, rgba(0, 0, 0, 0.48) 100%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0%, transparent 11%, transparent 89%, rgba(0, 0, 0, 0.14) 100%);
-  pointer-events: none;
-}
-
-.loader__brand,
-.loader__line {
-  display: none;
+  filter: none;
 }
 
 .loader__meta {
@@ -45,20 +32,33 @@
   left: auto;
   display: flex;
   gap: 10px;
-  color: rgba(255, 255, 255, 0.46);
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.62rem;
   letter-spacing: 0.16em;
 }
 
-.rail {
-  opacity: 0;
-  transform: translate3d(0, 10px, 0);
-  animation: railOpeningReveal 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.18s forwards;
+.loader__line,
+.loader__brand,
+.loader__portrait-shade {
+  display: none !important;
 }
 
-.brand-corner {
-  opacity: 0;
-  animation: cornerOpeningReveal 0.9s ease 1s forwards;
+.scene--opening-profile,
+.scene--opening-fallback {
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100dvh;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+}
+
+.scene--opening-fallback {
+  top: 50%;
+  left: 50%;
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(50%, 50%, 0) translate(-50%, -50%);
 }
 
 .panel--opening-profile {
@@ -83,26 +83,14 @@
   image-rendering: auto;
   backface-visibility: hidden;
   transform: translateZ(0);
-}
-
-.opening-profile__edge-fade {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, transparent 12%, transparent 84%, rgba(0, 0, 0, 0.58) 100%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.14) 0%, transparent 9%, transparent 91%, rgba(0, 0, 0, 0.16) 100%);
-}
-
-.scene--opening-profile {
-  will-change: transform, opacity;
-  transform-style: preserve-3d;
+  filter: none !important;
 }
 
 .scene--opening-profile,
-.scene--opening-profile * {
+.scene--opening-profile *,
+.scene--opening-fallback,
+.scene--opening-fallback * {
   filter: none !important;
-  image-rendering: auto;
 }
 
 #scroll-space {
@@ -110,27 +98,8 @@
   min-height: 21000px;
 }
 
-@keyframes railOpeningReveal {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes cornerOpeningReveal {
-  from { opacity: 0; }
-  to { opacity: 0.92; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .rail,
-  .brand-corner {
-    animation: none;
-    opacity: 1;
-    transform: none;
+  .loader {
+    transition: none;
   }
 }
