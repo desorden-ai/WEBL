@@ -1,6 +1,6 @@
 import { scenesConfig } from './scenes.js?v=20260731-desorden';
 
-const OPENING_PORTRAIT = './assets/intro-profile-1440.avif';
+const OPENING_PORTRAIT = './assets/intro-profile-2160.avif';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -14,8 +14,8 @@ const OPENING_HTML = `
     <img
       class="opening-profile__image"
       src="${OPENING_PORTRAIT}"
-      width="1440"
-      height="2560"
+      width="2160"
+      height="3840"
       alt="Retrat en blanc i negre de perfil"
       fetchpriority="high"
       decoding="sync"
@@ -26,8 +26,6 @@ const OPENING_HTML = `
 `;
 
 const buildRuntimeScenes = () => {
-  // The existing 185-unit rhythm between sections is preserved.
-  // The new portrait is inserted before the original first block.
   const positions = {
     intro: { x: 0, y: 0, z: -185 },
     about: { x: 0, y: 0, z: -370 },
@@ -132,8 +130,6 @@ class SceneProjector {
     const opacity = clamp(farVisibility * nearVisibility, 0, 1);
     const depth = Math.max(0.5, -distanceZ);
 
-    // The camera approaches the eye and nose, then veers to the left of the subject.
-    // No blur is applied at any point to this image.
     const scale = lerp(1.02, 4.35, approach);
     const dodgeX = approach * this.width * 0.62;
     const dodgeY = approach * this.height * 0.025;
