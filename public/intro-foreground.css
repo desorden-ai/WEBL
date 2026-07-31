@@ -1,0 +1,40 @@
+/* Retrato integrado en primer plano dentro del primer módulo 3D. */
+.scene--intro .panel {
+  isolation: isolate;
+}
+
+.scene--intro .intro-foreground {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  will-change: transform, opacity;
+  transform-origin: center center;
+}
+
+.scene--intro .intro-foreground__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% center;
+  filter: grayscale(1) contrast(1.08) brightness(.82);
+  user-select: none;
+}
+
+.scene--intro .intro-foreground__shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.98) 0%, rgba(0,0,0,.62) 20%, rgba(0,0,0,.18) 48%, rgba(0,0,0,.10) 62%, rgba(0,0,0,.70) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,.02) 42%, rgba(0,0,0,.72) 100%);
+}
+
+.scene--intro .panel__veil--hero {
+  z-index: 2;
+}
+
+.scene--intro .hero-copy {
+  z-index: 4 !important;
+}
