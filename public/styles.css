@@ -381,3 +381,57 @@ a, button { -webkit-tap-highlight-color: transparent; }
   .scroll-cue i::after { animation: none; transform: none; }
   .loader { transition: none; }
 }
+
+/* Textos transparentes gigantes de fondo (como el DUNGA del vídeo) */
+.title-outline-huge {
+  font-size: 15rem;
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.03);
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  pointer-events: none;
+}
+
+/* Nube de marcas/logos */
+.tech-brand {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: -0.02em;
+}
+
+/* Números flotantes */
+.number-huge {
+  font-size: 5rem;
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+}
+
+.number-huge span {
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  display: block;
+  margin-top: 10px;
+}
+
+/* Pequeño ajuste a la lista para el nuevo layout */
+.list-item {
+  font-size: 0.95rem;
+  font-weight: 300;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.list-item::before {
+  content: "✦";
+  color: var(--muted);
+  margin-right: 12px;
+  font-size: 0.7rem;
+  margin-top: 4px;
+}
