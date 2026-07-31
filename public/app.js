@@ -1,9 +1,5 @@
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const lerp = (a, b, t) => a + (b - a) * t;
-const smoothstep = (edge0, edge1, value) => {
-  const t = clamp((value - edge0) / Math.max(edge1 - edge0, 0.0001), 0, 1);
-  return t * t * (3 - 2 * t);
-};
 
 class Loader {
   constructor() {
@@ -37,54 +33,76 @@ class SceneProjector {
       label: element.dataset.label || '',
       number: element.dataset.number || ''
     }));
+
     this.label = document.getElementById('section-label');
     this.number = document.getElementById('section-number');
     this.activeKey = '';
     this.resize();
+
     window.addEventListener('resize', () => this.resize(), { passive: true });
   }
 
   resize() {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
-    this.focal = Math.min(this.width, this.height) * 1.18;
+    this.focal = Math.min(this.width, this.height) * 1.2;
   }
 
   update(camera) {
     let active = this.items[0];
-    let activeDistance = Infinity;
+    let closestZ = -Infinity;
 
     for (const item of this.items) {
-      const depth = camera.z - item.z;
-      const visible = depth > 1.5 && depth < 174;
+      // Convención equivalente a Three.js:
+      // negativo = elemento delante de cámara; positivo = ya ha rebasado la cámara.
+      const distanceZ = item.z - camera.z;
 
-      if (!visible) {
+      // Rango de proyección ampliado para entradas y salidas más largas.
+      if (distanceZ > 5 || distanceZ < -600) {
         item.element.style.opacity = '0';
         item.element.style.visibility = 'hidden';
-        item.element.classList.remove('is-interactive');
+        item.element.style.pointerEvents = 'none';
+        item.element.style.filter = 'blur(0px)';
         continue;
       }
 
+      if (distanceZ < 20 && distanceZ > closestZ) {
+        closestZ = distanceZ;
+        active = item;
+      }
+
+      const depth = Math.max(0.1, -distanceZ);
       const relativeX = item.x - camera.x;
       const relativeY = item.y - camera.y;
       const screenX = this.width / 2 + (relativeX / depth) * this.focal;
       const screenY = this.height / 2 - (relativeY / depth) * this.focal;
 
-      const scale = clamp(33 / depth, 0.22, 1.9);
-      const farFade = 1 - smoothstep(105, 174, depth);
-      const nearFade = smoothstep(1.5, 24, depth);
-      const opacity = Math.pow(farFade * nearFade, 0.82);
+      // Escalado expansivo: el contenido crece hasta atravesar la cámara.
+      const scale = 35 / Math.max(0.1, Math.abs(distanceZ));
+      const clampedScale = clamp(scale, 0.05, 20);
 
-      item.element.style.visibility = 'visible';
-      item.element.style.opacity = opacity.toFixed(4);
-      item.element.style.transform = `translate3d(${screenX}px, ${screenY}px, 0) translate(-50%, -50%) scale(${scale.toFixed(4)})`;
-      item.element.classList.toggle('is-interactive', opacity > 0.68);
+      let opacity = 1;
+      let blur = 0;
 
-      const candidateDistance = Math.abs(depth - 32);
-      if (candidateDistance < activeDistance) {
-        activeDistance = candidateDistance;
-        active = item;
+      // Entrada prolongada desde el fondo.
+      if (distanceZ < -240) {
+        opacity = (520 + distanceZ) / 280;
       }
+
+      // Salida cercana: fundido y desenfoque progresivos.
+      if (distanceZ > -28) {
+        opacity = Math.max(0, -distanceZ / 28);
+        blur = (28 + distanceZ) * 0.36;
+      }
+
+      opacity = clamp(opacity, 0, 1);
+      blur = clamp(blur, 0, 12);
+
+      item.element.style.visibility = opacity > 0.002 ? 'visible' : 'hidden';
+      item.element.style.opacity = opacity.toFixed(4);
+      item.element.style.pointerEvents = opacity > 0.65 ? 'auto' : 'none';
+      item.element.style.filter = `blur(${blur.toFixed(2)}px)`;
+      item.element.style.transform = `translate3d(${screenX}px, ${screenY}px, 0) translate(-50%, -50%) scale(${clampedScale.toFixed(4)})`;
     }
 
     const key = `${active.number}-${active.label}`;
@@ -100,7 +118,7 @@ class ScrollFlight {
   constructor() {
     this.target = 0;
     this.current = 0;
-    this.maxDepth = -296;
+    this.maxDepth = -344;
     this.lastTime = performance.now();
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.updateTarget();
@@ -118,7 +136,8 @@ class ScrollFlight {
     const delta = clamp((time - this.lastTime) / 1000, 0.001, 0.05);
     this.lastTime = time;
 
-    const response = this.reducedMotion ? 9 : 2.65;
+    // Interpolación independiente de FPS: respuesta lenta, continua y estable.
+    const response = this.reducedMotion ? 9 : 2.15;
     const easing = 1 - Math.exp(-response * delta);
     this.current = lerp(this.current, this.target, easing);
 
@@ -126,8 +145,8 @@ class ScrollFlight {
     return {
       progress: p,
       z: p * this.maxDepth,
-      x: Math.sin(p * Math.PI * 3.2) * 0.42,
-      y: Math.cos(p * Math.PI * 2.1) * 0.2
+      x: Math.sin(p * Math.PI * 3.0) * 0.3,
+      y: Math.cos(p * Math.PI * 2.0) * 0.14
     };
   }
 }
