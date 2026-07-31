@@ -1,17 +1,52 @@
-/* Primer módulo: fondo negro puro detrás de la tipografía.
-   Mantiene intactos el texto, la navegación y el recorrido 3D. */
-.scene--intro .panel__media,
-.scene--intro .panel__media--hero,
-.scene--intro .panel__media--hero-start,
-.scene--intro .panel__media--hero-end,
-.scene--intro .panel__orange-glow {
-  display: none !important;
-}
-
+/* Bloque 2: titular centrado sobre fondo negro puro. */
+.scene--intro,
 .scene--intro .panel {
   background: #000 !important;
 }
 
-.scene--intro .panel__veil--hero {
-  background: #000 !important;
+/* Elimina completamente cualquier imagen, vídeo, glow, degradado o velo del bloque. */
+.scene--intro .panel__media,
+.scene--intro .panel__media--hero,
+.scene--intro .panel__media--hero-start,
+.scene--intro .panel__media--hero-end,
+.scene--intro .panel__orange-glow,
+.scene--intro .panel__veil,
+.scene--intro .panel__veil--hero,
+.scene--intro .panel::before,
+.scene--intro .panel::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Centrado real del contenido en ambos ejes. */
+.scene--intro .hero-copy {
+  position: absolute !important;
+  z-index: 4 !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 clamp(28px, 8vw, 56px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  transform: none !important;
+}
+
+.scene--intro .hero-copy h1 {
+  width: 100% !important;
+  margin: 0 !important;
+  text-align: center !important;
+  text-wrap: balance;
+}
+
+.scene--intro .hero-copy p,
+.scene--intro .hero-copy .signature {
+  width: 100% !important;
+  text-align: center !important;
 }
