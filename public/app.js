@@ -1,10 +1,54 @@
 import { scenesConfig } from './scenes.js?v=20260731-desorden';
 
+const OPENING_PORTRAIT = './assets/intro-profile-1440.avif';
+
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const lerp = (a, b, t) => a + (b - a) * t;
 const smoothstep = (edge0, edge1, value) => {
   const t = clamp((value - edge0) / Math.max(edge1 - edge0, 0.0001), 0, 1);
   return t * t * (3 - 2 * t);
+};
+
+const OPENING_HTML = `
+  <article class="panel panel--opening-profile" aria-label="Retrat inicial de DESORDEN">
+    <img
+      class="opening-profile__image"
+      src="${OPENING_PORTRAIT}"
+      width="1440"
+      height="2560"
+      alt="Retrat en blanc i negre de perfil"
+      fetchpriority="high"
+      decoding="sync"
+      draggable="false"
+    >
+    <div class="opening-profile__edge-fade" aria-hidden="true"></div>
+  </article>
+`;
+
+const buildRuntimeScenes = () => {
+  const positions = {
+    intro: { x: 0, y: 0, z: -240 },
+    about: { x: 0, y: 0, z: -520 },
+    radar: { x: 0, y: 0, z: -810 },
+    contact: { x: 0, y: 0, z: -1080 }
+  };
+
+  const normalized = scenesConfig.map((scene) => ({
+    ...scene,
+    position: positions[scene.id] || scene.position
+  }));
+
+  const introIndex = normalized.findIndex((scene) => scene.id === 'intro');
+  normalized.splice(introIndex >= 0 ? introIndex : 0, 0, {
+    id: 'opening-profile',
+    kind: 'opening-profile',
+    number: '01',
+    sectionLabel: 'INICI',
+    position: { x: 0, y: 0, z: 0 },
+    html: OPENING_HTML
+  });
+
+  return normalized;
 };
 
 class Loader {
@@ -23,16 +67,20 @@ class Loader {
   finish() {
     window.clearTimeout(window.__WEBL_BOOT_TIMEOUT__);
     this.set(100);
-    window.setTimeout(() => this.root?.classList.add('is-hidden'), 180);
+    window.setTimeout(() => this.root?.classList.add('is-hidden'), 260);
   }
 }
 
 class SceneProjector {
   constructor(config) {
-    if (!Array.isArray(config) || config.length === 0) throw new Error('La configuració d’escenes està buida.');
+    if (!Array.isArray(config) || config.length === 0) {
+      throw new Error('La configuració d’escenes està buida.');
+    }
+
     this.container = document.getElementById('scene-layer');
     this.number = document.getElementById('section-number');
     this.activeKey = '';
+
     if (!this.container) throw new Error('No existeix #scene-layer.');
     this.container.replaceChildren();
 
@@ -43,7 +91,10 @@ class SceneProjector {
       element.setAttribute('aria-label', scene.sectionLabel || `Secció ${index + 1}`);
       element.innerHTML = scene.html;
       this.container.appendChild(element);
+
       return {
+        id: scene.id,
+        kind: scene.kind || 'default',
         element,
         x: Number(scene.position?.x || 0),
         y: Number(scene.position?.y || 0),
@@ -65,34 +116,71 @@ class SceneProjector {
     this.focal = Math.min(this.width, this.height) * 1.08;
   }
 
+  updateOpeningProfile(item, distanceZ, camera) {
+    if (distanceZ > 12 || distanceZ < -165) {
+      item.element.style.opacity = '0';
+      item.element.style.visibility = 'hidden';
+      item.element.style.pointerEvents = 'none';
+      return 0;
+    }
+
+    const approach = smoothstep(-48, 7, distanceZ);
+    const farVisibility = smoothstep(-165, -82, distanceZ);
+    const nearVisibility = 1 - smoothstep(8, 12, distanceZ);
+    const opacity = clamp(farVisibility * nearVisibility, 0, 1);
+    const depth = Math.max(0.5, -distanceZ);
+
+    const scale = lerp(1.02, 4.35, approach);
+    const dodgeX = approach * this.width * 0.62;
+    const dodgeY = approach * this.height * 0.025;
+    const screenX = this.width / 2 + ((item.x - camera.x) / depth) * this.focal + dodgeX;
+    const screenY = this.height / 2 - ((item.y - camera.y) / depth) * this.focal + dodgeY;
+
+    item.element.style.visibility = opacity > 0.002 ? 'visible' : 'hidden';
+    item.element.style.opacity = opacity.toFixed(4);
+    item.element.style.pointerEvents = 'none';
+    item.element.style.filter = 'none';
+    item.element.style.transform = `translate3d(${screenX}px, ${screenY}px, 0) translate(-50%, -50%) scale(${scale.toFixed(4)})`;
+
+    return opacity;
+  }
+
+  updateDefaultScene(item, distanceZ, camera) {
+    if (distanceZ > 10 || distanceZ < -205) {
+      item.element.style.opacity = '0';
+      item.element.style.visibility = 'hidden';
+      item.element.style.pointerEvents = 'none';
+      return 0;
+    }
+
+    const safeDistance = Math.max(0.5, Math.abs(distanceZ));
+    const depth = Math.max(0.5, -distanceZ);
+    const screenX = this.width / 2 + ((item.x - camera.x) / depth) * this.focal;
+    const screenY = this.height / 2 - ((item.y - camera.y) / depth) * this.focal;
+    const scale = clamp(35 / safeDistance, 0.17, 16);
+    const farFade = smoothstep(-200, -105, distanceZ);
+    const nearFade = 1 - smoothstep(-28, 8, distanceZ);
+    const opacity = clamp(farFade * nearFade, 0, 1);
+    const blur = distanceZ > -28 ? clamp((28 + distanceZ) * 0.34, 0, 12) : 0;
+
+    item.element.style.visibility = opacity > 0.002 ? 'visible' : 'hidden';
+    item.element.style.opacity = opacity.toFixed(4);
+    item.element.style.pointerEvents = opacity > 0.72 ? 'auto' : 'none';
+    item.element.style.filter = `blur(${blur.toFixed(2)}px)`;
+    item.element.style.transform = `translate3d(${screenX}px, ${screenY}px, 0) translate(-50%, -50%) scale(${scale.toFixed(4)})`;
+
+    return opacity;
+  }
+
   update(camera) {
     let active = this.items[0];
     let activeDistance = Infinity;
 
     for (const item of this.items) {
       const distanceZ = item.z - camera.z;
-      if (distanceZ > 10 || distanceZ < -205) {
-        item.element.style.opacity = '0';
-        item.element.style.visibility = 'hidden';
-        item.element.style.pointerEvents = 'none';
-        continue;
-      }
-
-      const safeDistance = Math.max(0.5, Math.abs(distanceZ));
-      const depth = Math.max(0.5, -distanceZ);
-      const screenX = this.width / 2 + ((item.x - camera.x) / depth) * this.focal;
-      const screenY = this.height / 2 - ((item.y - camera.y) / depth) * this.focal;
-      const scale = clamp(35 / safeDistance, 0.17, 16);
-      const farFade = smoothstep(-200, -105, distanceZ);
-      const nearFade = 1 - smoothstep(-28, 8, distanceZ);
-      const opacity = clamp(farFade * nearFade, 0, 1);
-      const blur = distanceZ > -28 ? clamp((28 + distanceZ) * 0.34, 0, 12) : 0;
-
-      item.element.style.visibility = opacity > 0.002 ? 'visible' : 'hidden';
-      item.element.style.opacity = opacity.toFixed(4);
-      item.element.style.pointerEvents = opacity > 0.72 ? 'auto' : 'none';
-      item.element.style.filter = `blur(${blur.toFixed(2)}px)`;
-      item.element.style.transform = `translate3d(${screenX}px, ${screenY}px, 0) translate(-50%, -50%) scale(${scale.toFixed(4)})`;
+      const opacity = item.kind === 'opening-profile'
+        ? this.updateOpeningProfile(item, distanceZ, camera)
+        : this.updateDefaultScene(item, distanceZ, camera);
 
       const candidateDistance = Math.abs(distanceZ + 38);
       if (opacity > 0.08 && candidateDistance < activeDistance) {
@@ -119,6 +207,7 @@ class ScrollFlight {
     this.lastTime = performance.now();
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.updateTarget();
+
     window.addEventListener('scroll', () => this.updateTarget(), { passive: true });
     window.addEventListener('resize', () => this.updateTarget(), { passive: true });
   }
@@ -131,14 +220,15 @@ class ScrollFlight {
   update(time) {
     const delta = clamp((time - this.lastTime) / 1000, 0.001, 0.05);
     this.lastTime = time;
-    const response = this.reducedMotion ? 10 : 2.8;
+    const response = this.reducedMotion ? 10 : 2.25;
     this.current = lerp(this.current, this.target, 1 - Math.exp(-response * delta));
+
     const p = this.current;
     return {
       progress: p,
       z: lerp(this.startZ, this.endZ, p),
-      x: Math.sin(p * Math.PI * 4.1) * 0.16,
-      y: Math.cos(p * Math.PI * 3.0) * 0.08
+      x: Math.sin(p * Math.PI * 4.1) * 0.1,
+      y: Math.cos(p * Math.PI * 3) * 0.05
     };
   }
 }
@@ -155,14 +245,20 @@ const bindContactForm = () => {
 
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Projecte per a DESORDEN', text, url: 'https://www.desorden.cat/#contacte' });
+        await navigator.share({
+          title: 'Projecte per a DESORDEN',
+          text,
+          url: 'https://www.desorden.cat/#contacte'
+        });
         if (note) note.textContent = 'Missatge preparat per compartir.';
       } else {
         await navigator.clipboard.writeText(text);
         if (note) note.textContent = 'Missatge copiat. Obre el canal de contacte que prefereixis.';
       }
     } catch (error) {
-      if (error?.name !== 'AbortError' && note) note.textContent = 'Pots contactar directament amb els botons inferiors.';
+      if (error?.name !== 'AbortError' && note) {
+        note.textContent = 'Pots contactar directament amb els botons inferiors.';
+      }
     }
   });
 };
@@ -171,7 +267,7 @@ class App {
   constructor() {
     this.loader = new Loader();
     this.loader.set(22);
-    this.projector = new SceneProjector(scenesConfig);
+    this.projector = new SceneProjector(buildRuntimeScenes());
     this.loader.set(64);
     this.flight = new ScrollFlight(this.projector.minZ, this.projector.maxZ);
     this.cue = document.getElementById('scroll-cue');
