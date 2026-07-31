@@ -12,17 +12,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body>
+<body id="top">
   <div id="loader" class="loader" role="status" aria-live="polite">
     <div class="loader__brand" aria-hidden="true">DES<br>OR<br>DEN</div>
     <div class="loader__line"><span id="loader-bar"></span></div>
     <div class="loader__meta"><span>CARREGANT EXPERIÈNCIA</span><span id="loader-progress">0%</span></div>
   </div>
-
-  <canvas id="world" aria-hidden="true"></canvas>
-  <div class="fallback-space" aria-hidden="true"></div>
-  <div class="grain" aria-hidden="true"></div>
-  <div class="vignette" aria-hidden="true"></div>
 
   <header class="chrome" aria-label="Navegació principal">
     <a class="chrome__brand" href="#top" aria-label="Tornar a l'inici">DESORDEN</a>
@@ -94,7 +89,7 @@
   <div id="scroll-space" aria-hidden="true"></div>
 
   <noscript>
-    <div class="noscript">Activa JavaScript per veure l’experiència 3D de DESORDEN.</div>
+    <div class="noscript">Activa JavaScript per veure l’experiència de DESORDEN.</div>
   </noscript>
 
   <script defer src="./app.js"></script>
