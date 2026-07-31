@@ -1,0 +1,129 @@
+/* Opening portrait and sharp pass-by camera transition */
+
+.loader {
+  z-index: 20;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.loader__portrait {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  background: #000;
+  user-select: none;
+  pointer-events: none;
+}
+
+.loader__portrait-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.24) 0%, transparent 15%, transparent 81%, rgba(0, 0, 0, 0.58) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0%, transparent 12%, transparent 87%, rgba(0, 0, 0, 0.2) 100%);
+  pointer-events: none;
+}
+
+.loader__brand,
+.loader__line {
+  display: none;
+}
+
+.loader__meta {
+  position: absolute;
+  z-index: 2;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: auto;
+  display: flex;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+}
+
+.rail {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  animation: railOpeningReveal 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.18s forwards;
+}
+
+.brand-corner {
+  opacity: 0;
+  animation: cornerOpeningReveal 0.9s ease 1s forwards;
+}
+
+.panel--opening-profile {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.opening-profile__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  background: #000;
+  user-select: none;
+  pointer-events: none;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.opening-profile__edge-fade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0%, transparent 13%, transparent 82%, rgba(0, 0, 0, 0.7) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, transparent 10%, transparent 88%, rgba(0, 0, 0, 0.24) 100%);
+}
+
+.scene--opening-profile {
+  will-change: transform, opacity;
+}
+
+.scene--opening-profile,
+.scene--opening-profile * {
+  image-rendering: auto;
+}
+
+#scroll-space {
+  height: 3000vh;
+  min-height: 21000px;
+}
+
+@keyframes railOpeningReveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes cornerOpeningReveal {
+  from { opacity: 0; }
+  to { opacity: 0.92; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail,
+  .brand-corner {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
