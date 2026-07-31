@@ -1,4 +1,4 @@
-/* Opening portrait and sharp pass-by camera transition */
+/* DESORDEN — imagen inicial nítida y transición de cámara por delante del rostro */
 
 .loader {
   z-index: 20;
@@ -18,14 +18,17 @@
   background: #000;
   user-select: none;
   pointer-events: none;
+  image-rendering: auto;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .loader__portrait-shade {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.24) 0%, transparent 15%, transparent 81%, rgba(0, 0, 0, 0.58) 100%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0%, transparent 12%, transparent 87%, rgba(0, 0, 0, 0.2) 100%);
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, transparent 14%, transparent 82%, rgba(0, 0, 0, 0.48) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0%, transparent 11%, transparent 89%, rgba(0, 0, 0, 0.14) 100%);
   pointer-events: none;
 }
 
@@ -64,6 +67,7 @@
   height: 100%;
   overflow: hidden;
   background: #000;
+  contain: paint;
 }
 
 .opening-profile__image {
@@ -76,6 +80,7 @@
   background: #000;
   user-select: none;
   pointer-events: none;
+  image-rendering: auto;
   backface-visibility: hidden;
   transform: translateZ(0);
 }
@@ -85,16 +90,18 @@
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0%, transparent 13%, transparent 82%, rgba(0, 0, 0, 0.7) 100%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, transparent 10%, transparent 88%, rgba(0, 0, 0, 0.24) 100%);
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, transparent 12%, transparent 84%, rgba(0, 0, 0, 0.58) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.14) 0%, transparent 9%, transparent 91%, rgba(0, 0, 0, 0.16) 100%);
 }
 
 .scene--opening-profile {
   will-change: transform, opacity;
+  transform-style: preserve-3d;
 }
 
 .scene--opening-profile,
 .scene--opening-profile * {
+  filter: none !important;
   image-rendering: auto;
 }
 

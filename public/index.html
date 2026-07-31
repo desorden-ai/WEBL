@@ -9,24 +9,26 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="image" href="./assets/intro-profile-1440.avif" type="image/avif" fetchpriority="high" />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=20260731-desorden" />
-  <link rel="stylesheet" href="./opening-profile.css?v=20260731-opening-profile-1" />
+  <link rel="stylesheet" href="./opening-profile.css?v=20260731-opening-profile-3" />
+
+  <script src="./opening-profile-data-init.js?v=20260731-opening-profile-3"></script>
+  <script src="./opening-profile-data/chunk-00.js?v=20260731-opening-profile-3"></script>
+  <script src="./opening-profile-data/chunk-01.js?v=20260731-opening-profile-3"></script>
+  <script src="./opening-profile-data/chunk-02.js?v=20260731-opening-profile-3"></script>
+  <script src="./opening-profile-data/chunk-03-04.js?v=20260731-opening-profile-3"></script>
+  <script src="./opening-profile-data/chunk-05-06.js?v=20260731-opening-profile-3"></script>
+  <script src="./opening-profile-data/chunk-07-08.js?v=20260731-opening-profile-3"></script>
+  <script src="./opening-profile-data-final.js?v=20260731-opening-profile-3"></script>
 </head>
 <body id="top">
   <div id="loader" class="loader" role="status" aria-live="polite">
-    <img
-      class="loader__portrait"
-      src="./assets/intro-profile-1440.avif"
-      width="1440"
-      height="2560"
-      alt=""
-      fetchpriority="high"
-      decoding="sync"
-      draggable="false"
-      aria-hidden="true"
-    />
+    <img id="loader-opening-profile" class="loader__portrait" width="2160" height="3840" alt="" fetchpriority="high" decoding="sync" draggable="false" aria-hidden="true" />
+    <script>
+      document.getElementById('loader-opening-profile').src =
+        window.__OPENING_PROFILE_DATA__ || './assets/intro-profile-1440.avif';
+    </script>
     <div class="loader__portrait-shade" aria-hidden="true"></div>
     <div class="loader__brand" aria-hidden="true">DES<br>ORDEN.</div>
     <div class="loader__line"><span id="loader-bar"></span></div>
@@ -59,6 +61,6 @@
       document.getElementById('loader')?.classList.add('is-hidden');
     }, 4200);
   </script>
-  <script type="module" src="./app.js?v=20260731-opening-profile-1"></script>
+  <script type="module" src="./app.js?v=20260731-opening-profile-3"></script>
 </body>
 </html>
