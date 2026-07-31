@@ -1,0 +1,17 @@
+/* Primer módulo: fondo negro puro detrás de la tipografía.
+   Mantiene intactos el texto, la navegación y el recorrido 3D. */
+.scene--intro .panel__media,
+.scene--intro .panel__media--hero,
+.scene--intro .panel__media--hero-start,
+.scene--intro .panel__media--hero-end,
+.scene--intro .panel__orange-glow {
+  display: none !important;
+}
+
+.scene--intro .panel {
+  background: #000 !important;
+}
+
+.scene--intro .panel__veil--hero {
+  background: #000 !important;
+}
