@@ -9,14 +9,28 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="image" href="./assets/intro-profile-1440.avif" type="image/avif" fetchpriority="high" />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=20260731-desorden" />
+  <link rel="stylesheet" href="./opening-profile.css?v=20260731-opening-profile-1" />
 </head>
 <body id="top">
   <div id="loader" class="loader" role="status" aria-live="polite">
+    <img
+      class="loader__portrait"
+      src="./assets/intro-profile-1440.avif"
+      width="1440"
+      height="2560"
+      alt=""
+      fetchpriority="high"
+      decoding="sync"
+      draggable="false"
+      aria-hidden="true"
+    />
+    <div class="loader__portrait-shade" aria-hidden="true"></div>
     <div class="loader__brand" aria-hidden="true">DES<br>ORDEN.</div>
     <div class="loader__line"><span id="loader-bar"></span></div>
-    <div class="loader__meta"><span>CARREGANT EXPERIÈNCIA</span><span id="loader-progress">0%</span></div>
+    <div class="loader__meta"><span>CARREGANT</span><span id="loader-progress">0%</span></div>
   </div>
 
   <aside class="rail" aria-label="Estat de navegació">
@@ -45,6 +59,6 @@
       document.getElementById('loader')?.classList.add('is-hidden');
     }, 4200);
   </script>
-  <script type="module" src="./app.js?v=20260731-desorden"></script>
+  <script type="module" src="./app.js?v=20260731-opening-profile-1"></script>
 </body>
 </html>
