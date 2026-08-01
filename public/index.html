@@ -10,10 +10,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
-  <link rel="preload" href="./assets/module-1-bg-rotating.png" as="image" type="image/png" />
   <link rel="preload" href="./assets/module-1-subject.png" as="image" type="image/png" />
   <link rel="stylesheet" href="./styles.css?v=20260731-desorden" />
-  <link rel="stylesheet" href="./opening-profile.css?v=20260801-module-1-rotating-1" />
+  <link rel="stylesheet" href="./opening-profile.css?v=20260801-module-1-code-bg-1" />
   <link rel="stylesheet" href="./hero-cleanup.css?v=20260801-clean-block-3" />
 
   <script>
@@ -42,7 +41,7 @@
     <section class="scene scene--opening-profile scene--opening-fallback" aria-label="Mòdul inicial DESORDEN">
       <article class="panel panel--opening-profile">
         <div class="opening-profile__bg-wrap" aria-hidden="true">
-          <img class="opening-profile__bg" src="./assets/module-1-bg-rotating.png" width="540" height="810" alt="" fetchpriority="high" decoding="sync" draggable="false" />
+          <div class="opening-profile__bg"></div>
         </div>
         <div class="opening-profile__center-hole" aria-hidden="true"></div>
         <img class="opening-profile__subject" src="./assets/module-1-subject.png" width="720" height="1080" alt="Silueta en perfil" fetchpriority="high" decoding="sync" draggable="false" />
@@ -59,6 +58,6 @@
       document.getElementById('loader')?.classList.add('is-hidden');
     }, 6500);
   </script>
-  <script type="module" src="./app.js?v=20260801-module-1-rotating-1"></script>
+  <script type="module" src="./app.js?v=20260801-module-1-code-bg-1"></script>
 </body>
 </html>
