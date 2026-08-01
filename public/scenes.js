@@ -15,26 +15,19 @@ export const scenesConfig = [
     html: `
       <article class="panel panel--services">
         <div class="services-heading">
-          <span>SECCIÓ · SERVEIS</span>
           <h2 class="services-title">QUÈ FEM</h2>
           <p>Una mirada única per convertir idees en presència.</p>
         </div>
         <div class="services-space">
-          <i class="service-guide service-guide--left" aria-hidden="true"></i>
-          <i class="service-guide service-guide--right" aria-hidden="true"></i>
           <ul class="service-nodes" aria-label="QUÈ FEM">
-            <li class="service-node service-node--core" data-x="50" data-y="51" data-z="-520" data-drift="-7" data-rotate="-2">DESORDEN</li>
-            <li class="service-node service-node--large" data-x="23" data-y="27" data-z="-700" data-drift="9" data-rotate="-5">VÍDEO</li>
-            <li class="service-node" data-x="76" data-y="32" data-z="-880" data-drift="-11" data-rotate="3">FOTOGRAFIA</li>
-            <li class="service-node service-node--small" data-x="17" data-y="69" data-z="-1060" data-drift="14" data-rotate="-3">DRON</li>
-            <li class="service-node service-node--large" data-x="79" data-y="72" data-z="-1240" data-drift="-15" data-rotate="4">IA</li>
-            <li class="service-node" data-x="40" data-y="84" data-z="-1420" data-drift="11" data-rotate="2">WEB</li>
-            <li class="service-node service-node--wide" data-x="68" data-y="15" data-z="-1600" data-drift="-9" data-rotate="-4">ESTRATÈGIA</li>
-            <li class="service-node service-node--outline" data-x="48" data-y="58" data-z="-1780" data-drift="6" data-rotate="7">CONTINGUT</li>
-            <li class="service-node service-node--small" data-x="25" data-y="43" data-z="-1960" data-drift="-12" data-rotate="-2">DIRECCIÓ VISUAL</li>
+            <li class="service-node service-node--large" data-x="22" data-y="42" data-drift="-18" data-rotate="-4">VÍDEO</li>
+            <li class="service-node" data-x="76" data-y="46" data-drift="16" data-rotate="3">FOTOGRAFIA</li>
+            <li class="service-node service-node--core" data-x="50" data-y="62" data-drift="-7" data-rotate="-2">DESORDEN</li>
+            <li class="service-node" data-x="19" data-y="77" data-drift="13" data-rotate="-3">DRON</li>
+            <li class="service-node service-node--large" data-x="81" data-y="79" data-drift="-15" data-rotate="4">IA</li>
+            <li class="service-node" data-x="44" data-y="90" data-drift="9" data-rotate="2">WEB</li>
           </ul>
         </div>
-        <p class="services-caption"><span>DESPLAÇA</span><b>→</b><span>EXPLORA</span></p>
       </article>
     `
   },

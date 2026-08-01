@@ -320,35 +320,28 @@ html.is-ready .scene--opening-fallback {
   top: calc(var(--safe-top) + 7vh);
   right: 24px;
   left: 74px;
+  text-align: center;
   pointer-events: none;
-}
-
-.services-heading > span {
-  display: block;
-  margin-bottom: 9px;
-  color: var(--accent);
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: 0.17em;
 }
 
 .services-title {
   margin: 0;
-  color: var(--accent);
+  color: var(--white);
   font-family: var(--anton);
-  font-size: clamp(4rem, 18vw, 6.7rem);
+  font-size: clamp(4.5rem, 19vw, 7rem);
   font-weight: 400;
   line-height: 0.84;
+  letter-spacing: -0.025em;
   text-transform: uppercase;
   will-change: transform, opacity;
 }
 
 .services-heading p {
-  max-width: 280px;
-  margin: 12px 0 0;
+  max-width: 390px;
+  margin: 28px auto 0;
   color: #939398;
-  font-size: clamp(0.9rem, 4vw, 1.08rem);
-  line-height: 1.35;
+  font-size: clamp(1.04rem, 4.7vw, 1.34rem);
+  line-height: 1.42;
 }
 
 .services-space,
@@ -369,20 +362,6 @@ html.is-ready .scene--opening-fallback {
 .service-nodes {
   list-style: none;
 }
-
-.service-guide {
-  position: absolute;
-  z-index: 1;
-  top: 20%;
-  bottom: 12%;
-  width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.2) 18%, rgba(255, 255, 255, 0.2) 82%, transparent);
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.service-guide--left { left: 31%; }
-.service-guide--right { right: 18%; }
 
 .service-node {
   position: absolute;
@@ -408,26 +387,10 @@ html.is-ready .scene--opening-fallback {
   font-size: clamp(2.6rem, 13vw, 4.2rem);
 }
 
-.service-node--large { color: #f2f2f2; font-size: clamp(1.8rem, 8.5vw, 2.8rem); }
+.service-node--large { color: #d8d8dc; font-size: clamp(1.8rem, 8.5vw, 2.8rem); }
 .service-node--small { color: #818187; font-size: clamp(0.82rem, 3.6vw, 1.15rem); letter-spacing: 0.08em; }
 .service-node--wide { font-size: clamp(1.3rem, 6.3vw, 2rem); letter-spacing: 0.06em; }
 .service-node--outline { color: transparent; font-size: clamp(2.4rem, 12vw, 4rem); -webkit-text-stroke: 1px rgba(242, 160, 0, 0.45); }
-
-.services-caption {
-  position: absolute;
-  z-index: 5;
-  right: 24px;
-  bottom: var(--safe-bottom);
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0;
-  color: #737378;
-  font-size: 0.58rem;
-  letter-spacing: 0.16em;
-}
-
-.services-caption b { color: var(--accent); font-size: 1rem; font-weight: 400; }
 
 /* Tipografía cinética compartida. */
 .kinetic-word {
