@@ -12,9 +12,15 @@
 }
 
 * { box-sizing: border-box; }
-html { background: var(--black); scroll-behavior: auto; }
+html {
+  margin: 0;
+  padding: 0;
+  background: var(--black);
+  scroll-behavior: auto;
+}
 body {
   margin: 0;
+  padding: 0;
   min-width: 320px;
   overflow-x: hidden;
   overscroll-behavior-y: none;
@@ -27,6 +33,11 @@ body {
 button, input, textarea { font: inherit; }
 a { color: inherit; }
 a, button { -webkit-tap-highlight-color: transparent; }
+.text-orange { color: var(--accent); }
+.text-gray { color: #77787c; }
+
+#viewport,
+#scroll-container { background-color: transparent; }
 
 #scene-layer {
   position: fixed;
@@ -65,34 +76,161 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .panel__veil--hero { background: linear-gradient(180deg, rgba(0,0,0,.16) 0%, rgba(0,0,0,.1) 32%, rgba(0,0,0,.72) 68%, #000 100%); }
 .panel__veil--about { background: linear-gradient(90deg, #000 0%, rgba(0,0,0,.9) 42%, rgba(0,0,0,.33) 72%, rgba(0,0,0,.14) 100%), linear-gradient(180deg, rgba(0,0,0,.1), #000 95%); }
 
-.rail {
+/* Módulo 1: titular integrado y zoom hacia la silueta. */
+#module-1,
+.scene--module-1 {
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: #000;
+}
+.panel--module-1 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+  contain: paint;
+}
+.glow-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150vw;
+  height: 150vw;
+  min-width: 150vh;
+  min-height: 150vh;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(242,160,0,.6) 0%, rgba(0,0,0,1) 50%);
+  z-index: 1;
+  pointer-events: none;
+  will-change: opacity;
+}
+.intro-text {
+  position: absolute;
+  z-index: 2;
+  top: 40%;
+  left: 0;
+  width: 100%;
+  padding: 0 clamp(28px, 8vw, 56px);
+  text-align: center;
+  transform: translateY(-50%);
+  will-change: opacity, transform;
+}
+.intro-text h2 {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--anton);
+  font-size: clamp(3.1rem, 14.5vw, 5.4rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 1px;
+  text-shadow: 0 4px 15px rgba(0,0,0,.8);
+  text-transform: uppercase;
+}
+.silhouette-container {
+  position: absolute;
+  right: -10%;
+  bottom: 0;
+  z-index: 3;
+  width: 85%;
+  height: 80%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  transform-origin: 30% 30%;
+  will-change: transform;
+  pointer-events: none;
+}
+.zoom-silhouette {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: 100%;
+  object-fit: contain;
+  object-position: right bottom;
+  user-select: none;
+  pointer-events: none;
+  backface-visibility: hidden;
+  filter: none !important;
+}
+
+/* Barra lateral traducida. */
+.sidebar {
   position: fixed;
   z-index: 30;
   top: var(--safe-top);
   bottom: var(--safe-bottom);
   left: max(14px, env(safe-area-inset-left));
-  width: 42px;
+  width: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
   color: var(--muted);
   pointer-events: none;
 }
-.rail__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px rgba(242,160,0,.35); }
-.rail__mode, .rail__scroll { writing-mode: vertical-rl; text-orientation: mixed; font-size: .67rem; letter-spacing: .16em; }
-.rail__mode { display: flex; gap: 7px; margin-top: 16px; }
-.rail__mode strong { color: var(--accent); font-weight: 500; }
-.rail__mode span { color: #77787c; }
-.rail__line { position: relative; width: 1px; background: var(--line); overflow: hidden; }
-.rail__line--top { height: 92px; margin: 18px 0; }
-.rail__scroll { margin: 0 0 18px; color: #77787c; }
-.rail__line--bottom { flex: 1; min-height: 80px; }
-.rail__line--bottom i { position: absolute; inset: 0; background: var(--accent); transform: scaleY(0); transform-origin: top; }
-.rail__counter { display: grid; justify-items: center; gap: 5px; margin-top: 14px; }
-.rail__counter strong, .rail__counter small { font-size: .78rem; letter-spacing: .08em; font-weight: 400; }
-.rail__counter strong { color: var(--accent); }
-.rail__counter small { color: #77787c; }
-.rail__counter span { width: 18px; height: 1px; background: var(--line); }
+.sidebar-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 16px rgba(242,160,0,.35);
+}
+.sidebar-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: .64rem;
+  letter-spacing: .14em;
+  line-height: 1;
+}
+.sidebar-text--mode { margin-top: 16px; }
+.sidebar-line {
+  position: relative;
+  width: 1px;
+  overflow: hidden;
+  background: var(--line);
+}
+.sidebar-line--top {
+  height: 72px;
+  margin: 16px 0;
+  flex: 0 0 auto;
+}
+.sidebar-text--scroll { margin-bottom: 16px; }
+.sidebar-line--progress {
+  flex: 1;
+  min-height: 70px;
+}
+.sidebar-active-line {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  will-change: transform;
+}
+.sidebar-step,
+.sidebar-total {
+  font-size: .78rem;
+  font-weight: 400;
+  letter-spacing: .08em;
+  line-height: 1;
+}
+.sidebar-step { margin-top: 14px; }
+.sidebar-short-line {
+  width: 18px;
+  height: 1px;
+  margin: 7px 0;
+  background: var(--line);
+}
 .brand-corner { position: fixed; z-index: 25; top: var(--safe-top); right: 18px; font-family: var(--anton); font-size: .75rem; letter-spacing: .14em; color: var(--accent); text-decoration: none; opacity: .92; }
 
 .hero-copy { position: absolute; z-index: 2; left: 74px; right: 26px; bottom: 7.8vh; text-align: left; }
@@ -184,6 +322,9 @@ a, button { -webkit-tap-highlight-color: transparent; }
 @keyframes revealEnd { 0%, 32% { opacity: 0; } 48%, 84% { opacity: 1; } 100% { opacity: 0; } }
 
 @media (max-height: 780px) {
+  .intro-text { top: 38%; }
+  .intro-text h2 { font-size: clamp(2.85rem, 13.4vw, 4.8rem); }
+  .silhouette-container { height: 77%; }
   .hero-copy { bottom: 5vh; }
   .about-copy { top: 15vh; }
   .about-copy p { margin-top: 17px; line-height: 1.38; }
@@ -200,7 +341,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 }
 
 @media (min-width: 700px) {
-  .rail { left: calc(50% - 280px + 14px); }
+  .sidebar { left: calc(50% - 280px + 14px); }
   .brand-corner { right: calc(50% - 280px + 18px); }
 }
 
