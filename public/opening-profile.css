@@ -1,4 +1,4 @@
-/* DESORDEN — módulo 1 con fondo rotatorio y silueta independiente */
+/* DESORDEN — módulo 1 con fondo naranja generado por código y sujeto independiente */
 .loader {
   z-index: 999;
   display: flex;
@@ -45,23 +45,35 @@ html.is-ready .scene--opening-fallback { display: none !important; }
   contain: paint;
   isolation: isolate;
 }
+
+/* Fondo del módulo 1: 100 % CSS, sin imágenes, degradados, blur ni filtros. */
 .opening-profile__bg-wrap {
   position: absolute;
-  inset: -12%;
+  inset: -30%;
   z-index: 1;
+  overflow: hidden;
+  background: #f2a000;
   transform-origin: 50% 50%;
   will-change: transform;
+  backface-visibility: hidden;
 }
 .opening-profile__bg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  user-select: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #f2a000;
   pointer-events: none;
-  image-rendering: auto;
-  backface-visibility: hidden;
-  filter: none !important;
+}
+.opening-profile__bg::before {
+  content: "";
+  position: absolute;
+  left: 51%;
+  top: 49%;
+  width: 54%;
+  height: 34%;
+  border-radius: 50%;
+  background: #000;
+  transform: translate(-50%, -50%) rotate(-18deg);
 }
 .opening-profile__center-hole {
   position: absolute;
