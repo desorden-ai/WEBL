@@ -1,6 +1,6 @@
 import { scenesConfig } from './scenes.js?v=20260731-desorden';
 
-const OPENING_SUBJECT = './assets/module-1-subject.png';
+const OPENING_SUBJECT = './assets/file_00000000cad881f4b1a836492f3a56ec.png';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -26,7 +26,7 @@ const OPENING_HTML = `
       <div class="opening-profile__bg"></div>
     </div>
     <div class="opening-profile__center-hole" aria-hidden="true"></div>
-    <img class="opening-profile__subject" src="${OPENING_SUBJECT}" width="720" height="1080" alt="Silueta en perfil" fetchpriority="high" decoding="async" draggable="false">
+    <img class="opening-profile__subject" src="${OPENING_SUBJECT}" width="1024" height="1536" alt="Figura en perfil" fetchpriority="high" decoding="async" draggable="false">
   </article>
 `;
 
