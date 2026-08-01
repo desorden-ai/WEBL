@@ -10,30 +10,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="preload" href="./assets/module-1-bg-rotating.png" as="image" type="image/png" />
+  <link rel="preload" href="./assets/module-1-subject.png" as="image" type="image/png" />
   <link rel="stylesheet" href="./styles.css?v=20260731-desorden" />
-  <link rel="stylesheet" href="./opening-profile.css?v=20260801-opening-stable-2" />
+  <link rel="stylesheet" href="./opening-profile.css?v=20260801-module-1-rotating-1" />
   <link rel="stylesheet" href="./hero-cleanup.css?v=20260801-clean-block-3" />
 
   <script>
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
   </script>
-  <script src="./opening-profile-data-init.js?v=20260731-opening-profile-3"></script>
-  <script src="./opening-profile-data/chunk-00.js?v=20260731-opening-profile-3"></script>
-  <script src="./opening-profile-data/chunk-01.js?v=20260731-opening-profile-3"></script>
-  <script src="./opening-profile-data/chunk-02.js?v=20260731-opening-profile-3"></script>
-  <script src="./opening-profile-data/chunk-03-04.js?v=20260731-opening-profile-3"></script>
-  <script src="./opening-profile-data/chunk-05-06.js?v=20260731-opening-profile-3"></script>
-  <script src="./opening-profile-data/chunk-07-08.js?v=20260731-opening-profile-3"></script>
-  <script src="./opening-profile-data-final.js?v=20260731-opening-profile-3"></script>
 </head>
 <body id="top">
   <div id="loader" class="loader" role="status" aria-live="polite">
-    <img id="loader-opening-profile" class="loader__portrait" width="2160" height="3840" alt="" fetchpriority="high" decoding="sync" draggable="false" aria-hidden="true" />
-    <script>
-      document.getElementById('loader-opening-profile').src =
-        window.__OPENING_PROFILE_DATA__ || './assets/intro-profile-1440.avif';
-    </script>
     <div class="loader__meta"><span>CARREGANT</span><span id="loader-progress">0%</span></div>
     <div class="loader__line" aria-hidden="true"><span id="loader-bar"></span></div>
   </div>
@@ -50,14 +39,14 @@
   <a class="brand-corner" href="#top" aria-label="Tornar a l'inici">DESORDEN.</a>
 
   <main id="scene-layer" aria-label="Presentació de DESORDEN">
-    <section class="scene scene--opening-profile scene--opening-fallback" aria-label="Retrat inicial de DESORDEN">
+    <section class="scene scene--opening-profile scene--opening-fallback" aria-label="Mòdul inicial DESORDEN">
       <article class="panel panel--opening-profile">
-        <img id="opening-fallback-image" class="opening-profile__image" width="2160" height="3840" alt="Retrat en blanc i negre de perfil" fetchpriority="high" decoding="sync" draggable="false" />
+        <div class="opening-profile__bg-wrap" aria-hidden="true">
+          <img class="opening-profile__bg" src="./assets/module-1-bg-rotating.png" width="540" height="810" alt="" fetchpriority="high" decoding="sync" draggable="false" />
+        </div>
+        <div class="opening-profile__center-hole" aria-hidden="true"></div>
+        <img class="opening-profile__subject" src="./assets/module-1-subject.png" width="720" height="1080" alt="Silueta en perfil" fetchpriority="high" decoding="sync" draggable="false" />
       </article>
-      <script>
-        document.getElementById('opening-fallback-image').src =
-          window.__OPENING_PROFILE_DATA__ || './assets/intro-profile-1440.avif';
-      </script>
     </section>
   </main>
 
@@ -70,6 +59,6 @@
       document.getElementById('loader')?.classList.add('is-hidden');
     }, 6500);
   </script>
-  <script type="module" src="./app.js?v=20260801-opening-stable-2"></script>
+  <script type="module" src="./app.js?v=20260801-module-1-rotating-1"></script>
 </body>
 </html>
