@@ -28,7 +28,6 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  overscroll-behavior-y: none;
   touch-action: pan-y;
   background: var(--black);
   color: var(--white);
