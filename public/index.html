@@ -10,11 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
-  <link rel="preload" href="./assets/module-1-subject.png" as="image" type="image/png" />
-  <link rel="stylesheet" href="./styles.css?v=20260801-hero-zoom-1" />
-  <link rel="stylesheet" href="./opening-profile.css?v=20260801-hero-zoom-1" />
-  <link rel="stylesheet" href="./hero-cleanup.css?v=20260801-clean-block-3" />
-  <link rel="stylesheet" href="./scene-transparency.css?v=20260801-scene-transparency-1" />
+  <link rel="preload" href="./assets/module-1-subject.png?v=20260801-cinematic-1" as="image" type="image/png" />
+  <link rel="stylesheet" href="./styles.css?v=20260801-cinematic-1" />
 
   <script>
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -26,6 +23,8 @@
     <div class="loader__meta"><span>CARREGANT</span><span id="loader-progress">0%</span></div>
     <div class="loader__line" aria-hidden="true"><span id="loader-bar"></span></div>
   </div>
+
+  <canvas id="particle-field" class="particle-field" aria-hidden="true"></canvas>
 
   <div id="sidebar" class="sidebar" aria-label="Estat de navegació">
     <div class="sidebar-dot" aria-hidden="true"></div>
@@ -56,7 +55,7 @@
           <h2>SI NO ET VEUEN<br>NO ET TRIEN</h2>
         </div>
         <div class="silhouette-container">
-          <img src="./assets/module-1-subject.png" width="1024" height="1536" alt="Perfil Desorden" class="zoom-silhouette" fetchpriority="high" decoding="sync" draggable="false" />
+          <img src="./assets/module-1-subject.png?v=20260801-cinematic-1" width="1024" height="1536" alt="Perfil Desorden" class="zoom-silhouette" fetchpriority="high" decoding="sync" draggable="false" />
         </div>
       </article>
     </section>
@@ -71,6 +70,6 @@
       document.getElementById('loader')?.classList.add('is-hidden');
     }, 6500);
   </script>
-  <script type="module" src="./app.js?v=20260801-hero-zoom-1"></script>
+  <script type="module" src="./app.js?v=20260801-cinematic-1"></script>
 </body>
 </html>

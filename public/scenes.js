@@ -1,6 +1,4 @@
-const RAW_ROOT = 'https://raw.githubusercontent.com/desorden-ai/DESORDEN/DESORDEN/public/frames/v1';
-const FRAME_START = `${RAW_ROOT}/frame_0001.webp`;
-const FRAME_END = `${RAW_ROOT}/frame_0097.webp`;
+const ABOUT_PORTRAIT = './1000091026.jpg?v=20260801-cinematic-1';
 
 const AVATARS = {
   leire: 'data:image/jpeg;base64,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',
@@ -10,19 +8,31 @@ const AVATARS = {
 
 export const scenesConfig = [
   {
-    id: 'intro',
-    number: '01',
-    sectionLabel: 'INICI',
-    position: { x: 0, y: 0, z: 0 },
+    id: 'services',
+    number: '02',
+    sectionLabel: 'QUÈ FEM',
+    position: { x: 0, y: 0, z: -150 },
     html: `
-      <article class="panel panel--hero">
-        <img class="panel__media panel__media--hero panel__media--hero-start" src="${FRAME_START}" alt="" decoding="async">
-        <img class="panel__media panel__media--hero panel__media--hero-end" src="${FRAME_END}" alt="Retrat en blanc i negre de David Milla" decoding="async">
-        <div class="panel__veil panel__veil--hero"></div>
-        <div class="hero-copy">
-          <h1>SI NO TE VEN<br>NO TE ELIGEN</h1>
-          <p>Estratègia visual, IA i contingut<br>que et fan visible.</p>
-          <span class="signature">DESORDEN.</span>
+      <article class="panel panel--services">
+        <h2 class="services-title">QUÈ FEM</h2>
+        <div class="services-space">
+          <svg class="service-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <line x1="50" y1="50" x2="19" y2="29"></line>
+            <line x1="50" y1="50" x2="79" y2="25"></line>
+            <line x1="50" y1="50" x2="24" y2="75"></line>
+            <line x1="50" y1="50" x2="77" y2="74"></line>
+            <line x1="50" y1="50" x2="9" y2="53"></line>
+            <line x1="50" y1="50" x2="88" y2="54"></line>
+          </svg>
+          <div class="service-node service-node--core" data-x="0" data-y="0" data-z="0">DESORDEN</div>
+          <ul class="service-nodes" aria-label="QUÈ FEM">
+            <li class="service-node" data-x="-31" data-y="-21" data-z="-12">VÍDEO</li>
+            <li class="service-node" data-x="29" data-y="-25" data-z="15">FOTOGRAFIA</li>
+            <li class="service-node" data-x="-26" data-y="25" data-z="34">DRON</li>
+            <li class="service-node" data-x="27" data-y="24" data-z="-20">IA</li>
+            <li class="service-node" data-x="-41" data-y="3" data-z="54">WEB</li>
+            <li class="service-node" data-x="38" data-y="4" data-z="48">ESTRATÈGIA</li>
+          </ul>
         </div>
       </article>
     `
@@ -34,9 +44,10 @@ export const scenesConfig = [
     position: { x: 0, y: 0, z: -185 },
     html: `
       <article class="panel panel--about">
-        <img class="panel__media panel__media--about" src="${FRAME_END}" alt="Retrat de David Milla amb contrallum taronja" loading="lazy" decoding="async">
+        <img class="panel__media panel__media--about" src="${ABOUT_PORTRAIT}" alt="Retrat de David Milla amb contrallum taronja" loading="lazy" decoding="async">
         <div class="panel__orange-glow"></div>
         <div class="panel__veil panel__veil--about"></div>
+        <div class="kinetic-word kinetic-word--about" aria-hidden="true">DESORDEN</div>
         <div class="about-copy">
           <h2>QUI SOC</h2>
           <p>David Milla, creador i director<br>de <strong>DESORDEN.</strong></p>
@@ -88,15 +99,16 @@ export const scenesConfig = [
     position: { x: 0, y: 0, z: -555 },
     html: `
       <article class="panel panel--contact">
+        <div class="kinetic-word kinetic-word--contact" aria-hidden="true">PARLEM</div>
         <header class="contact-header"><h2>PARLEM DEL<br>TEU PROJECTE</h2><p>Fem visible allò que tens al cap.</p></header>
         <form class="contact-form" id="contact-form">
-          <label><span aria-hidden="true">♙</span><input name="nom" autocomplete="name" placeholder="Nom" required></label>
-          <label><span aria-hidden="true">⌕</span><input name="contacte" autocomplete="email" placeholder="Contacte" required></label>
-          <label class="contact-form__message"><span aria-hidden="true">⊙</span><textarea name="objectiu" placeholder="Objectiu" required></textarea></label>
+          <label><span aria-hidden="true">♙</span><input name="nom" autocomplete="name" placeholder="Nom" aria-label="Nom" required></label>
+          <label><span aria-hidden="true">⌕</span><input name="contacte" autocomplete="email" placeholder="Contacte" aria-label="Contacte" required></label>
+          <label class="contact-form__message"><span aria-hidden="true">⊙</span><textarea name="objectiu" placeholder="Objectiu" aria-label="Objectiu" required></textarea></label>
           <button type="submit">PARLEM <span>→</span></button>
         </form>
         <div class="contact-actions">
-          <a href="https://www.desorden.cat/#contacte" target="_blank" rel="noopener"><span>◉</span> WHATSAPP</a>
+          <a href="https://wa.me/34640925788" target="_blank" rel="noopener"><span>◉</span> WHATSAPP</a>
           <a href="https://www.desorden.cat/#contacte" target="_blank" rel="noopener"><span>✉</span> CORREU</a>
         </div>
         <p class="contact-note" id="contact-note" aria-live="polite"></p>
