@@ -427,36 +427,34 @@ class TimelineProjector {
 
   updateServices(item, local) {
     const titleReveal = smoothstep(0.03, 0.20, local);
-    const entryCamera = lerp(-34, 0, smoothstep(0, 0.26, local));
-    const exitCamera = lerp(0, 40, smoothstep(0.74, 1, local));
-    const camera = this.reducedMotion ? 0 : entryCamera + exitCamera;
 
     if (item.servicesTitle) {
       item.servicesTitle.style.opacity = titleReveal.toFixed(4);
       item.servicesTitle.style.transform = `translate3d(0, ${(18 * (1 - titleReveal)).toFixed(2)}px, 0)`;
     }
 
-    if (item.serviceLinks) {
-      const linkReveal = smoothstep(0.12, 0.30, local);
-      item.serviceLinks.style.opacity = (linkReveal * 0.44).toFixed(4);
-      item.serviceLinks.style.transform = `scale(${lerp(0.94, 1, linkReveal).toFixed(4)})`;
-    }
-
     item.serviceNodes.forEach((node, index) => {
-      const x = Number(node.dataset.x || 0);
-      const y = Number(node.dataset.y || 0);
-      const depth = Number(node.dataset.z || 0);
-      const reveal = smoothstep(0.04 + index * 0.018, 0.21 + index * 0.015, local);
-      const relativeDepth = camera - depth;
-      const scale = this.reducedMotion
-        ? 1
-        : clamp(1 + relativeDepth / 180 + (index === 0 ? 0.06 : 0), 0.70, 1.34);
-      const xPx = (x / 100) * this.mainWidth - camera * (depth / 70) * 0.08;
-      const yPx = (y / 100) * this.height;
-      const depthOpacity = clamp(1 - Math.abs(relativeDepth) / 150, 0.42, 1);
+      const baseX = Number(node.dataset.x || 50);
+      const baseY = Number(node.dataset.y || 50);
+      const baseZ = Number(node.dataset.z || 0);
+      const drift = Number(node.dataset.drift || 0);
+      const rotation = Number(node.dataset.rotate || 0);
+      const currentZ = this.reducedMotion ? clamp(baseZ, -140, 140) : baseZ + local * 2100;
+      const driftX = this.reducedMotion ? 0 : drift * (local - 0.5);
+      const waveY = this.reducedMotion ? 0 : Math.sin(local * Math.PI * 2 + index * 0.72) * 2.4;
+      const fadeIn = clamp((currentZ + 620) / 210, 0, 1);
+      const fadeOut = 1 - clamp((currentZ - 190) / 190, 0, 1);
+      const opacity = this.reducedMotion ? 1 : Math.min(fadeIn, fadeOut);
+      const blur = this.reducedMotion ? 0 : currentZ < -430
+        ? Math.min(4, Math.abs(currentZ + 430) / 75)
+        : (currentZ > 260 ? Math.min(5, (currentZ - 260) / 45) : 0);
+      const scale = this.reducedMotion ? 1 : 0.78 + clamp((currentZ + 600) / 920, 0, 1) * 0.45;
 
-      node.style.opacity = (reveal * depthOpacity).toFixed(4);
-      node.style.transform = `translate3d(calc(-50% + ${xPx.toFixed(2)}px), calc(-50% + ${yPx.toFixed(2)}px), 0) scale(${scale.toFixed(4)})`;
+      node.style.left = `${(baseX + driftX).toFixed(2)}%`;
+      node.style.top = `${(baseY + waveY).toFixed(2)}%`;
+      node.style.opacity = opacity.toFixed(4);
+      node.style.filter = `blur(${blur.toFixed(2)}px)`;
+      node.style.transform = `translate3d(-50%, -50%, ${currentZ.toFixed(2)}px) scale(${scale.toFixed(4)}) rotate(${(rotation * (1 - local * 0.35)).toFixed(2)}deg)`;
     });
   }
 

@@ -14,26 +14,27 @@ export const scenesConfig = [
     position: { x: 0, y: 0, z: -150 },
     html: `
       <article class="panel panel--services">
-        <h2 class="services-title">QUÈ FEM</h2>
+        <div class="services-heading">
+          <span>SECCIÓ · SERVEIS</span>
+          <h2 class="services-title">QUÈ FEM</h2>
+          <p>Una mirada única per convertir idees en presència.</p>
+        </div>
         <div class="services-space">
-          <svg class="service-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-            <line x1="50" y1="50" x2="19" y2="29"></line>
-            <line x1="50" y1="50" x2="79" y2="25"></line>
-            <line x1="50" y1="50" x2="24" y2="75"></line>
-            <line x1="50" y1="50" x2="77" y2="74"></line>
-            <line x1="50" y1="50" x2="9" y2="53"></line>
-            <line x1="50" y1="50" x2="88" y2="54"></line>
-          </svg>
-          <div class="service-node service-node--core" data-x="0" data-y="0" data-z="0">DESORDEN</div>
+          <i class="service-guide service-guide--left" aria-hidden="true"></i>
+          <i class="service-guide service-guide--right" aria-hidden="true"></i>
           <ul class="service-nodes" aria-label="QUÈ FEM">
-            <li class="service-node" data-x="-31" data-y="-21" data-z="-12">VÍDEO</li>
-            <li class="service-node" data-x="29" data-y="-25" data-z="15">FOTOGRAFIA</li>
-            <li class="service-node" data-x="-26" data-y="25" data-z="34">DRON</li>
-            <li class="service-node" data-x="27" data-y="24" data-z="-20">IA</li>
-            <li class="service-node" data-x="-41" data-y="3" data-z="54">WEB</li>
-            <li class="service-node" data-x="38" data-y="4" data-z="48">ESTRATÈGIA</li>
+            <li class="service-node service-node--core" data-x="50" data-y="51" data-z="-520" data-drift="-7" data-rotate="-2">DESORDEN</li>
+            <li class="service-node service-node--large" data-x="23" data-y="27" data-z="-700" data-drift="9" data-rotate="-5">VÍDEO</li>
+            <li class="service-node" data-x="76" data-y="32" data-z="-880" data-drift="-11" data-rotate="3">FOTOGRAFIA</li>
+            <li class="service-node service-node--small" data-x="17" data-y="69" data-z="-1060" data-drift="14" data-rotate="-3">DRON</li>
+            <li class="service-node service-node--large" data-x="79" data-y="72" data-z="-1240" data-drift="-15" data-rotate="4">IA</li>
+            <li class="service-node" data-x="40" data-y="84" data-z="-1420" data-drift="11" data-rotate="2">WEB</li>
+            <li class="service-node service-node--wide" data-x="68" data-y="15" data-z="-1600" data-drift="-9" data-rotate="-4">ESTRATÈGIA</li>
+            <li class="service-node service-node--outline" data-x="48" data-y="58" data-z="-1780" data-drift="6" data-rotate="7">CONTINGUT</li>
+            <li class="service-node service-node--small" data-x="25" data-y="43" data-z="-1960" data-drift="-12" data-rotate="-2">DIRECCIÓ VISUAL</li>
           </ul>
         </div>
+        <p class="services-caption"><span>DESPLAÇA</span><b>→</b><span>EXPLORA</span></p>
       </article>
     `
   },

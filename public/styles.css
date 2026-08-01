@@ -311,13 +311,28 @@ html.is-ready .scene--opening-fallback {
 /* Escena 02: constelación semántica de servicios. */
 .panel--services {
   isolation: isolate;
+  perspective: 900px;
+}
+
+.services-heading {
+  position: absolute;
+  z-index: 5;
+  top: calc(var(--safe-top) + 7vh);
+  right: 24px;
+  left: 74px;
+  pointer-events: none;
+}
+
+.services-heading > span {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--accent);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.17em;
 }
 
 .services-title {
-  position: absolute;
-  z-index: 4;
-  top: calc(var(--safe-top) + 7vh);
-  left: 74px;
   margin: 0;
   color: var(--accent);
   font-family: var(--anton);
@@ -326,6 +341,14 @@ html.is-ready .scene--opening-fallback {
   line-height: 0.84;
   text-transform: uppercase;
   will-change: transform, opacity;
+}
+
+.services-heading p {
+  max-width: 280px;
+  margin: 12px 0 0;
+  color: #939398;
+  font-size: clamp(0.9rem, 4vw, 1.08rem);
+  line-height: 1.35;
 }
 
 .services-space,
@@ -338,62 +361,73 @@ html.is-ready .scene--opening-fallback {
 
 .services-space {
   z-index: 2;
+  perspective: 850px;
+  perspective-origin: 50% 52%;
+  transform-style: preserve-3d;
 }
 
 .service-nodes {
   list-style: none;
 }
 
-.service-links {
+.service-guide {
   position: absolute;
   z-index: 1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  transform-origin: center;
+  top: 20%;
+  bottom: 12%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.2) 18%, rgba(255, 255, 255, 0.2) 82%, transparent);
+  opacity: 0.5;
   pointer-events: none;
-  will-change: transform, opacity;
 }
 
-.service-links line {
-  stroke: rgba(242, 160, 0, 0.34);
-  stroke-width: 0.16;
-  vector-effect: non-scaling-stroke;
-}
+.service-guide--left { left: 31%; }
+.service-guide--right { right: 18%; }
 
 .service-node {
   position: absolute;
   z-index: 2;
   top: 50%;
   left: 50%;
-  max-width: 52vw;
-  padding: 0.56rem 0.72rem;
-  border: 1px solid rgba(255, 255, 255, 0.20);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.72);
-  color: var(--white);
-  font-size: clamp(0.78rem, 3.4vw, 1.08rem);
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  color: #b9b9bd;
+  font-family: var(--anton);
+  font-size: clamp(1.1rem, 5.6vw, 1.75rem);
+  font-weight: 400;
+  letter-spacing: 0.015em;
   line-height: 1;
   white-space: nowrap;
-  transform: translate(-50%, -50%);
   transform-origin: center;
-  will-change: transform, opacity;
+  text-shadow: 0 4px 18px #000;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
 }
 
 .service-node--core {
   z-index: 3;
-  padding: 0.84rem 1.05rem;
-  border-color: var(--accent);
   color: var(--accent);
-  font-family: var(--anton);
-  font-size: clamp(1.2rem, 5vw, 1.72rem);
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  box-shadow: 0 0 22px rgba(242, 160, 0, 0.14);
+  font-size: clamp(2.6rem, 13vw, 4.2rem);
 }
+
+.service-node--large { color: #f2f2f2; font-size: clamp(1.8rem, 8.5vw, 2.8rem); }
+.service-node--small { color: #818187; font-size: clamp(0.82rem, 3.6vw, 1.15rem); letter-spacing: 0.08em; }
+.service-node--wide { font-size: clamp(1.3rem, 6.3vw, 2rem); letter-spacing: 0.06em; }
+.service-node--outline { color: transparent; font-size: clamp(2.4rem, 12vw, 4rem); -webkit-text-stroke: 1px rgba(242, 160, 0, 0.45); }
+
+.services-caption {
+  position: absolute;
+  z-index: 5;
+  right: 24px;
+  bottom: var(--safe-bottom);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  color: #737378;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+}
+
+.services-caption b { color: var(--accent); font-size: 1rem; font-weight: 400; }
 
 /* Tipografía cinética compartida. */
 .kinetic-word {
