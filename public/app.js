@@ -1,6 +1,6 @@
 import { scenesConfig } from './scenes.js?v=20260731-desorden';
 
-const OPENING_SUBJECT = './assets/file_00000000cad881f4b1a836492f3a56ec.png';
+const OPENING_SUBJECT = './assets/module-1-subject.png';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const lerp = (a, b, t) => a + (b - a) * t;
