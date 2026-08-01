@@ -1,6 +1,5 @@
 import { scenesConfig } from './scenes.js?v=20260731-desorden';
 
-const OPENING_BG = './assets/module-1-bg-rotating.png';
 const OPENING_SUBJECT = './assets/module-1-subject.png';
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -24,7 +23,7 @@ const preloadImage = (src) => new Promise((resolve) => {
 const OPENING_HTML = `
   <article class="panel panel--opening-profile" aria-label="Mòdul inicial DESORDEN">
     <div class="opening-profile__bg-wrap" aria-hidden="true">
-      <img class="opening-profile__bg" src="${OPENING_BG}" width="540" height="810" alt="" fetchpriority="high" decoding="async" draggable="false">
+      <div class="opening-profile__bg"></div>
     </div>
     <div class="opening-profile__center-hole" aria-hidden="true"></div>
     <img class="opening-profile__subject" src="${OPENING_SUBJECT}" width="720" height="1080" alt="Silueta en perfil" fetchpriority="high" decoding="async" draggable="false">
@@ -279,7 +278,7 @@ class App {
 const boot = async () => {
   const loader = new Loader();
   loader.set(16);
-  await Promise.all([preloadImage(OPENING_BG), preloadImage(OPENING_SUBJECT)]);
+  await preloadImage(OPENING_SUBJECT);
   loader.set(56);
   new App(loader);
 };
