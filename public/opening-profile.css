@@ -1,65 +1,40 @@
-/* DESORDEN — bloque inicial estable, nítido y sin efectos visuales */
-
+/* DESORDEN — módulo 1 con fondo rotatorio y silueta independiente */
 .loader {
   z-index: 999;
-  display: block;
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 20px max(20px, env(safe-area-inset-bottom));
   overflow: hidden;
   background: #000;
 }
-
-.loader__portrait {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 50%;
-  background: #000;
-  user-select: none;
-  pointer-events: none;
-  image-rendering: auto;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  filter: none;
-}
-
 .loader__meta {
-  position: absolute;
-  z-index: 2;
-  right: max(20px, env(safe-area-inset-right));
-  bottom: max(20px, env(safe-area-inset-bottom));
-  left: auto;
   display: flex;
-  gap: 10px;
-  margin: 0;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
+  justify-content: space-between;
+  color: rgba(255,255,255,.5);
+  font-size: .62rem;
+  letter-spacing: .16em;
 }
-
-.loader__line,
-.loader__brand,
-.loader__portrait-shade {
-  display: none !important;
-}
+.loader__line { width: 100%; height: 1px; margin-top: 10px; background: rgba(255,255,255,.15); overflow: hidden; }
+.loader__line span { display: block; width: 0; height: 100%; background: #f2a000; transition: width .2s ease; }
+.loader__brand,.loader__portrait,.loader__portrait-shade { display: none !important; }
 
 .scene--opening-profile,
 .scene--opening-fallback {
   width: 100vw !important;
   max-width: none !important;
-  height: 100dvh;
+  height: 100dvh !important;
   will-change: transform, opacity;
   transform-style: preserve-3d;
 }
-
 .scene--opening-fallback {
-  top: 50%;
-  left: 50%;
+  top: 50% !important;
+  left: 50% !important;
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, -50%);
 }
+html.is-ready .scene--opening-fallback { display: none !important; }
 
 .panel--opening-profile {
   position: relative;
@@ -68,38 +43,62 @@
   overflow: hidden;
   background: #000;
   contain: paint;
+  isolation: isolate;
 }
-
-.opening-profile__image {
+.opening-profile__bg-wrap {
   position: absolute;
-  inset: 0;
+  inset: -12%;
+  z-index: 1;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.opening-profile__bg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 50%;
-  background: #000;
+  object-position: center;
   user-select: none;
   pointer-events: none;
   image-rendering: auto;
   backface-visibility: hidden;
-  transform: translateZ(0);
   filter: none !important;
 }
-
+.opening-profile__center-hole {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #000;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+  pointer-events: none;
+}
+.opening-profile__subject {
+  position: absolute;
+  inset: 20px;
+  z-index: 3;
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+  pointer-events: none;
+  image-rendering: auto;
+  backface-visibility: hidden;
+  filter: none !important;
+  will-change: transform;
+}
 .scene--opening-profile,
 .scene--opening-profile *,
 .scene--opening-fallback,
 .scene--opening-fallback * {
   filter: none !important;
+  box-shadow: none !important;
 }
-
-#scroll-space {
-  height: 3000vh;
-  min-height: 21000px;
-}
-
+#scroll-space { height: 3000vh; min-height: 21000px; }
 @media (prefers-reduced-motion: reduce) {
-  .loader {
-    transition: none;
-  }
+  .loader { transition: none; }
 }
