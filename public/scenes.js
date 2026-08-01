@@ -20,12 +20,12 @@ export const scenesConfig = [
         </div>
         <div class="services-space">
           <ul class="service-nodes" aria-label="QUÈ FEM">
-            <li class="service-node service-node--large" data-x="22" data-y="42" data-drift="-18" data-rotate="-4">VÍDEO</li>
-            <li class="service-node" data-x="76" data-y="46" data-drift="16" data-rotate="3">FOTOGRAFIA</li>
-            <li class="service-node service-node--core" data-x="50" data-y="62" data-drift="-7" data-rotate="-2">DESORDEN</li>
-            <li class="service-node" data-x="19" data-y="77" data-drift="13" data-rotate="-3">DRON</li>
-            <li class="service-node service-node--large" data-x="81" data-y="79" data-drift="-15" data-rotate="4">IA</li>
-            <li class="service-node" data-x="44" data-y="90" data-drift="9" data-rotate="2">WEB</li>
+            <li class="service-node service-node--large" data-x="31" data-y="45" data-start="0.00" data-drift="-10" data-rotate="-4">VÍDEO</li>
+            <li class="service-node" data-x="69" data-y="49" data-start="0.14" data-drift="11" data-rotate="3">FOTOGRAFIA</li>
+            <li class="service-node service-node--core" data-x="50" data-y="55" data-start="0.28" data-drift="-4" data-rotate="-2">DESORDEN</li>
+            <li class="service-node" data-x="34" data-y="61" data-start="0.42" data-drift="-9" data-rotate="-3">DRON</li>
+            <li class="service-node service-node--large" data-x="67" data-y="59" data-start="0.56" data-drift="10" data-rotate="4">IA</li>
+            <li class="service-node" data-x="50" data-y="66" data-start="0.70" data-drift="3" data-rotate="2">WEB</li>
           </ul>
         </div>
       </article>

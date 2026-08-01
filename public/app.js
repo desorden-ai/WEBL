@@ -1,4 +1,4 @@
-import { scenesConfig } from './scenes.js?v=20260801-services-depth-2';
+import { scenesConfig } from './scenes.js?v=20260801-services-depth-3';
 
 const OPENING_SUBJECT = './assets/module-1-subject.png?v=20260801-cinematic-1';
 
@@ -427,33 +427,37 @@ class TimelineProjector {
 
   updateServices(item, local) {
     const titleReveal = smoothstep(0.03, 0.20, local);
-    const motion = smoothstep(0.42, 0.94, local);
+    const journey = smoothstep(0.18, 0.96, local);
 
     if (item.servicesTitle) {
       item.servicesTitle.style.opacity = titleReveal.toFixed(4);
-      const titleScale = this.reducedMotion ? 1 : 1 + motion * 0.055;
-      item.servicesTitle.style.transform = `translate3d(0, ${(18 * (1 - titleReveal) - motion * 8).toFixed(2)}px, 0) scale(${titleScale.toFixed(4)})`;
+      const titleScale = this.reducedMotion ? 1 : 1 + journey * 0.025;
+      item.servicesTitle.style.transform = `translate3d(0, ${(18 * (1 - titleReveal) - journey * 4).toFixed(2)}px, 0) scale(${titleScale.toFixed(4)})`;
     }
 
-    item.serviceNodes.forEach((node, index) => {
+    item.serviceNodes.forEach((node) => {
       const baseX = Number(node.dataset.x || 50);
       const baseY = Number(node.dataset.y || 50);
+      const start = Number(node.dataset.start || 0);
       const drift = Number(node.dataset.drift || 0);
       const rotation = Number(node.dataset.rotate || 0);
-      const delay = index * 0.075;
-      const travel = this.reducedMotion ? 0 : smoothstep(delay, Math.min(1, delay + 0.62), motion);
-      const currentZ = travel * 520;
-      const driftX = drift * travel;
-      const waveY = Math.sin(travel * Math.PI + index * 0.7) * 2.2 * travel;
-      const opacity = this.reducedMotion ? 1 : 1 - smoothstep(0.62, 1, travel);
-      const blur = this.reducedMotion ? 0 : smoothstep(0.70, 1, travel) * 4.5;
-      const scale = this.reducedMotion ? 1 : 1 + travel * 0.18;
+      const duration = 0.12;
+      const phase = clamp((journey - start) / duration, 0, 1);
+      const eased = smoothstep(0, 1, phase);
+      const currentZ = this.reducedMotion ? 0 : lerp(-620, 370, eased);
+      const driftX = this.reducedMotion ? 0 : drift * eased;
+      const waveY = this.reducedMotion ? 0 : Math.sin(phase * Math.PI) * 2.5;
+      const fadeIn = smoothstep(0.04, 0.25, phase);
+      const fadeOut = 1 - smoothstep(0.68, 1, phase);
+      const opacity = this.reducedMotion ? (journey >= start ? 1 : 0) : fadeIn * fadeOut;
+      const blur = this.reducedMotion ? 0 : (1 - fadeIn) * 3.2 + smoothstep(0.78, 1, phase) * 5;
+      const scale = this.reducedMotion ? 1 : lerp(0.72, 1.22, eased);
 
       node.style.left = `${(baseX + driftX).toFixed(2)}%`;
       node.style.top = `${(baseY + waveY).toFixed(2)}%`;
       node.style.opacity = opacity.toFixed(4);
       node.style.filter = `blur(${blur.toFixed(2)}px)`;
-      node.style.transform = `translate3d(-50%, -50%, ${currentZ.toFixed(2)}px) scale(${scale.toFixed(4)}) rotate(${(rotation * travel).toFixed(2)}deg)`;
+      node.style.transform = `translate3d(-50%, -50%, ${currentZ.toFixed(2)}px) scale(${scale.toFixed(4)}) rotate(${(rotation * eased).toFixed(2)}deg)`;
     });
   }
 
