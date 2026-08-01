@@ -20,10 +20,42 @@ const preloadImage = (src) => new Promise((resolve) => {
   image.src = src;
 });
 
+const generateDustBackground = (canvas) => {
+  if (!(canvas instanceof HTMLCanvasElement)) return;
+  const ctx = canvas.getContext('2d', { alpha: true });
+  if (!ctx) return;
+
+  const cssSize = Math.max(window.innerWidth, window.innerHeight) * 1.5;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const renderSize = Math.max(1, Math.round(cssSize * dpr));
+
+  canvas.width = renderSize;
+  canvas.height = renderSize;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssSize, cssSize);
+
+  const particlesCount = window.innerWidth < 768 ? 200 : 400;
+  for (let i = 0; i < particlesCount; i += 1) {
+    const x = Math.random() * cssSize;
+    const y = Math.random() * cssSize;
+    const radius = Math.random() * 2 + 0.5;
+    const opacity = Math.random() * 0.7 + 0.3;
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(242, 160, 0, ${opacity})`;
+    ctx.shadowColor = '#f2a000';
+    ctx.shadowBlur = Math.random() * 15 + 5;
+    ctx.fill();
+  }
+
+  ctx.shadowBlur = 0;
+};
+
 const OPENING_HTML = `
   <article class="panel panel--opening-profile" aria-label="Mòdul inicial DESORDEN">
     <div class="opening-profile__bg-wrap" aria-hidden="true">
-      <div class="opening-profile__bg"></div>
+      <canvas id="dust-background"></canvas>
     </div>
     <div class="opening-profile__center-hole" aria-hidden="true"></div>
     <img class="opening-profile__subject" src="${OPENING_SUBJECT}" width="1024" height="1536" alt="Figura en perfil" fetchpriority="high" decoding="async" draggable="false">
@@ -32,10 +64,10 @@ const OPENING_HTML = `
 
 const buildRuntimeScenes = () => {
   const positions = {
-    intro: { x: 0, y: 0, z: -170 },
-    about: { x: 0, y: 0, z: -340 },
-    radar: { x: 0, y: 0, z: -510 },
-    contact: { x: 0, y: 0, z: -680 }
+    intro: { x: 0, y: 0, z: -190 },
+    about: { x: 0, y: 0, z: -360 },
+    radar: { x: 0, y: 0, z: -530 },
+    contact: { x: 0, y: 0, z: -700 }
   };
 
   const currentScenes = scenesConfig.map((scene) => ({
@@ -49,7 +81,7 @@ const buildRuntimeScenes = () => {
       kind: 'opening-profile',
       number: '01',
       sectionLabel: 'INICI',
-      position: { x: 0, y: 0, z: 0 },
+      position: { x: 0, y: 0, z: -20 },
       html: OPENING_HTML
     },
     ...currentScenes.map((scene, index) => ({
@@ -97,7 +129,7 @@ class SceneProjector {
         id: scene.id,
         kind: scene.kind || 'default',
         element,
-        bgWrap: element.querySelector('.opening-profile__bg-wrap'),
+        dustCanvas: element.querySelector('#dust-background'),
         subject: element.querySelector('.opening-profile__subject'),
         centerHole: element.querySelector('.opening-profile__center-hole'),
         x: Number(scene.position?.x || 0),
@@ -118,6 +150,8 @@ class SceneProjector {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.focal = Math.min(this.width, this.height) * 1.08;
+    const opening = this.items.find((item) => item.kind === 'opening-profile');
+    if (opening?.dustCanvas) generateDustBackground(opening.dustCanvas);
   }
 
   hideItem(item) {
@@ -146,10 +180,10 @@ class SceneProjector {
     item.element.style.filter = 'none';
     item.element.style.transform = `translate3d(${screenX}px, ${screenY}px, 0) translate(-50%, -50%) scale(${lerp(1, 1.08, movement).toFixed(4)})`;
 
-    if (item.bgWrap) {
+    if (item.dustCanvas) {
       const rotation = lerp(0, 55, movement);
       const scale = lerp(1.03, 1.18, movement);
-      item.bgWrap.style.transform = `rotate(${rotation.toFixed(3)}deg) scale(${scale.toFixed(4)})`;
+      item.dustCanvas.style.transform = `translate(-50%, -50%) rotate(${rotation.toFixed(3)}deg) scale(${scale.toFixed(4)})`;
     }
 
     if (item.subject) {
