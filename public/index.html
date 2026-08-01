@@ -10,9 +10,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
-  <link rel="preload" href="./assets/module-1-subject.png" as="image" />
-  <link rel="stylesheet" href="./styles.css?v=20260731-desorden" />
-  <link rel="stylesheet" href="./opening-profile.css?v=20260801-dust-canvas-1" />
+  <link rel="preload" href="./assets/module-1-subject.png" as="image" type="image/png" />
+  <link rel="stylesheet" href="./styles.css?v=20260801-hero-zoom-1" />
+  <link rel="stylesheet" href="./opening-profile.css?v=20260801-hero-zoom-1" />
   <link rel="stylesheet" href="./hero-cleanup.css?v=20260801-clean-block-3" />
   <link rel="stylesheet" href="./scene-transparency.css?v=20260801-scene-transparency-1" />
 
@@ -27,25 +27,37 @@
     <div class="loader__line" aria-hidden="true"><span id="loader-bar"></span></div>
   </div>
 
-  <aside class="rail" aria-label="Estat de navegació">
-    <span class="rail__dot" aria-hidden="true"></span>
-    <div class="rail__mode"><strong>VIDEO</strong><span>MODE</span></div>
-    <span class="rail__line rail__line--top" aria-hidden="true"></span>
-    <span class="rail__scroll">SCROLL ADAPTIU</span>
-    <span class="rail__line rail__line--bottom" aria-hidden="true"><i id="rail-progress"></i></span>
-    <div class="rail__counter"><strong id="section-number">01</strong><span></span><small>05</small></div>
-  </aside>
+  <div id="sidebar" class="sidebar" aria-label="Estat de navegació">
+    <div class="sidebar-dot" aria-hidden="true"></div>
+    <div class="sidebar-text sidebar-text--mode">
+      <span class="text-orange">MODE</span>
+      <span class="text-gray">VÍDEO</span>
+    </div>
+    <div class="sidebar-line sidebar-line--top" aria-hidden="true"></div>
+    <div class="sidebar-text sidebar-text--scroll">
+      <span class="text-gray">DESPLAÇAMENT</span>
+      <span class="text-gray">ADAPTIU</span>
+    </div>
+    <div class="sidebar-line sidebar-line--progress" aria-hidden="true">
+      <div id="rail-progress" class="sidebar-active-line"></div>
+    </div>
+    <div id="section-number" class="sidebar-step text-orange">01</div>
+    <div class="sidebar-short-line" aria-hidden="true"></div>
+    <div class="sidebar-total text-gray">05</div>
+  </div>
 
   <a class="brand-corner" href="#top" aria-label="Tornar a l'inici">DESORDEN.</a>
 
   <main id="scene-layer" aria-label="Presentació de DESORDEN">
-    <section class="scene scene--opening-profile scene--opening-fallback" aria-label="Mòdul inicial DESORDEN">
-      <article class="panel panel--opening-profile">
-        <div class="opening-profile__bg-wrap" aria-hidden="true">
-          <canvas id="dust-background"></canvas>
+    <section class="scene scene--module-1 scene--opening-fallback" aria-label="Mòdul inicial DESORDEN">
+      <article class="panel panel--module-1">
+        <div class="glow-background" aria-hidden="true"></div>
+        <div class="intro-text">
+          <h2>SI NO ET VEUEN<br>NO ET TRIEN</h2>
         </div>
-        <div class="opening-profile__center-hole" aria-hidden="true"></div>
-        <img class="opening-profile__subject" src="./assets/module-1-subject.png" width="1024" height="1536" alt="Figura en perfil" fetchpriority="high" decoding="sync" draggable="false" />
+        <div class="silhouette-container">
+          <img src="./assets/module-1-subject.png" width="1024" height="1536" alt="Perfil Desorden" class="zoom-silhouette" fetchpriority="high" decoding="sync" draggable="false" />
+        </div>
       </article>
     </section>
   </main>
@@ -59,6 +71,6 @@
       document.getElementById('loader')?.classList.add('is-hidden');
     }, 6500);
   </script>
-  <script type="module" src="./app.js?v=20260801-dust-canvas-1"></script>
+  <script type="module" src="./app.js?v=20260801-hero-zoom-1"></script>
 </body>
 </html>
