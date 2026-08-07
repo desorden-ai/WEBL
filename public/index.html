@@ -5,21 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>David Milla - Creativo | Portada Épica 3D</title>
   <meta name="description" content="Portfolio interactivo 3D de David Milla. Dirección visual, vídeo, fotografía, dron, IA y diseño web. Tu partner tecnológico y creativo.">
+
   <link rel="preload" href="1000091876.jpg" as="image" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="cover-v6.css?v=1">
+
   <style>
+    body { font-family: 'Inter', Arial, sans-serif; }
+    .font-bebas,
+    #loader-text-3d,
+    #btn-accept-cookies,
+    #hud-top-right,
+    .menu-item {
+      font-family: 'Bebas Neue', Impact, sans-serif;
+    }
+
     #scene {
       opacity: 0;
       transition: opacity 1.5s ease-in-out;
     }
 
-    body.ready #scene {
-      opacity: 1;
-    }
+    body.ready #scene { opacity: 1; }
 
+    .stardust-container { will-change: transform; }
+    .stardust-real-img { will-change: opacity; }
     .stardust-canvas {
       position: absolute;
       inset: auto;
@@ -29,6 +40,7 @@
       height: 300%;
       z-index: 2;
       pointer-events: none;
+      will-change: opacity;
     }
 
     #seo-header,
@@ -61,14 +73,11 @@
       background: transparent;
       border: 0;
       padding: 0;
-      font-family: 'Bebas Neue', cursive;
       text-transform: uppercase;
       white-space: nowrap;
     }
 
-    #hud-page-number {
-      transition: opacity 0.3s ease;
-    }
+    #hud-page-number { transition: opacity 0.3s ease; }
 
     .menu-arrow {
       display: inline-block;
@@ -86,17 +95,11 @@
       top: 70px;
       right: 25px;
       z-index: 101;
-      min-width: auto;
       padding: 10px 0;
       display: flex;
       flex-direction: column;
       gap: 18px;
       text-align: right;
-      background: transparent;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      border: 0;
-      border-radius: 0;
       opacity: 0;
       pointer-events: none;
       transform: translateY(-10px);
@@ -114,7 +117,6 @@
       border: 0;
       padding: 0;
       background: transparent;
-      font-family: 'Bebas Neue', cursive;
       font-size: 1.3rem;
       line-height: 1;
       letter-spacing: 2px;
@@ -168,230 +170,6 @@
 
   <div id="scene"><div id="world"></div></div>
 
-  <script src="cover-v6.js?v=1"></script>
-  <script>
-    const menuButton = document.getElementById('hud-top-right');
-    const navMenu = document.getElementById('nav-menu');
-    const menuItems = Array.from(document.querySelectorAll('.menu-item'));
-    const pageNumberEl = document.getElementById('hud-page-number');
-
-    function setMenuOpen(isOpen) {
-      navMenu.classList.toggle('open', isOpen);
-      menuButton.setAttribute('aria-expanded', String(isOpen));
-      menuButton.setAttribute('aria-label', isOpen ? 'Cerrar navegación por secciones' : 'Abrir navegación por secciones');
-    }
-
-    menuButton.addEventListener('click', () => {
-      setMenuOpen(!navMenu.classList.contains('open'));
-    });
-
-    menuItems.forEach((item) => {
-      item.addEventListener('click', () => {
-        const destination = Number(item.dataset.target);
-        if (Number.isFinite(destination)) {
-          targetScroll = Math.max(0, Math.min(destination, maxVirtualScroll));
-        }
-        setMenuOpen(false);
-      });
-    });
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') setMenuOpen(false);
-    });
-
-    document.addEventListener('pointerdown', (event) => {
-      if (!navMenu.classList.contains('open')) return;
-      if (navMenu.contains(event.target) || menuButton.contains(event.target)) return;
-      setMenuOpen(false);
-    });
-
-    launchExperience = function launchExperienceWithFade() {
-      if (launchStarted) return;
-      launchStarted = true;
-      cookieWrapper.classList.remove('visible');
-
-      setTimeout(() => {
-        loaderContainer.style.opacity = '0';
-        setTimeout(() => {
-          loaderContainer.style.display = 'none';
-          document.body.classList.add('ready');
-          if (!sceneStarted) {
-            sceneStarted = true;
-            updateScene();
-          }
-        }, 500);
-      }, 200);
-    };
-
-    StardustImage.prototype.processImage = function processImageExpanded(img) {
-      try {
-        const cols = 75;
-        const aspect = img.height / img.width;
-        const rows = Math.floor(cols * aspect);
-        const pixelSize = 4;
-        const imgDrawWidth = cols * pixelSize;
-        const imgDrawHeight = rows * pixelSize;
-
-        this.particles.length = 0;
-        this.canvas.width = imgDrawWidth * 3;
-        this.canvas.height = imgDrawHeight * 3;
-
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = cols;
-        tempCanvas.height = rows;
-        const tempContext = tempCanvas.getContext('2d');
-        tempContext.drawImage(img, 0, 0, cols, rows);
-
-        const imageData = tempContext.getImageData(0, 0, cols, rows).data;
-        const offsetX = imgDrawWidth;
-        const offsetY = imgDrawHeight;
-
-        for (let y = 0; y < rows; y += 1) {
-          for (let x = 0; x < cols; x += 1) {
-            const index = (y * cols + x) * 4;
-            const red = imageData[index];
-            const green = imageData[index + 1];
-            const blue = imageData[index + 2];
-            const alpha = imageData[index + 3];
-            const brightness = (red + green + blue) / 3;
-
-            if (alpha > 50 && brightness > 15) {
-              this.particles.push({
-                baseX: (x * pixelSize) + offsetX,
-                baseY: (y * pixelSize) + offsetY,
-                color: `rgba(${red},${green},${blue},1)`,
-                randX: (Math.random() - 0.5) * window.innerWidth * 3,
-                randY: (Math.random() - 0.5) * window.innerHeight * 3
-              });
-            }
-          }
-        }
-
-        this.loaded = true;
-        checkLoadingState();
-      } catch (error) {
-        this.fallbackMode = true;
-        this.loaded = true;
-        checkLoadingState();
-      }
-    };
-
-    StardustImage.prototype.update = function updateExpanded(trueZ) {
-      if (!this.loaded) return;
-
-      let dispersion = 0;
-      if (trueZ > -400) {
-        dispersion = (trueZ + 400) / 2800;
-      }
-
-      dispersion = Math.max(0, Math.min(1, dispersion));
-      const easedDispersion = Math.pow(dispersion, 1.2);
-
-      if (this.fallbackMode) {
-        this.realImg.style.opacity = 1 - easedDispersion;
-        return;
-      }
-
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-      if (easedDispersion === 0) {
-        this.realImg.style.opacity = 1;
-        this.canvas.style.opacity = 0;
-      } else if (easedDispersion < 0.1) {
-        const fade = easedDispersion / 0.1;
-        this.realImg.style.opacity = 1 - fade;
-        this.canvas.style.opacity = fade;
-      } else {
-        this.realImg.style.opacity = 0;
-        this.canvas.style.opacity = 1 - (easedDispersion * 0.8);
-      }
-
-      if (easedDispersion >= 0.99) return;
-
-      for (const particle of this.particles) {
-        const x = particle.baseX + (particle.randX * easedDispersion);
-        const y = particle.baseY + (particle.randY * easedDispersion);
-        this.ctx.fillStyle = particle.color;
-        this.ctx.fillRect(x, y, 3.5, 3.5);
-      }
-    };
-
-    updateScene = function updateSceneWithNumberedNavigation() {
-      currentScroll += (targetScroll - currentScroll) * lerpFactor;
-
-      const scrollProgress = currentScroll / maxVirtualScroll;
-      const cameraZ = scrollProgress * requiredCameraTravel;
-      const t = Math.min(1, Math.max(0, cameraZ / requiredCameraTravel));
-      const adjustedT = Math.pow(t, 1.2);
-
-      globalPanX = Math.sin(adjustedT * Math.PI * 1.5) * 12;
-      globalPanY = Math.sin(t * Math.PI * 2.5) * 4;
-
-      sceneEl.style.perspectiveOrigin = `${50 + globalPanX}% ${50 + globalPanY}%`;
-      worldEl.style.transform = `rotateX(${Math.sin(t * Math.PI * 2.5) * 1.5}deg) rotateY(${-Math.cos(adjustedT * Math.PI * 1.5) * 2}deg)`;
-      navThumb.style.top = `${scrollProgress * 80}%`;
-
-      let activePage = 1;
-      if (scrollProgress < 0.02) activePage = 1;
-      else if (scrollProgress < 0.10) activePage = 2;
-      else if (scrollProgress < 0.24) activePage = 3;
-      else if (scrollProgress < 0.39) activePage = 4;
-      else if (scrollProgress < 0.53) activePage = 5;
-      else if (scrollProgress < 0.73) activePage = 6;
-      else activePage = 7;
-
-      const formattedPage = String(activePage).padStart(2, '0');
-      if (pageNumberEl.textContent !== formattedPage) {
-        pageNumberEl.style.opacity = '0';
-        setTimeout(() => {
-          pageNumberEl.textContent = formattedPage;
-          pageNumberEl.style.opacity = '1';
-        }, 150);
-      }
-
-      menuItems.forEach((item, index) => {
-        item.classList.toggle('active', index === activePage - 1);
-      });
-
-      domElements.forEach((item) => {
-        const trueZ = item.data.z + cameraZ;
-        const zAbsoluta = trueZ;
-        const renderX = item.data.x;
-
-        if (item.data.type === 'stardust') {
-          item.element.style.display = 'inline-block';
-          item.stardust.update(trueZ);
-          item.element.style.transform = `translate(-50%,-50%) translate3d(${renderX * cx}px,${item.data.y * cy}px,${zAbsoluta}px)`;
-          item.element.style.opacity = 1;
-          item.element.style.filter = 'none';
-          return;
-        }
-
-        const optimalZ = -600;
-        const distanceFromOptimal = Math.abs(zAbsoluta - optimalZ);
-        const coreVisibleRange = 1200;
-        const fadeTransition = 3500;
-        let opacity = 1;
-
-        if (distanceFromOptimal > coreVisibleRange) {
-          opacity = 1 - ((distanceFromOptimal - coreVisibleRange) / fadeTransition);
-        }
-
-        opacity = Math.max(0, Math.min(1, opacity));
-        const blurAmount = (1 - opacity) * 10;
-
-        if (opacity > 0.01) {
-          item.element.style.transform = `translate(-50%,-50%) translate3d(${renderX * cx}px,${item.data.y * cy}px,${zAbsoluta}px)`;
-          item.element.style.opacity = opacity;
-          item.element.style.filter = blurAmount > 0.01 ? `blur(${blurAmount}px)` : 'none';
-          item.element.style.display = 'block';
-        } else {
-          item.element.style.display = 'none';
-        }
-      });
-
-      requestAnimationFrame(updateScene);
-    };
-  </script>
+  <script src="performance-v8.js?v=1" defer></script>
 </body>
 </html>
