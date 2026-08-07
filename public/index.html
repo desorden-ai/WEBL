@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>David Milla - Creativo | Portada Épica 3D</title>
   <meta name="description" content="Portfolio interactivo 3D de David Milla. Dirección visual, vídeo, fotografía, dron, IA y diseño web. Tu partner tecnológico y creativo.">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preload" href="https://cdn.jsdelivr.net/gh/desorden-ai/WEBL@562bddc49fdb51d547e52b2d042169fecab10bbe/public/1000091876.jpg" as="image" type="image/jpeg" fetchpriority="high" crossorigin="anonymous">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -14,14 +12,38 @@
   <link rel="stylesheet" href="lcp-v12.css?v=2">
   <link rel="stylesheet" href="portrait-inline-v13.css?v=1">
   <style>
-    #lcp-stardust {
+    /* Portada fiable: fuera del world 3D de tamaño 0. */
+    #hero-reliable {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      overflow: hidden;
+      pointer-events: none;
+      perspective: 900px;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity .45s ease;
+    }
+    #hero-reliable.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    #hero-reliable #lcp-stardust {
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      width: min(90vw, 650px) !important;
+      max-width: 650px !important;
+      aspect-ratio: 360 / 645;
       opacity: 1 !important;
       visibility: visible !important;
       display: block !important;
+      transform: translate(-50%,-50%) translate3d(4vw,22vh,-600px);
     }
     #lcp-portrait {
       opacity: 0 !important;
       visibility: hidden !important;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -54,16 +76,27 @@
 
   <div id="nav-right" aria-hidden="true"><div class="nav-track"><div class="nav-thumb" id="nav-thumb"></div></div></div>
 
-  <div id="scene">
-    <div id="world">
-      <div id="lcp-stardust" class="hologram stardust-container" role="img" aria-label="David Milla, creativo y director de DESORDEN">
-        <img id="lcp-portrait" class="stardust-real-img" src="https://cdn.jsdelivr.net/gh/desorden-ai/WEBL@562bddc49fdb51d547e52b2d042169fecab10bbe/public/1000091876.jpg" alt="" width="360" height="645" loading="eager" decoding="async" fetchpriority="high" crossorigin="anonymous" draggable="false" aria-hidden="true">
-        <canvas id="lcp-stardust-canvas" class="stardust-canvas" aria-hidden="true"></canvas>
-      </div>
+  <!-- La portada se mantiene en una capa de viewport independiente del motor. -->
+  <div id="hero-reliable" aria-hidden="true">
+    <div id="lcp-stardust" class="hologram stardust-container" role="img" aria-label="David Milla, creativo y director de DESORDEN">
+      <img id="lcp-portrait" class="stardust-real-img" src="/1000091876.jpg" alt="" width="360" height="645" loading="eager" decoding="async" draggable="false" aria-hidden="true">
+      <canvas id="lcp-stardust-canvas" class="stardust-canvas" aria-hidden="true"></canvas>
     </div>
   </div>
 
+  <div id="scene"><div id="world"></div></div>
+
   <script src="performance-v8.js?v=5" defer></script>
   <script src="lcp-v12.js?v=2" defer></script>
+  <script defer>
+    window.addEventListener('DOMContentLoaded', () => {
+      const hero = document.getElementById('hero-reliable');
+      const page = document.getElementById('hud-page-number');
+      if (!hero || !page) return;
+      const syncHero = () => hero.classList.toggle('is-hidden', page.textContent.trim() !== '01');
+      syncHero();
+      new MutationObserver(syncHero).observe(page, { childList: true, characterData: true, subtree: true });
+    });
+  </script>
 </body>
 </html>
