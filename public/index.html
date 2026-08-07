@@ -11,6 +11,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="cover-v6.css?v=1">
   <style>
+    #scene {
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    body.ready #scene {
+      opacity: 1;
+    }
+
     .stardust-canvas {
       position: absolute;
       inset: auto;
@@ -20,6 +29,99 @@
       height: 300%;
       z-index: 2;
       pointer-events: none;
+    }
+
+    #seo-header,
+    #hud-top-right {
+      top: 40px;
+      font-size: 1.2rem;
+      line-height: 1;
+      letter-spacing: 2px;
+    }
+
+    #seo-header {
+      position: fixed;
+      left: 25px;
+      z-index: 100;
+      margin: 0;
+      color: var(--text-main);
+      font-weight: 400;
+    }
+
+    #hud-top-right {
+      position: fixed;
+      right: 25px;
+      z-index: 102;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent-color);
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      font-family: 'Bebas Neue', cursive;
+      text-transform: uppercase;
+    }
+
+    .menu-arrow {
+      display: inline-block;
+      font-size: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+
+    #hud-top-right[aria-expanded="true"] .menu-arrow {
+      transform: rotate(180deg);
+    }
+
+    #nav-menu {
+      position: fixed;
+      top: 70px;
+      right: 25px;
+      z-index: 101;
+      min-width: 190px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      text-align: right;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(242, 157, 38, 0.3);
+      border-radius: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    #nav-menu.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .menu-item {
+      appearance: none;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.2rem;
+      line-height: 1;
+      letter-spacing: 2px;
+      text-align: right;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .menu-item:hover,
+    .menu-item:focus-visible,
+    .menu-item.active {
+      color: var(--accent-color);
+      outline: none;
     }
   </style>
 </head>
@@ -36,26 +138,80 @@
 
   <h1 id="seo-header" class="font-bebas">DAVID MILLA <span class="text-orange">DIRECTOR CREATIVO</span></h1>
 
-  <div id="hud-top-right">
-    <span id="current-page" class="text-orange">01</span>
-    <span style="color:#fff">/</span>
-    <span style="color:#fff">07</span>
-  </div>
-
-  <div id="nav-right">
-    <div class="nav-track"><div class="nav-thumb" id="nav-thumb"></div></div>
-  </div>
-
-  <div id="hud-bottom-left">
-    <span style="color:white">SECCIÓN</span>
+  <button id="hud-top-right" type="button" aria-controls="nav-menu" aria-expanded="false">
     <span id="hud-section-name">INICIO</span>
-    <span class="arrow-up">^</span>
+    <span class="menu-arrow" aria-hidden="true">▼</span>
+  </button>
+
+  <nav id="nav-menu" aria-label="Navegación por secciones">
+    <button class="menu-item active" type="button" data-target="0">INICIO</button>
+    <button class="menu-item" type="button" data-target="1000">INTRODUCCIÓN</button>
+    <button class="menu-item" type="button" data-target="4000">QUIÉN SOY</button>
+    <button class="menu-item" type="button" data-target="8000">FORMACIONES</button>
+    <button class="menu-item" type="button" data-target="11500">ARTISTAS</button>
+    <button class="menu-item" type="button" data-target="15000">PROYECTO</button>
+    <button class="menu-item" type="button" data-target="21500">MANIFIESTO</button>
+  </nav>
+
+  <div id="nav-right" aria-hidden="true">
+    <div class="nav-track"><div class="nav-thumb" id="nav-thumb"></div></div>
   </div>
 
   <div id="scene"><div id="world"></div></div>
 
   <script src="cover-v6.js?v=1"></script>
   <script>
+    const menuButton = document.getElementById('hud-top-right');
+    const navMenu = document.getElementById('nav-menu');
+    const menuItems = Array.from(document.querySelectorAll('.menu-item'));
+
+    function setMenuOpen(isOpen) {
+      navMenu.classList.toggle('open', isOpen);
+      menuButton.setAttribute('aria-expanded', String(isOpen));
+    }
+
+    menuButton.addEventListener('click', () => {
+      setMenuOpen(!navMenu.classList.contains('open'));
+    });
+
+    menuItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        const destination = Number(item.dataset.target);
+        if (Number.isFinite(destination)) {
+          targetScroll = Math.max(0, Math.min(destination, maxVirtualScroll));
+        }
+        setMenuOpen(false);
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+      if (!navMenu.classList.contains('open')) return;
+      if (navMenu.contains(event.target) || menuButton.contains(event.target)) return;
+      setMenuOpen(false);
+    });
+
+    launchExperience = function launchExperienceWithFade() {
+      if (launchStarted) return;
+      launchStarted = true;
+      cookieWrapper.classList.remove('visible');
+
+      setTimeout(() => {
+        loaderContainer.style.opacity = '0';
+        setTimeout(() => {
+          loaderContainer.style.display = 'none';
+          document.body.classList.add('ready');
+          if (!sceneStarted) {
+            sceneStarted = true;
+            updateScene();
+          }
+        }, 500);
+      }, 200);
+    };
+
     StardustImage.prototype.processImage = function processImageExpanded(img) {
       try {
         const cols = 75;
@@ -114,7 +270,7 @@
 
       let dispersion = 0;
       if (trueZ > -400) {
-        dispersion = (trueZ + 400) / 1300;
+        dispersion = (trueZ + 400) / 2800;
       }
 
       dispersion = Math.max(0, Math.min(1, dispersion));
@@ -149,7 +305,7 @@
       }
     };
 
-    updateScene = function updateSceneThroughCamera() {
+    updateScene = function updateSceneWithNavigation() {
       currentScroll += (targetScroll - currentScroll) * lerpFactor;
 
       const scrollProgress = currentScroll / maxVirtualScroll;
@@ -165,23 +321,22 @@
       navThumb.style.top = `${scrollProgress * 80}%`;
 
       let activePage = 1;
-      if (scrollProgress < 0.05) activePage = 1;
-      else if (scrollProgress < 0.18) activePage = 2;
-      else if (scrollProgress < 0.35) activePage = 3;
-      else if (scrollProgress < 0.50) activePage = 4;
-      else if (scrollProgress < 0.65) activePage = 5;
-      else if (scrollProgress < 0.82) activePage = 6;
+      if (scrollProgress < 0.02) activePage = 1;
+      else if (scrollProgress < 0.10) activePage = 2;
+      else if (scrollProgress < 0.24) activePage = 3;
+      else if (scrollProgress < 0.39) activePage = 4;
+      else if (scrollProgress < 0.53) activePage = 5;
+      else if (scrollProgress < 0.73) activePage = 6;
       else activePage = 7;
 
-      const formattedPage = String(activePage).padStart(2, '0');
-      if (currentPageEl.innerText !== formattedPage) {
-        currentPageEl.innerText = formattedPage;
-        sectionNameEl.style.opacity = 0;
-        setTimeout(() => {
-          sectionNameEl.innerText = sectionNames[activePage - 1];
-          sectionNameEl.style.opacity = 1;
-        }, 150);
+      const activeName = sectionNames[activePage - 1];
+      if (sectionNameEl.textContent !== activeName) {
+        sectionNameEl.textContent = activeName;
       }
+
+      menuItems.forEach((item, index) => {
+        item.classList.toggle('active', index === activePage - 1);
+      });
 
       domElements.forEach((item) => {
         const trueZ = item.data.z + cameraZ;
