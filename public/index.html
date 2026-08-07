@@ -12,6 +12,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="cover-v6.css?v=1">
   <link rel="stylesheet" href="lcp-v12.css?v=2">
+  <link rel="stylesheet" href="portrait-inline-v13.css?v=1">
+  <style>
+    #lcp-stardust {
+      opacity: 1 !important;
+      visibility: visible !important;
+      display: block !important;
+    }
+    #lcp-portrait {
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+  </style>
 </head>
 <body>
   <div id="loader" role="status" aria-label="Cargando experiencia">
@@ -44,8 +56,8 @@
 
   <div id="scene">
     <div id="world">
-      <div id="lcp-stardust" class="hologram stardust-container">
-        <img id="lcp-portrait" class="stardust-real-img" src="https://cdn.jsdelivr.net/gh/desorden-ai/WEBL@562bddc49fdb51d547e52b2d042169fecab10bbe/public/1000091876.jpg" alt="David Milla, creativo y director de DESORDEN" width="360" height="645" loading="eager" decoding="async" fetchpriority="high" crossorigin="anonymous" draggable="false">
+      <div id="lcp-stardust" class="hologram stardust-container" role="img" aria-label="David Milla, creativo y director de DESORDEN">
+        <img id="lcp-portrait" class="stardust-real-img" src="https://cdn.jsdelivr.net/gh/desorden-ai/WEBL@562bddc49fdb51d547e52b2d042169fecab10bbe/public/1000091876.jpg" alt="" width="360" height="645" loading="eager" decoding="async" fetchpriority="high" crossorigin="anonymous" draggable="false" aria-hidden="true">
         <canvas id="lcp-stardust-canvas" class="stardust-canvas" aria-hidden="true"></canvas>
       </div>
     </div>
