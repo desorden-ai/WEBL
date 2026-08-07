@@ -11,28 +11,50 @@
   const record = domElements.find((item) => item.data?.id === 's0_img');
   const stardust = record?.stardust;
 
+  const markImageReady = () => {
+    staticContainer.style.opacity = '1';
+    staticContainer.style.display = 'inline-block';
+    checkLoadingState();
+    if (sceneStarted) wakeUpLoop(true);
+  };
+
+  staticImage.addEventListener('load', markImageReady, { once: true });
+  staticImage.addEventListener('error', () => {
+    staticContainer.style.display = 'none';
+    checkLoadingState();
+  }, { once: true });
+
+  if (staticImage.complete && staticImage.naturalWidth > 0) {
+    markImageReady();
+  }
+
   if (record && stardust) {
     const dynamicContainer = record.element;
+    const portraitSource = staticImage.currentSrc || staticImage.src;
 
     record.element = staticContainer;
     stardust.container = staticContainer;
     stardust.realImg = staticImage;
     stardust.canvas = staticCanvas;
     stardust.ctx = staticCanvas.getContext('2d', { alpha: true });
+    stardust.loaded = false;
+    stardust.fallbackMode = false;
+    stardust.readyToProcess = false;
+    stardust.processingRequested = false;
+    stardust.processing = false;
+    stardust.particles.length = 0;
 
-    staticImage.fetchPriority = 'high';
-    staticImage.decoding = 'async';
-    staticImage.draggable = false;
-
-    const markImageReady = () => {
-      checkLoadingState();
+    stardust.pixelImg.crossOrigin = 'anonymous';
+    stardust.pixelImg.onload = () => {
+      stardust.readyToProcess = true;
+      if (stardust.processingRequested) stardust.scheduleProcessing();
+    };
+    stardust.pixelImg.onerror = () => {
+      stardust.fallbackMode = true;
+      stardust.loaded = true;
       if (sceneStarted) wakeUpLoop(true);
     };
-
-    staticImage.addEventListener('load', markImageReady, { once: true });
-    if (staticImage.complete && staticImage.naturalWidth > 0) {
-      markImageReady();
-    }
+    stardust.pixelImg.src = portraitSource;
 
     if (dynamicContainer && dynamicContainer !== staticContainer) {
       dynamicContainer.remove();
@@ -56,11 +78,8 @@
   checkFinalLaunch = function checkFinalLaunchWithoutConsentBlock() {
     if (!animFinished) return;
 
-    if (cookiesAccepted) {
-      cookieWrapper.classList.remove('visible');
-    } else {
-      cookieWrapper.classList.add('visible');
-    }
+    if (cookiesAccepted) cookieWrapper.classList.remove('visible');
+    else cookieWrapper.classList.add('visible');
 
     launchExperience();
   };
