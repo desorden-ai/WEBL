@@ -2,7 +2,7 @@ const sceneData=[
 {id:'s1_1',html:'<h1 class="font-bebas text-white title-huge">TU</h1>',x:-3,y:-15,z:-1000},
 {id:'s1_2',html:'<h1 class="font-bebas text-orange title-huge">PARTNER</h1>',x:2,y:5,z:-3000},
 {id:'s1_3',html:'<p class="body-text text-muted" style="font-size:0.9rem;letter-spacing:2px;">( TECNOLÓGICO Y CREATIVO )</p>',x:0,y:25,z:-5000},
-{id:'s2_img',html:'<div class="main-image-container"><img src="1000091735.jpg" class="main-image" alt="Retrato"></div>',x:0,y:-5,z:-9000},
+{id:'s2_img',html:'<div class="main-image-container"><img src="1000091735.jpg" class="main-image" alt="Retrato"><div class="main-image-overlay"></div></div>',x:0,y:-5,z:-9000},
 {id:'s2_1',html:'<h2 class="font-bebas text-orange title-section">QUIÉN SOY</h2>',x:-5,y:-25,z:-12500},
 {id:'s2_2',html:'<p class="body-text text-muted">David Milla, creador y director<br>de <span class="text-orange">DESORDEN.</span></p>',x:2,y:-5,z:-14500},
 {id:'s2_3',html:'<p class="body-text text-muted">Dirección visual, vídeo,<br>fotografía, dron, IA y web.</p>',x:-2,y:15,z:-16500},
@@ -67,17 +67,20 @@ if(scrollProgress<.1)activePage=1;else if(scrollProgress<.22)activePage=2;else i
 const formattedPage=activePage.toString().padStart(2,'0');
 if(currentPageEl.innerText!==formattedPage){currentPageEl.innerText=formattedPage;sectionNameEl.style.opacity=0;setTimeout(()=>{sectionNameEl.innerText=sectionNames[activePage-1];sectionNameEl.style.opacity=1;},150);}
 domElements.forEach(item=>{
-const zAbsoluta=item.data.z+cameraZ;
+const trueZ=item.data.z+cameraZ;
+let zAbsoluta=trueZ;
+let renderX=item.data.x;
+if(item.data.id==='s2_img'&&trueZ>-300){renderX+=(trueZ+300)*.025;zAbsoluta=-300;}
 const optimalZ=-600;
-const distanceFromOptimal=Math.abs(zAbsoluta-optimalZ);
+const distanceFromOptimal=Math.abs(trueZ-optimalZ);
 const coreVisibleRange=1200;
 const fadeTransition=3500;
 let opacity=1;
 if(distanceFromOptimal>coreVisibleRange){opacity=1-((distanceFromOptimal-coreVisibleRange)/fadeTransition);}
 opacity=Math.max(0,Math.min(1,opacity));
-const maxBlur=10;
-const blurAmount=(1-opacity)*maxBlur;
-if(opacity>.01){const pxX=item.data.x*cx;const pxY=item.data.y*cy;item.element.style.transform=`translate(-50%, -50%) translate3d(${pxX}px, ${pxY}px, ${zAbsoluta}px)`;item.element.style.opacity=opacity;item.element.style.filter=`blur(${blurAmount}px)`;item.element.style.display='block';}else{item.element.style.display='none';}
+let blurAmount=0;
+if(item.data.id!=='s2_img'){const maxBlur=10;blurAmount=(1-opacity)*maxBlur;}
+if(opacity>.01){const pxX=renderX*cx;const pxY=item.data.y*cy;item.element.style.transform=`translate(-50%, -50%) translate3d(${pxX}px, ${pxY}px, ${zAbsoluta}px)`;item.element.style.opacity=opacity;item.element.style.filter=blurAmount>0?`blur(${blurAmount}px)`:'none';item.element.style.display='block';}else{item.element.style.display='none';}
 });
 requestAnimationFrame(updateScene);
 }
