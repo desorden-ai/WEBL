@@ -12,6 +12,7 @@
   const stardust = record?.stardust;
 
   const markImageReady = () => {
+    staticImage.style.visibility = 'visible';
     staticContainer.style.opacity = '1';
     staticContainer.style.display = 'inline-block';
     checkLoadingState();
@@ -20,8 +21,11 @@
 
   staticImage.addEventListener('load', markImageReady, { once: true });
   staticImage.addEventListener('error', () => {
-    staticContainer.style.display = 'none';
+    staticImage.style.visibility = 'hidden';
+    staticContainer.style.opacity = '1';
+    staticContainer.style.display = 'inline-block';
     checkLoadingState();
+    if (sceneStarted) wakeUpLoop(true);
   }, { once: true });
 
   if (staticImage.complete && staticImage.naturalWidth > 0) {
