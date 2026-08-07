@@ -1,37 +1,29 @@
-# WEBL — Experiencia de Scroll 3D
+# WEBL — Scroll 3D Adaptatiu
 
-Experiencia web estática con recorrido tipográfico tridimensional, campo de estrellas Canvas y movimiento controlado por scroll.
+Repositori centrat exclusivament en reproduir la web de scroll 3D definida en aquest projecte.
 
-## Estructura
+## Estructura activa
 
-- `public/index.html`: estructura principal y HUD.
-- `public/styles.css`: diseño, profundidad CSS, responsive y accesibilidad.
-- `public/app.js`: escena 3D, suavizado de scroll y animación Canvas.
-- `public/_headers`: cabeceras de seguridad y caché para Cloudflare.
-- `wrangler.jsonc`: configuración de Cloudflare Workers Static Assets.
+- `public/index.html`: web completa amb HTML, CSS i JavaScript integrats.
+- `public/_headers`: capçaleres HTTP per a Cloudflare.
+- `wrangler.jsonc`: desplegament de `public/` com a Static Assets.
+- `package.json`: scripts de Wrangler.
 
-## Vista previa local
+No hi ha cap sistema de compilació ni dependències de frontend.
+
+## Vista prèvia local
 
 ```bash
 python3 -m http.server 8080 --directory public
 ```
 
-Abrir `http://localhost:8080`.
+Obrir `http://localhost:8080`.
 
-## Validación rápida
-
-```bash
-node --check public/app.js
-```
-
-## Cloudflare Workers
-
-El repositorio conserva la configuración existente de despliegue mediante Static Assets.
+## Desplegament
 
 ```bash
 npm install
-npm run dev
 npm run deploy
 ```
 
-No requiere proceso de compilación para generar los archivos públicos.
+El Worker configurat és `webl`.
