@@ -30,7 +30,7 @@ body::-webkit-scrollbar{display:none}
 </head>
 <body>
 <div class="noise-overlay"></div><canvas id="stars-canvas"></canvas>
-<div id="hud-top-right"><span id="current-page" class="text-orange">01</span><span style="color:#fff">/</span><span style="color:#fff">06</span></div>
+<div id="hud-top-right"><span id="current-page" class="text-orange">01</span><span style="color:#fff">/</span><span style="color:#fff">07</span></div>
 <div id="nav-right"><div class="nav-track"><div class="nav-thumb" id="nav-thumb"></div></div></div>
 <div id="hud-bottom-left"><span style="color:white">SECCIÓN</span><span id="hud-section-name">INTRODUCCIÓN</span><span class="arrow-up">^</span></div>
 <div id="scene"><div id="world"></div></div>
@@ -39,7 +39,7 @@ const sceneData=[
 {id:'s1_1',html:'<h1 class="font-bebas text-white title-huge">TU</h1>',x:-3,y:-15,z:-1000},
 {id:'s1_2',html:'<h1 class="font-bebas text-orange title-huge">PARTNER</h1>',x:2,y:5,z:-3000},
 {id:'s1_3',html:'<p class="body-text text-muted" style="font-size:.9rem;letter-spacing:2px">( TECNOLÓGICO Y CREATIVO )</p>',x:0,y:25,z:-5000},
-{id:'s2_img',html:'<div class="main-image-container"><img src="1000091735.jpg" class="main-image" alt="Retrato"></div>',x:0,y:-5,z:-9000},
+{id:'s2_img',html:'<div class="main-image-container"><img id="main-portrait" class="main-image" alt="Retrato de David Milla" width="400" height="717" decoding="async"></div>',x:0,y:-5,z:-9000},
 {id:'s2_1',html:'<h2 class="font-bebas text-orange title-section">QUIÉN SOY</h2>',x:-5,y:-25,z:-12500},
 {id:'s2_2',html:'<p class="body-text text-muted">David Milla, creador y director<br>de <span class="text-orange">DESORDEN.</span></p>',x:2,y:-5,z:-14500},
 {id:'s2_3',html:'<p class="body-text text-muted">Dirección visual, vídeo,<br>fotografía, dron, IA y web.</p>',x:-2,y:15,z:-16500},
@@ -62,34 +62,27 @@ const sceneData=[
 ];
 const worldEl=document.getElementById('world'),sceneEl=document.getElementById('scene'),navThumb=document.getElementById('nav-thumb'),currentPageEl=document.getElementById('current-page'),sectionNameEl=document.getElementById('hud-section-name');
 const domElements=[];sceneData.forEach(item=>{const el=document.createElement('div');el.className='hologram';el.innerHTML=item.html;worldEl.appendChild(el);domElements.push({element:el,data:item})});
+Promise.all([0,1,2,3,4].map(index=>fetch(`portrait-${index}.b64`).then(response=>response.text()))).then(parts=>{const portrait=document.getElementById('main-portrait');if(portrait)portrait.src=`data:image/jpeg;base64,${parts.join('')}`}).catch(()=>{});
 const minZ=Math.min(...sceneData.map(item=>item.z)),requiredCameraTravel=Math.abs(minZ)+5000;
-let currentScroll=0,targetScroll=0,globalPanX=0,globalPanY=0;const lerpFactor=.06;const sectionNames=['INTRODUCCIÓN','LA IMAGEN','QUIÉN SOY','FORMACIONES','ARTISTAS','PROYECTO','MANIFIESTO'];
+let currentScroll=0,targetScroll=0,globalPanX=0,globalPanY=0,activePage=1,sectionTimer=0;const lerpFactor=.06;const sectionNames=['INTRODUCCIÓN','LA IMAGEN','QUIÉN SOY','FORMACIONES','ARTISTAS','PROYECTO','MANIFIESTO'];
 addEventListener('scroll',()=>{targetScroll=scrollY},{passive:true});
 function updateScene(){
  currentScroll+=(targetScroll-currentScroll)*lerpFactor;
  const maxScrollableHeight=document.documentElement.scrollHeight-innerHeight;
- const scrollProgress=maxScrollableHeight>0?currentScroll/maxScrollableHeight:0;
- const speedMultiplier=maxScrollableHeight>0?requiredCameraTravel/maxScrollableHeight:0;
- const cameraZ=currentScroll*speedMultiplier;
+ const scrollProgress=maxScrollableHeight>0?Math.min(1,Math.max(0,currentScroll/maxScrollableHeight)):0;
+ const cameraZ=currentScroll*(requiredCameraTravel/maxScrollableHeight);
  const t=Math.min(1,Math.max(0,cameraZ/requiredCameraTravel)),adjustedT=Math.pow(t,1.2);
  globalPanX=Math.sin(adjustedT*Math.PI*1.5)*12;globalPanY=Math.sin(t*Math.PI*2.5)*4;
- const targetRotY=-Math.cos(adjustedT*Math.PI*1.5)*2,targetRotX=Math.sin(t*Math.PI*2.5)*1.5;
- sceneEl.style.perspectiveOrigin=`${50+globalPanX}% ${50+globalPanY}%`;worldEl.style.transform=`rotateX(${targetRotX}deg) rotateY(${targetRotY}deg)`;
+ sceneEl.style.perspectiveOrigin=`${50+globalPanX}% ${50+globalPanY}%`;worldEl.style.transform=`rotateX(${Math.sin(t*Math.PI*2.5)*1.5}deg) rotateY(${-Math.cos(adjustedT*Math.PI*1.5)*2}deg)`;
  const cx=innerWidth/100,cy=innerHeight/100;navThumb.style.top=`${scrollProgress*80}%`;
- let activePage=1;if(scrollProgress<.1)activePage=1;else if(scrollProgress<.22)activePage=2;else if(scrollProgress<.38)activePage=3;else if(scrollProgress<.52)activePage=4;else if(scrollProgress<.68)activePage=5;else if(scrollProgress<.85)activePage=6;else activePage=7;
- const formattedPage=String(activePage).padStart(2,'0');if(currentPageEl.innerText!==formattedPage){currentPageEl.innerText=formattedPage;sectionNameEl.style.opacity=0;setTimeout(()=>{sectionNameEl.innerText=sectionNames[activePage-1];sectionNameEl.style.opacity=1},150)}
- domElements.forEach(item=>{
-  const zAbsoluta=item.data.z+cameraZ,optimalZ=-600,distanceFromOptimal=Math.abs(zAbsoluta-optimalZ),coreVisibleRange=1200,fadeTransition=3500;
-  let opacity=1;if(distanceFromOptimal>coreVisibleRange)opacity=1-((distanceFromOptimal-coreVisibleRange)/fadeTransition);opacity=Math.max(0,Math.min(1,opacity));
-  const blur=Math.max(0,Math.min(3,(distanceFromOptimal-coreVisibleRange)/2200));
-  if(opacity>.01){item.element.style.display='block';item.element.style.opacity=opacity;item.element.style.filter=blur>.05?`blur(${blur}px)`:'none';item.element.style.transform=`translate(-50%,-50%) translate3d(${item.data.x*cx}px,${item.data.y*cy}px,${zAbsoluta}px)`}else item.element.style.display='none';
- });
+ let nextPage=1;if(scrollProgress<.1)nextPage=1;else if(scrollProgress<.22)nextPage=2;else if(scrollProgress<.38)nextPage=3;else if(scrollProgress<.52)nextPage=4;else if(scrollProgress<.68)nextPage=5;else if(scrollProgress<.85)nextPage=6;else nextPage=7;
+ if(nextPage!==activePage){activePage=nextPage;currentPageEl.textContent=String(activePage).padStart(2,'0');sectionNameEl.style.opacity='0';clearTimeout(sectionTimer);sectionTimer=setTimeout(()=>{sectionNameEl.textContent=sectionNames[activePage-1];sectionNameEl.style.opacity='1'},150)}
+ domElements.forEach(item=>{const z=item.data.z+cameraZ,optimalZ=-600,distance=Math.abs(z-optimalZ),core=1200,transition=3500;let opacity=distance>core?1-(distance-core)/transition:1;opacity=Math.max(0,Math.min(1,opacity));const blur=Math.max(0,Math.min(3,(distance-core)/2500));if(opacity>.01){item.element.style.display='block';item.element.style.transform=`translate(-50%,-50%) translate3d(${item.data.x*cx}px,${item.data.y*cy}px,${z}px)`;item.element.style.opacity=opacity;item.element.style.filter=blur>.05?`blur(${blur}px)`:'none'}else item.element.style.display='none'});
  requestAnimationFrame(updateScene)
 }
-const canvas=document.getElementById('stars-canvas'),ctx=canvas.getContext('2d');let width,height,stars=[];const numStars=250;
-function initStars(){const dpr=Math.min(devicePixelRatio||1,2);width=innerWidth;height=innerHeight;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);canvas.style.width=width+'px';canvas.style.height=height+'px';ctx.setTransform(dpr,0,0,dpr,0,0);stars=[];for(let i=0;i<numStars;i++)stars.push({x:(Math.random()-.5)*width*3,y:(Math.random()-.5)*height*3,z:Math.random()*2200,radius:Math.random()*1.5})}
-let lastScrollForStars=0;
-function renderStars(){ctx.clearRect(0,0,width,height);const scrollDelta=Math.abs(currentScroll-lastScrollForStars);lastScrollForStars=currentScroll;const speed=.35+scrollDelta*.25,centerX=width/2+(globalPanX/12)*(width*.12),centerY=height/2+(globalPanY/4)*(height*.05);ctx.fillStyle='rgba(242,157,38,.9)';for(const star of stars){star.z-=speed;if(star.z<=0){star.x=(Math.random()-.5)*width*3;star.y=(Math.random()-.5)*height*3;star.z=2200}const k=900/star.z,px=star.x*k+centerX,py=star.y*k+centerY;if(px>=0&&px<=width&&py>=0&&py<=height){ctx.globalAlpha=Math.max(.2,Math.min(1,1-star.z/2600));ctx.beginPath();ctx.arc(px,py,Math.max(.1,star.radius*k),0,Math.PI*2);ctx.fill()}}ctx.globalAlpha=1;requestAnimationFrame(renderStars)}
+const canvas=document.getElementById('stars-canvas'),ctx=canvas.getContext('2d');let width=0,height=0,stars=[],lastScrollForStars=0;const numStars=250;
+function initStars(){const dpr=Math.min(devicePixelRatio||1,2);width=innerWidth;height=innerHeight;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);canvas.style.width=`${width}px`;canvas.style.height=`${height}px`;ctx.setTransform(dpr,0,0,dpr,0,0);stars=Array.from({length:numStars},()=>({x:(Math.random()-.5)*width*3,y:(Math.random()-.5)*height*3,z:Math.random()*2000,radius:Math.random()*1.5}))}
+function renderStars(){ctx.clearRect(0,0,width,height);const scrollDelta=Math.abs(currentScroll-lastScrollForStars);lastScrollForStars=currentScroll;const speed=.35+scrollDelta*.18,centerX=width/2+(globalPanX/12)*(width*.12),centerY=height/2+(globalPanY/4)*(height*.04);ctx.fillStyle='rgba(242,157,38,.8)';for(const star of stars){star.z-=speed;if(star.z<=0){star.x=(Math.random()-.5)*width*3;star.y=(Math.random()-.5)*height*3;star.z=2000}const k=900/star.z,px=star.x*k+centerX,py=star.y*k+centerY;if(px>=0&&px<=width&&py>=0&&py<=height){ctx.beginPath();ctx.arc(px,py,Math.max(.1,star.radius*k),0,Math.PI*2);ctx.fill()}}requestAnimationFrame(renderStars)}
 addEventListener('resize',initStars,{passive:true});initStars();renderStars();updateScene();
 </script>
 </body>
