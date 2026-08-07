@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Scroll 3D Móvil - Portada Épica</title>
+  <title>DESORDEN — Experiencia 3D</title>
+  <link rel="preload" href="1000091876.jpg" as="image" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -12,10 +13,8 @@
     *{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none}
     html,body{width:100%;height:100%;overflow:hidden;background:var(--bg-color);overscroll-behavior:none}
     body{height:100dvh;width:100vw;background-color:var(--bg-color);color:var(--text-main);font-family:'Inter',sans-serif;overflow:hidden;touch-action:none;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-    #loader{position:fixed;inset:0;width:100vw;height:100dvh;background:var(--bg-color);z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:opacity .8s ease}
-    .spinner{width:40px;height:40px;border:3px solid rgba(242,157,38,.3);border-top-color:var(--accent-color);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .loader-text{font-family:'Bebas Neue',cursive;color:var(--accent-color);font-size:1.5rem;letter-spacing:3px}
+    #loader{position:fixed;inset:0;width:100vw;height:100dvh;background:var(--bg-color);z-index:9999;display:flex;justify-content:center;align-items:center;transition:opacity .5s ease;pointer-events:none;perspective:800px}
+    #loader-text-3d{font-size:15vw;color:var(--accent-color);text-shadow:0 5px 20px rgba(242,157,38,.3);transform-origin:center;transform:rotateX(0);opacity:1;will-change:transform,opacity}
     .noise-overlay{position:fixed;inset:0;width:100vw;height:100dvh;pointer-events:none;z-index:50;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")}
     #scene{position:fixed;inset:0;width:100vw;height:100dvh;z-index:10;perspective:900px;pointer-events:none;display:flex;justify-content:center;align-items:center;overflow:hidden}
     #world{position:absolute;transform-style:preserve-3d;width:0;height:0;will-change:transform}
@@ -34,7 +33,7 @@
   </style>
 </head>
 <body>
-  <div id="loader"><div class="spinner"></div><div class="loader-text">CARGANDO EXPERIENCIA</div></div>
+  <div id="loader" role="status" aria-label="Cargando experiencia"><div id="loader-text-3d" class="font-bebas" aria-hidden="true">D</div></div>
   <div class="noise-overlay"></div>
   <div id="hud-top-right"><span id="current-page" class="text-orange">01</span><span style="color:#fff">/</span><span style="color:#fff">07</span></div>
   <div id="nav-right"><div class="nav-track"><div class="nav-thumb" id="nav-thumb"></div></div></div>
@@ -42,9 +41,9 @@
   <div id="scene"><div id="world"></div></div>
   <script>
     class StardustImage{
-      constructor(src,container){this.container=container;this.loaded=false;this.fallbackMode=false;this.fallbackRequested=false;this.realImg=document.createElement('img');this.realImg.className='stardust-real-img';this.realImg.onerror=()=>this.loadFallback();this.realImg.src=src;this.canvas=document.createElement('canvas');this.canvas.className='stardust-canvas';this.ctx=this.canvas.getContext('2d',{alpha:true});this.overlay=document.createElement('div');this.overlay.className='stardust-overlay';container.append(this.realImg,this.canvas,this.overlay);this.particles=[];this.pixelImg=new Image();this.pixelImg.crossOrigin='Anonymous';this.pixelImg.onload=()=>this.processImage(this.pixelImg);this.pixelImg.onerror=()=>this.loadFallback();this.pixelImg.src=src}
+      constructor(src,container){this.container=container;this.loaded=false;this.fallbackMode=false;this.fallbackRequested=false;this.realImg=document.createElement('img');this.realImg.className='stardust-real-img';this.realImg.onerror=()=>this.loadFallback();this.realImg.src=src;this.canvas=document.createElement('canvas');this.canvas.className='stardust-canvas';this.ctx=this.canvas.getContext('2d',{alpha:true});this.overlay=document.createElement('div');this.overlay.className='stardust-overlay';container.append(this.realImg,this.canvas,this.overlay);this.particles=[];this.pixelImg=new Image();this.pixelImg.crossOrigin='Anonymous';this.pixelImg.onload=()=>setTimeout(()=>this.processImage(this.pixelImg),50);this.pixelImg.onerror=()=>this.loadFallback();this.pixelImg.src=src}
       async loadFallback(){if(this.fallbackRequested)return;this.fallbackRequested=true;try{const parts=await Promise.all([0,1,2,3,4].map(i=>fetch(`portrait-${i}.b64`).then(r=>{if(!r.ok)throw new Error('portrait');return r.text()})));const data=`data:image/jpeg;base64,${parts.join('')}`;this.realImg.src=data;this.pixelImg.src=data}catch{this.fallbackMode=true;this.loaded=true;checkLoadingState()}}
-      processImage(img){try{const cols=70,aspect=img.height/img.width,rows=Math.floor(cols*aspect),pixelSize=4;this.canvas.width=cols*pixelSize;this.canvas.height=rows*pixelSize;const tempCanvas=document.createElement('canvas');tempCanvas.width=cols;tempCanvas.height=rows;const tCtx=tempCanvas.getContext('2d');tCtx.drawImage(img,0,0,cols,rows);const imgData=tCtx.getImageData(0,0,cols,rows).data;for(let y=0;y<rows;y++){for(let x=0;x<cols;x++){const i=(y*cols+x)*4,r=imgData[i],g=imgData[i+1],b=imgData[i+2],a=imgData[i+3],brightness=(r+g+b)/3;if(a>50&&brightness>15)this.particles.push({baseX:x*pixelSize,baseY:y*pixelSize,color:`rgba(${r},${g},${b},1)`,randX:(.2+Math.random()*1.3)*innerWidth,randY:(Math.random()-.5)*innerHeight*1.1})}}this.loaded=true;checkLoadingState()}catch{this.fallbackMode=true;this.loaded=true;checkLoadingState()}}
+      processImage(img){try{const cols=65,aspect=img.height/img.width,rows=Math.floor(cols*aspect),pixelSize=4;this.canvas.width=cols*pixelSize;this.canvas.height=rows*pixelSize;const tempCanvas=document.createElement('canvas');tempCanvas.width=cols;tempCanvas.height=rows;const tCtx=tempCanvas.getContext('2d');tCtx.drawImage(img,0,0,cols,rows);const imgData=tCtx.getImageData(0,0,cols,rows).data;for(let y=0;y<rows;y++){for(let x=0;x<cols;x++){const i=(y*cols+x)*4,r=imgData[i],g=imgData[i+1],b=imgData[i+2],a=imgData[i+3],brightness=(r+g+b)/3;if(a>50&&brightness>15)this.particles.push({baseX:x*pixelSize,baseY:y*pixelSize,color:`rgba(${r},${g},${b},1)`,randX:(.2+Math.random()*1.3)*innerWidth,randY:(Math.random()-.5)*innerHeight*1.1})}}this.loaded=true;checkLoadingState()}catch{this.fallbackMode=true;this.loaded=true;checkLoadingState()}}
       update(trueZ){if(!this.loaded)return;let dispersion=0;if(trueZ>-400)dispersion=(trueZ+400)/1200;dispersion=Math.max(0,Math.min(1,dispersion));const easeDispersion=Math.pow(dispersion,1.2);if(this.fallbackMode){this.realImg.style.opacity=1-easeDispersion;return}this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);if(easeDispersion===0){this.realImg.style.opacity=1;this.canvas.style.opacity=0}else if(easeDispersion<.1){const fade=easeDispersion/.1;this.realImg.style.opacity=1-fade;this.canvas.style.opacity=fade}else{this.realImg.style.opacity=0;this.canvas.style.opacity=1-easeDispersion*.8}if(easeDispersion>=.99)return;for(const p of this.particles){const x=p.baseX+p.randX*easeDispersion,y=p.baseY+p.randY*easeDispersion;this.ctx.fillStyle=p.color;this.ctx.fillRect(x,y,3,3)}}
     }
     const check=`<svg viewBox="0 0 24 24" fill="white" style="width:10px;height:10px"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
@@ -76,17 +75,67 @@
     ];
     const worldEl=document.getElementById('world'),sceneEl=document.getElementById('scene'),navThumb=document.getElementById('nav-thumb'),currentPageEl=document.getElementById('current-page'),sectionNameEl=document.getElementById('hud-section-name'),loader=document.getElementById('loader');
     const domElements=[];sceneData.forEach(item=>{const el=document.createElement('div');if(item.type==='stardust'){el.className='hologram stardust-container';worldEl.appendChild(el);domElements.push({element:el,data:item,stardust:new StardustImage(item.src,el)})}else{el.className='hologram';el.innerHTML=item.html;worldEl.appendChild(el);domElements.push({element:el,data:item})}});
-    let assetsLoaded=false,sceneStarted=false;
-    function checkLoadingState(){assetsLoaded=true;hideLoader()}
-    function hideLoader(){if(!assetsLoaded||sceneStarted)return;sceneStarted=true;loader.style.opacity='0';setTimeout(()=>{loader.style.display='none';updateScene()},800)}
+    let assetsLoaded=false,sceneStarted=false,simulatedProgress=0,currentWordIndex=0,pendingWordIndex=0,loaderAnimating=false,loaderFinished=false;
+    const loaderWords=['D','E','S','O','R','D','E','N'];
+    const loaderTxtEl=document.getElementById('loader-text-3d');
+    const loaderContainer=document.getElementById('loader');
+    function checkLoadingState(){assetsLoaded=true}
+    function animateNextLoaderLetter(){
+      if(loaderAnimating||currentWordIndex>=pendingWordIndex||loaderFinished)return;
+      loaderAnimating=true;
+      const nextIndex=currentWordIndex+1;
+      loaderTxtEl.style.transition='transform .1s ease-in,opacity .1s ease';
+      loaderTxtEl.style.transform='rotateX(90deg)';
+      loaderTxtEl.style.opacity='0';
+      setTimeout(()=>{
+        loaderTxtEl.textContent=loaderWords[nextIndex];
+        loaderTxtEl.style.transition='none';
+        loaderTxtEl.style.transform='rotateX(-90deg)';
+        void loaderTxtEl.offsetWidth;
+        loaderTxtEl.style.transition='transform .1s ease-out,opacity .1s ease';
+        loaderTxtEl.style.transform='rotateX(0deg)';
+        loaderTxtEl.style.opacity='1';
+        currentWordIndex=nextIndex;
+        setTimeout(()=>{loaderAnimating=false;animateNextLoaderLetter();finishLoaderIfReady()},105);
+      },100);
+    }
+    function requestLoaderIndex(index){pendingWordIndex=Math.max(pendingWordIndex,Math.min(loaderWords.length-1,index));animateNextLoaderLetter()}
+    function finishLoaderIfReady(){
+      if(loaderFinished||simulatedProgress<100||currentWordIndex!==loaderWords.length-1||loaderAnimating)return;
+      loaderFinished=true;
+      setTimeout(()=>{
+        loaderContainer.style.opacity='0';
+        setTimeout(()=>{
+          loaderContainer.style.display='none';
+          if(!sceneStarted){sceneStarted=true;updateScene()}
+        },500);
+      },350);
+    }
+    let loaderLastTime=performance.now();
+    function updateLoaderProgress(now){
+      if(loaderFinished)return;
+      const frameScale=Math.min(4,(now-loaderLastTime)/16.667||1);
+      loaderLastTime=now;
+      const target=assetsLoaded?100:90;
+      const rate=assetsLoaded?.18:.012;
+      simulatedProgress+=(target-simulatedProgress)*(1-Math.pow(1-rate,frameScale));
+      if(assetsLoaded&&simulatedProgress>99.35)simulatedProgress=100;
+      requestLoaderIndex(Math.min(loaderWords.length-1,Math.floor(simulatedProgress/12.5)));
+      finishLoaderIfReady();
+      requestAnimationFrame(updateLoaderProgress);
+    }
+    requestAnimationFrame(updateLoaderProgress);
     const minZ=Math.min(...sceneData.map(item=>item.z)),requiredCameraTravel=Math.abs(minZ)+5000,maxVirtualScroll=25000,lerpFactor=.12;
     let currentScroll=0,targetScroll=0,globalPanX=0,globalPanY=0,touchStartY=0;
     const sectionNames=['INICIO','INTRODUCCIÓN','QUIÉN SOY','FORMACIONES','ARTISTAS','PROYECTO','MANIFIESTO'];
-    addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY},{passive:false});
-    addEventListener('touchmove',e=>{e.preventDefault();const touchY=e.touches[0].clientY;targetScroll+=((touchStartY-touchY)*4.5);targetScroll=Math.max(0,Math.min(targetScroll,maxVirtualScroll));touchStartY=touchY},{passive:false});
-    addEventListener('wheel',e=>{e.preventDefault();targetScroll+=e.deltaY*2;targetScroll=Math.max(0,Math.min(targetScroll,maxVirtualScroll))},{passive:false});
-    function updateScene(){currentScroll+=(targetScroll-currentScroll)*lerpFactor;const scrollProgress=currentScroll/maxVirtualScroll,cameraZ=scrollProgress*requiredCameraTravel,t=Math.min(1,Math.max(0,cameraZ/requiredCameraTravel)),adjustedT=Math.pow(t,1.2);globalPanX=Math.sin(adjustedT*Math.PI*1.5)*12;globalPanY=Math.sin(t*Math.PI*2.5)*4;sceneEl.style.perspectiveOrigin=`${50+globalPanX}% ${50+globalPanY}%`;worldEl.style.transform=`rotateX(${Math.sin(t*Math.PI*2.5)*1.5}deg) rotateY(${-Math.cos(adjustedT*Math.PI*1.5)*2}deg)`;const cx=innerWidth/100,cy=innerHeight/100;navThumb.style.top=`${scrollProgress*80}%`;let activePage=1;if(scrollProgress<.05)activePage=1;else if(scrollProgress<.18)activePage=2;else if(scrollProgress<.35)activePage=3;else if(scrollProgress<.5)activePage=4;else if(scrollProgress<.65)activePage=5;else if(scrollProgress<.82)activePage=6;else activePage=7;const formatted=String(activePage).padStart(2,'0');if(currentPageEl.innerText!==formatted){currentPageEl.innerText=formatted;sectionNameEl.style.opacity=0;setTimeout(()=>{sectionNameEl.innerText=sectionNames[activePage-1];sectionNameEl.style.opacity=1},150)}const escapeProgress=Math.max(0,Math.min(1,(cameraZ-150)/1400));const escapeEase=1-Math.pow(1-escapeProgress,3);domElements.forEach(item=>{const trueZ=item.data.z+cameraZ;let zAbsoluta=trueZ,renderX=item.data.x,opacity=1;const isOpeningPair=item.data.id==='s0_img'||item.data.id==='s0_text';if(isOpeningPair&&cameraZ>150){renderX+=escapeEase*120;zAbsoluta=item.data.z+150;opacity=1-escapeEase}if(item.data.type==='stardust'){item.element.style.display=opacity>.01?'inline-block':'none';item.stardust.update(trueZ);item.element.style.transform=`translate(-50%,-50%) translate3d(${renderX*cx}px,${item.data.y*cy}px,${zAbsoluta}px)`;item.element.style.opacity=opacity;item.element.style.filter='none'}else{let blur=0;if(!isOpeningPair){const distance=Math.abs(trueZ+600),core=1200,transition=3500;opacity=distance>core?1-((distance-core)/transition):1;opacity=Math.max(0,Math.min(1,opacity));blur=(1-opacity)*10}if(opacity>.01){item.element.style.transform=`translate(-50%,-50%) translate3d(${renderX*cx}px,${item.data.y*cy}px,${zAbsoluta}px)`;item.element.style.opacity=opacity;item.element.style.filter=blur>.01?`blur(${blur}px)`:'none';item.element.style.display='block'}else item.element.style.display='none'}});requestAnimationFrame(updateScene)}
-    addEventListener('load',()=>setTimeout(checkLoadingState,3000),{once:true});
+    let cx=innerWidth/100,cy=innerHeight/100;
+    function updateViewportMetrics(){cx=innerWidth/100;cy=innerHeight/100}
+    addEventListener('resize',updateViewportMetrics,{passive:true});
+    addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY},{passive:true});
+    addEventListener('touchmove',e=>{const touchY=e.touches[0].clientY;targetScroll+=((touchStartY-touchY)*4.5);targetScroll=Math.max(0,Math.min(targetScroll,maxVirtualScroll));touchStartY=touchY},{passive:true});
+    addEventListener('wheel',e=>{targetScroll+=e.deltaY*2;targetScroll=Math.max(0,Math.min(targetScroll,maxVirtualScroll))},{passive:true});
+    function updateScene(){currentScroll+=(targetScroll-currentScroll)*lerpFactor;const scrollProgress=currentScroll/maxVirtualScroll,cameraZ=scrollProgress*requiredCameraTravel,t=Math.min(1,Math.max(0,cameraZ/requiredCameraTravel)),adjustedT=Math.pow(t,1.2);globalPanX=Math.sin(adjustedT*Math.PI*1.5)*12;globalPanY=Math.sin(t*Math.PI*2.5)*4;sceneEl.style.perspectiveOrigin=`${50+globalPanX}% ${50+globalPanY}%`;worldEl.style.transform=`rotateX(${Math.sin(t*Math.PI*2.5)*1.5}deg) rotateY(${-Math.cos(adjustedT*Math.PI*1.5)*2}deg)`;navThumb.style.top=`${scrollProgress*80}%`;let activePage=1;if(scrollProgress<.05)activePage=1;else if(scrollProgress<.18)activePage=2;else if(scrollProgress<.35)activePage=3;else if(scrollProgress<.5)activePage=4;else if(scrollProgress<.65)activePage=5;else if(scrollProgress<.82)activePage=6;else activePage=7;const formatted=String(activePage).padStart(2,'0');if(currentPageEl.innerText!==formatted){currentPageEl.innerText=formatted;sectionNameEl.style.opacity=0;setTimeout(()=>{sectionNameEl.innerText=sectionNames[activePage-1];sectionNameEl.style.opacity=1},150)}const escapeProgress=Math.max(0,Math.min(1,(cameraZ-150)/1400));const escapeEase=1-Math.pow(1-escapeProgress,3);domElements.forEach(item=>{const trueZ=item.data.z+cameraZ;let zAbsoluta=trueZ,renderX=item.data.x,opacity=1;const isOpeningPair=item.data.id==='s0_img'||item.data.id==='s0_text';if(isOpeningPair&&cameraZ>150){renderX+=escapeEase*120;zAbsoluta=item.data.z+150;opacity=1-escapeEase}if(item.data.type==='stardust'){item.element.style.display=opacity>.01?'inline-block':'none';item.stardust.update(trueZ);item.element.style.transform=`translate(-50%,-50%) translate3d(${renderX*cx}px,${item.data.y*cy}px,${zAbsoluta}px)`;item.element.style.opacity=opacity;item.element.style.filter='none'}else{let blur=0;if(!isOpeningPair){const distance=Math.abs(trueZ+600),core=1200,transition=3500;opacity=distance>core?1-((distance-core)/transition):1;opacity=Math.max(0,Math.min(1,opacity));blur=(1-opacity)*10}if(opacity>.01){item.element.style.transform=`translate(-50%,-50%) translate3d(${renderX*cx}px,${item.data.y*cy}px,${zAbsoluta}px)`;item.element.style.opacity=opacity;item.element.style.filter=blur>.01?`blur(${blur}px)`:'none';item.element.style.display='block'}else item.element.style.display='none'}});requestAnimationFrame(updateScene)}
+    addEventListener('load',()=>setTimeout(()=>{if(!assetsLoaded)checkLoadingState()},3000),{once:true});
   </script>
 </body>
 </html>
