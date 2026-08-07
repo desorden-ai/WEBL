@@ -22,11 +22,11 @@
   Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=31536000, immutable
 
-/portrait-recovery-v9.js
+/portrait-inline-v11.js
   Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=31536000, immutable
 
-/race-fix-v10.js
+/portrait-inline-apply-v11.js
   Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=31536000, immutable
 
