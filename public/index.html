@@ -5,56 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>David Milla - Creativo | Portada Épica 3D</title>
   <meta name="description" content="Portfolio interactivo 3D de David Milla. Dirección visual, vídeo, fotografía, dron, IA y diseño web. Tu partner tecnológico y creativo.">
+  <link rel="preload" href="1000091876.jpg" as="image" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="cover-v6.css?v=1">
-  <link rel="stylesheet" href="lcp-v12.css?v=2">
-  <link rel="stylesheet" href="portrait-inline-v13.css?v=1">
   <style>
-    /* Portada fiable: fuera del world 3D de tamaño 0. */
-    #hero-reliable {
-      position: fixed;
-      inset: 0;
-      z-index: 20;
-      overflow: hidden;
-      pointer-events: none;
-      perspective: 900px;
-      opacity: 1;
-      visibility: visible;
-      transition: opacity .45s ease;
-    }
-    #hero-reliable.is-hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-    #hero-reliable #lcp-stardust {
-      position: absolute !important;
-      left: 50% !important;
-      top: 50% !important;
-      width: min(90vw, 650px) !important;
-      max-width: 650px !important;
-      aspect-ratio: 360 / 645;
-      opacity: 1 !important;
-      visibility: visible !important;
-      display: block !important;
-      transform: translate(-50%,-50%) translate3d(4vw,22vh,-600px);
-    }
-    #lcp-portrait {
-      opacity: 0 !important;
-      visibility: hidden !important;
-      pointer-events: none;
-    }
+    #scene{opacity:0;transition:opacity 1.5s ease-in-out}body.ready #scene{opacity:1}
+    .stardust-canvas{position:absolute;inset:auto;top:-100%;left:-100%;width:300%;height:300%;z-index:2;pointer-events:none}
+    #seo-header,#hud-top-right{top:40px;font-size:1.1rem;line-height:1;letter-spacing:2px}
+    #seo-header{position:fixed;left:25px;z-index:100;margin:0;color:var(--text-main);font-weight:400;white-space:nowrap}
+    #hud-top-right{position:fixed;right:25px;z-index:102;display:flex;align-items:center;gap:4px;color:var(--accent-color);cursor:pointer;background:transparent;border:0;padding:0;font-family:'Bebas Neue',cursive;text-transform:uppercase;white-space:nowrap}
+    #hud-page-number{transition:opacity .3s ease}.menu-arrow{display:inline-block;margin-left:4px;font-size:.8rem;transition:transform .3s ease}#hud-top-right[aria-expanded="true"] .menu-arrow{transform:rotate(180deg)}
+    #nav-menu{position:fixed;top:70px;right:25px;z-index:101;padding:10px 0;display:flex;flex-direction:column;gap:18px;text-align:right;background:transparent;border:0;opacity:0;pointer-events:none;transform:translateY(-10px);transition:opacity .3s ease,transform .3s ease}
+    #nav-menu.open{opacity:1;pointer-events:auto;transform:translateY(0)}
+    .menu-item{appearance:none;border:0;padding:0;background:transparent;font-family:'Bebas Neue',cursive;font-size:1.3rem;line-height:1;letter-spacing:2px;text-align:right;color:var(--text-main);cursor:pointer;text-shadow:0 4px 15px rgba(0,0,0,.9),0 0 5px rgba(0,0,0,.8);transition:color .3s ease}
+    .menu-item:hover,.menu-item:focus-visible,.menu-item.active{color:var(--accent-color);outline:none}
   </style>
 </head>
 <body>
   <div id="loader" role="status" aria-label="Cargando experiencia">
     <div id="loader-text-3d" class="font-bebas" aria-hidden="true">D</div>
-  </div>
-
-  <div id="cookie-wrapper">
-    <p class="cookie-text">ESTA WEB UTILIZA COOKIES PARA OFRECER LA MEJOR EXPERIENCIA 3D.</p>
-    <button id="btn-accept-cookies" class="font-bebas" type="button">ACEPTAR Y ENTRAR</button>
+    <div id="cookie-wrapper">
+      <p class="cookie-text">ESTA WEB UTILIZA COOKIES PARA OFRECER LA MEJOR EXPERIENCIA 3D.</p>
+      <button id="btn-accept-cookies" class="font-bebas" type="button">ACEPTAR Y ENTRAR</button>
+    </div>
   </div>
 
   <div class="noise-overlay"></div>
@@ -75,28 +50,73 @@
   </nav>
 
   <div id="nav-right" aria-hidden="true"><div class="nav-track"><div class="nav-thumb" id="nav-thumb"></div></div></div>
-
-  <!-- La portada se mantiene en una capa de viewport independiente del motor. -->
-  <div id="hero-reliable" aria-hidden="true">
-    <div id="lcp-stardust" class="hologram stardust-container" role="img" aria-label="David Milla, creativo y director de DESORDEN">
-      <img id="lcp-portrait" class="stardust-real-img" src="/1000091876.jpg" alt="" width="360" height="645" loading="eager" decoding="async" draggable="false" aria-hidden="true">
-      <canvas id="lcp-stardust-canvas" class="stardust-canvas" aria-hidden="true"></canvas>
-    </div>
-  </div>
-
   <div id="scene"><div id="world"></div></div>
 
-  <script src="performance-v8.js?v=5" defer></script>
-  <script src="lcp-v12.js?v=2" defer></script>
-  <script defer>
-    window.addEventListener('DOMContentLoaded', () => {
-      const hero = document.getElementById('hero-reliable');
-      const page = document.getElementById('hud-page-number');
-      if (!hero || !page) return;
-      const syncHero = () => hero.classList.toggle('is-hidden', page.textContent.trim() !== '01');
-      syncHero();
-      new MutationObserver(syncHero).observe(page, { childList: true, characterData: true, subtree: true });
-    });
+  <script src="cover-v6.js?v=1"></script>
+  <script>
+    const menuButton=document.getElementById('hud-top-right');
+    const navMenu=document.getElementById('nav-menu');
+    const menuItems=Array.from(document.querySelectorAll('.menu-item'));
+    const pageNumberEl=document.getElementById('hud-page-number');
+
+    function setMenuOpen(open){navMenu.classList.toggle('open',open);menuButton.setAttribute('aria-expanded',String(open));menuButton.setAttribute('aria-label',open?'Cerrar navegación por secciones':'Abrir navegación por secciones')}
+    menuButton.addEventListener('click',()=>setMenuOpen(!navMenu.classList.contains('open')));
+    menuItems.forEach(item=>item.addEventListener('click',()=>{const destination=Number(item.dataset.target);if(Number.isFinite(destination))targetScroll=Math.max(0,Math.min(destination,maxVirtualScroll));setMenuOpen(false)}));
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')setMenuOpen(false)});
+    document.addEventListener('pointerdown',e=>{if(navMenu.classList.contains('open')&&!navMenu.contains(e.target)&&!menuButton.contains(e.target))setMenuOpen(false)});
+
+    launchExperience=function(){
+      if(launchStarted)return;launchStarted=true;cookieWrapper.classList.remove('visible');
+      setTimeout(()=>{loaderContainer.style.opacity='0';setTimeout(()=>{loaderContainer.style.display='none';document.body.classList.add('ready');if(!sceneStarted){sceneStarted=true;updateScene()}},500)},200)
+    };
+
+    StardustImage.prototype.processImage=function(img){
+      try{
+        const cols=75,aspect=img.height/img.width,rows=Math.floor(cols*aspect),pixelSize=4;
+        const imgDrawWidth=cols*pixelSize,imgDrawHeight=rows*pixelSize;
+        this.particles.length=0;this.canvas.width=imgDrawWidth*3;this.canvas.height=imgDrawHeight*3;
+        const temp=document.createElement('canvas');temp.width=cols;temp.height=rows;const ctx=temp.getContext('2d');ctx.drawImage(img,0,0,cols,rows);
+        const data=ctx.getImageData(0,0,cols,rows).data,offsetX=imgDrawWidth,offsetY=imgDrawHeight;
+        for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+          const i=(y*cols+x)*4,r=data[i],g=data[i+1],b=data[i+2],a=data[i+3],brightness=(r+g+b)/3;
+          if(a>50&&brightness>15)this.particles.push({baseX:x*pixelSize+offsetX,baseY:y*pixelSize+offsetY,color:`rgba(${r},${g},${b},1)`,randX:(Math.random()-.5)*window.innerWidth*3,randY:(Math.random()-.5)*window.innerHeight*3});
+        }
+        this.loaded=true;checkLoadingState();
+      }catch(e){this.fallbackMode=true;this.loaded=true;checkLoadingState()}
+    };
+
+    StardustImage.prototype.update=function(trueZ){
+      if(!this.loaded)return;
+      let dispersion=trueZ>-400?(trueZ+400)/2800:0;dispersion=Math.max(0,Math.min(1,dispersion));const eased=Math.pow(dispersion,1.2);
+      if(this.fallbackMode){this.realImg.style.opacity=1-eased;return}
+      this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+      if(eased===0){this.realImg.style.opacity=1;this.canvas.style.opacity=0}
+      else if(eased<.1){const fade=eased/.1;this.realImg.style.opacity=1-fade;this.canvas.style.opacity=fade}
+      else{this.realImg.style.opacity=0;this.canvas.style.opacity=1-eased*.8}
+      if(eased>=.99)return;
+      for(const p of this.particles){this.ctx.fillStyle=p.color;this.ctx.fillRect(p.baseX+p.randX*eased,p.baseY+p.randY*eased,3.5,3.5)}
+    };
+
+    updateScene=function(){
+      currentScroll+=(targetScroll-currentScroll)*lerpFactor;
+      const progress=currentScroll/maxVirtualScroll,cameraZ=progress*requiredCameraTravel,t=Math.min(1,Math.max(0,cameraZ/requiredCameraTravel)),adjustedT=Math.pow(t,1.2);
+      globalPanX=Math.sin(adjustedT*Math.PI*1.5)*12;globalPanY=Math.sin(t*Math.PI*2.5)*4;
+      sceneEl.style.perspectiveOrigin=`${50+globalPanX}% ${50+globalPanY}%`;
+      worldEl.style.transform=`rotateX(${Math.sin(t*Math.PI*2.5)*1.5}deg) rotateY(${-Math.cos(adjustedT*Math.PI*1.5)*2}deg)`;
+      navThumb.style.top=`${progress*80}%`;
+      let activePage=1;if(progress<.02)activePage=1;else if(progress<.10)activePage=2;else if(progress<.24)activePage=3;else if(progress<.39)activePage=4;else if(progress<.53)activePage=5;else if(progress<.73)activePage=6;else activePage=7;
+      const formatted=String(activePage).padStart(2,'0');if(pageNumberEl.textContent!==formatted){pageNumberEl.textContent=formatted}
+      menuItems.forEach((item,index)=>item.classList.toggle('active',index===activePage-1));
+      domElements.forEach(item=>{
+        const z=item.data.z+cameraZ,x=item.data.x;
+        if(item.data.type==='stardust'){
+          item.element.style.display='inline-block';item.stardust.update(z);item.element.style.transform=`translate(-50%,-50%) translate3d(${x*cx}px,${item.data.y*cy}px,${z}px)`;item.element.style.opacity=1;item.element.style.filter='none';return;
+        }
+        const distance=Math.abs(z+600),core=1200,transition=3500;let opacity=distance>core?1-(distance-core)/transition:1;opacity=Math.max(0,Math.min(1,opacity));
+        if(opacity>.01){const blur=(1-opacity)*10;item.element.style.transform=`translate(-50%,-50%) translate3d(${x*cx}px,${item.data.y*cy}px,${z}px)`;item.element.style.opacity=opacity;item.element.style.filter=blur>.01?`blur(${blur}px)`:'none';item.element.style.display='block'}else item.element.style.display='none';
+      });
+      requestAnimationFrame(updateScene)
+    };
   </script>
 </body>
 </html>
