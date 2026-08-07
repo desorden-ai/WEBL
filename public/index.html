@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>David Milla - Director Creativo | Portada Épica 3D</title>
+  <title>David Milla - Creativo | Portada Épica 3D</title>
   <meta name="description" content="Portfolio interactivo 3D de David Milla. Dirección visual, vídeo, fotografía, dron, IA y diseño web. Tu partner tecnológico y creativo.">
   <link rel="preload" href="1000091876.jpg" as="image" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +34,7 @@
     #seo-header,
     #hud-top-right {
       top: 40px;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       line-height: 1;
       letter-spacing: 2px;
     }
@@ -46,6 +46,7 @@
       margin: 0;
       color: var(--text-main);
       font-weight: 400;
+      white-space: nowrap;
     }
 
     #hud-top-right {
@@ -54,7 +55,7 @@
       z-index: 102;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       color: var(--accent-color);
       cursor: pointer;
       background: transparent;
@@ -62,10 +63,16 @@
       padding: 0;
       font-family: 'Bebas Neue', cursive;
       text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    #hud-page-number {
+      transition: opacity 0.3s ease;
     }
 
     .menu-arrow {
       display: inline-block;
+      margin-left: 4px;
       font-size: 0.8rem;
       transition: transform 0.3s ease;
     }
@@ -79,17 +86,17 @@
       top: 70px;
       right: 25px;
       z-index: 101;
-      min-width: 190px;
-      padding: 20px;
+      min-width: auto;
+      padding: 10px 0;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 18px;
       text-align: right;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(242, 157, 38, 0.3);
-      border-radius: 12px;
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border: 0;
+      border-radius: 0;
       opacity: 0;
       pointer-events: none;
       transform: translateY(-10px);
@@ -108,12 +115,13 @@
       padding: 0;
       background: transparent;
       font-family: 'Bebas Neue', cursive;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       line-height: 1;
       letter-spacing: 2px;
       text-align: right;
       color: var(--text-main);
       cursor: pointer;
+      text-shadow: 0 4px 15px rgba(0,0,0,0.9), 0 0 5px rgba(0,0,0,0.8);
       transition: color 0.3s ease;
     }
 
@@ -136,10 +144,11 @@
 
   <div class="noise-overlay"></div>
 
-  <h1 id="seo-header" class="font-bebas">DAVID MILLA <span class="text-orange">DIRECTOR CREATIVO</span></h1>
+  <h1 id="seo-header" class="font-bebas">DAVID MILLA <span class="text-orange">CREATIVO</span></h1>
 
-  <button id="hud-top-right" type="button" aria-controls="nav-menu" aria-expanded="false">
-    <span id="hud-section-name">INICIO</span>
+  <button id="hud-top-right" type="button" aria-controls="nav-menu" aria-expanded="false" aria-label="Abrir navegación por secciones">
+    <span id="hud-page-number" class="text-orange">01</span>
+    <span style="color:#fff">/ 07</span>
     <span class="menu-arrow" aria-hidden="true">▼</span>
   </button>
 
@@ -164,10 +173,12 @@
     const menuButton = document.getElementById('hud-top-right');
     const navMenu = document.getElementById('nav-menu');
     const menuItems = Array.from(document.querySelectorAll('.menu-item'));
+    const pageNumberEl = document.getElementById('hud-page-number');
 
     function setMenuOpen(isOpen) {
       navMenu.classList.toggle('open', isOpen);
       menuButton.setAttribute('aria-expanded', String(isOpen));
+      menuButton.setAttribute('aria-label', isOpen ? 'Cerrar navegación por secciones' : 'Abrir navegación por secciones');
     }
 
     menuButton.addEventListener('click', () => {
@@ -305,7 +316,7 @@
       }
     };
 
-    updateScene = function updateSceneWithNavigation() {
+    updateScene = function updateSceneWithNumberedNavigation() {
       currentScroll += (targetScroll - currentScroll) * lerpFactor;
 
       const scrollProgress = currentScroll / maxVirtualScroll;
@@ -329,9 +340,13 @@
       else if (scrollProgress < 0.73) activePage = 6;
       else activePage = 7;
 
-      const activeName = sectionNames[activePage - 1];
-      if (sectionNameEl.textContent !== activeName) {
-        sectionNameEl.textContent = activeName;
+      const formattedPage = String(activePage).padStart(2, '0');
+      if (pageNumberEl.textContent !== formattedPage) {
+        pageNumberEl.style.opacity = '0';
+        setTimeout(() => {
+          pageNumberEl.textContent = formattedPage;
+          pageNumberEl.style.opacity = '1';
+        }, 150);
       }
 
       menuItems.forEach((item, index) => {
