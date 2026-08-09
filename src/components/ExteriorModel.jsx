@@ -1,3 +1,5 @@
+import { PROJECT } from '../config/project.js'
+
 function Window({ position, scale, rotation = [0, 0, 0] }) {
   return (
     <mesh position={position} scale={scale} rotation={rotation} castShadow>
@@ -15,23 +17,27 @@ function Window({ position, scale, rotation = [0, 0, 0] }) {
 }
 
 export default function ExteriorModel() {
+  const { platform, building } = PROJECT.dimensions
+  const lowerHeight = building.floorToFloor
+  const upperHeight = building.floorToFloor
+  const platformTop = platform.thickness / 2
+
   return (
     <group>
-      {/* Platform V0.1: 16 x 16 m */}
       <mesh receiveShadow position={[0, 0, 0]}>
-        <boxGeometry args={[16, 0.18, 16]} />
+        <boxGeometry args={[platform.width, platform.thickness, platform.depth]} />
         <meshStandardMaterial color="#b9b9b7" roughness={0.92} />
       </mesh>
 
       {/* Temporary dimensional blockout. Replaced by approved exterior GLB. */}
-      <group position={[0, 0.18, 0]}>
-        <mesh castShadow receiveShadow position={[0, 1.55, 0]}>
-          <boxGeometry args={[10.8, 3.1, 9.6]} />
+      <group position={[0, platformTop, 0]}>
+        <mesh castShadow receiveShadow position={[0, lowerHeight / 2, 0]}>
+          <boxGeometry args={[building.maxWidth, lowerHeight, building.maxDepth]} />
           <meshStandardMaterial color="#9b806a" roughness={0.72} />
         </mesh>
 
-        <mesh castShadow receiveShadow position={[0, 4.65, 0]}>
-          <boxGeometry args={[10.3, 3.1, 9.1]} />
+        <mesh castShadow receiveShadow position={[0, lowerHeight + upperHeight / 2, 0]}>
+          <boxGeometry args={[10.3, upperHeight, 9.1]} />
           <meshStandardMaterial color="#ecebe7" roughness={0.66} />
         </mesh>
 
@@ -44,7 +50,7 @@ export default function ExteriorModel() {
         <Window position={[0, 1.62, 4.84]} scale={[7.2, 2.05, 1]} />
         <Window position={[2.1, 4.72, 4.59]} scale={[5.2, 1.9, 1]} />
 
-        {/* West/east temporary openings. Rotated 90° so they sit on side façades. */}
+        {/* West/east temporary openings. */}
         <Window position={[-5.44, 1.62, 0.5]} scale={[3.4, 2.0, 1]} rotation={[0, Math.PI / 2, 0]} />
         <Window position={[5.19, 4.72, -0.7]} scale={[3.1, 1.85, 1]} rotation={[0, Math.PI / 2, 0]} />
       </group>
