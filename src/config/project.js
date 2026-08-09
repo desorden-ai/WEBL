@@ -3,12 +3,23 @@ export const PROJECT = Object.freeze({
     useApprovedExteriorModel: false,
   },
   dimensions: {
-    platform: { width: 16, depth: 16, thickness: 0.18 },
+    platform: { width: 16, depth: 16, thickness: 0.2 },
     building: {
       maxWidth: 10.8,
       maxDepth: 9.6,
       floorToFloor: 3.1,
       targetHeight: 6.9,
+      lower: {
+        width: 10.8,
+        depth: 8.6,
+        centerDepth: -0.5,
+      },
+      upper: {
+        width: 10.8,
+        depth: 9.6,
+        centerDepth: 0,
+      },
+      parapetHeight: 0.7,
     },
   },
   camera: {
