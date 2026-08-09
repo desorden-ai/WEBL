@@ -34,13 +34,15 @@ button {
 
 .app-shell,
 .viewer,
-.entry-screen {
+.entry-screen,
+.experience-shell {
   width: 100%;
   height: 100%;
   min-height: 100dvh;
 }
 
-.app-shell {
+.app-shell,
+.experience-shell {
   position: relative;
   background: #ffffff;
 }
@@ -72,6 +74,15 @@ button {
   outline-offset: 4px;
 }
 
+.experience-shell .viewer {
+  opacity: 0;
+  transition: opacity 380ms ease;
+}
+
+.experience-shell.is-ready .viewer {
+  opacity: 1;
+}
+
 .viewer {
   position: fixed;
   inset: 0;
@@ -86,4 +97,71 @@ button {
   width: 100% !important;
   height: 100% !important;
   touch-action: none;
+}
+
+.project-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #ffffff;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 260ms ease, visibility 0s linear 260ms;
+}
+
+.project-loader.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 160ms ease;
+}
+
+.project-loader__content {
+  width: min(280px, 72vw);
+  text-align: center;
+}
+
+.project-loader__label,
+.project-loader__meta {
+  margin: 0;
+  color: #111111;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+}
+
+.project-loader__track {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  margin: 18px 0 10px;
+  overflow: hidden;
+  background: #e6e6e6;
+}
+
+.project-loader__bar {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  background: #111111;
+  transition: transform 140ms linear;
+}
+
+.project-loader__meta {
+  color: #737373;
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-shell .viewer,
+  .project-loader,
+  .project-loader__bar {
+    transition: none;
+  }
 }
