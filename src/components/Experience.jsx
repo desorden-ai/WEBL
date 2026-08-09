@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { TOUCH } from 'three'
@@ -37,7 +38,9 @@ export default function Experience() {
           shadow-bias={-0.00015}
         />
 
-        <ExteriorModel />
+        <Suspense fallback={null}>
+          <ExteriorModel />
+        </Suspense>
 
         <OrbitControls
           makeDefault
