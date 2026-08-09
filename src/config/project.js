@@ -1,4 +1,7 @@
 export const PROJECT = Object.freeze({
+  runtime: {
+    useApprovedExteriorModel: false,
+  },
   dimensions: {
     platform: { width: 16, depth: 16, thickness: 0.18 },
     building: {
