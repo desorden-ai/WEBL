@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
+import { TOUCH } from 'three'
 import ExteriorModel from './ExteriorModel.jsx'
 
 export default function Experience() {
@@ -12,7 +13,7 @@ export default function Experience() {
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
         <color attach="background" args={['#ffffff']} />
-        <ambientLight intensity={1.25} />
+        <hemisphereLight args={['#ffffff', '#c8c8c8', 1.35]} />
         <directionalLight
           castShadow
           position={[10, 16, 8]}
@@ -25,6 +26,7 @@ export default function Experience() {
           shadow-camera-right={14}
           shadow-camera-top={14}
           shadow-camera-bottom={-14}
+          shadow-bias={-0.00015}
         />
 
         <ExteriorModel />
@@ -39,7 +41,7 @@ export default function Experience() {
           minPolarAngle={0.38}
           maxPolarAngle={1.48}
           target={[0, 2.8, 0]}
-          touches={{ ONE: 1, TWO: 2 }}
+          touches={{ ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN }}
         />
       </Canvas>
     </div>
