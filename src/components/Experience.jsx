@@ -1,11 +1,23 @@
-import { Suspense } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Suspense, useRef } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { TOUCH } from 'three'
 import ExteriorModel from './ExteriorModel.jsx'
 import { PROJECT } from '../config/project.js'
 
-export default function Experience() {
+function SceneReady({ onReady }) {
+  const sent = useRef(false)
+
+  useFrame(() => {
+    if (sent.current) return
+    sent.current = true
+    onReady?.()
+  })
+
+  return null
+}
+
+export default function Experience({ onReady }) {
   const { camera } = PROJECT
 
   return (
@@ -40,6 +52,7 @@ export default function Experience() {
 
         <Suspense fallback={null}>
           <ExteriorModel />
+          <SceneReady onReady={onReady} />
         </Suspense>
 
         <OrbitControls
