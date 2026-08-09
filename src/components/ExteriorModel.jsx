@@ -1,6 +1,6 @@
-function Window({ position, scale }) {
+function Window({ position, scale, rotation = [0, 0, 0] }) {
   return (
-    <mesh position={position} scale={scale} castShadow>
+    <mesh position={position} scale={scale} rotation={rotation} castShadow>
       <boxGeometry args={[1, 1, 0.08]} />
       <meshPhysicalMaterial
         color="#172027"
@@ -40,10 +40,13 @@ export default function ExteriorModel() {
           <meshStandardMaterial color="#e6e5e1" roughness={0.7} />
         </mesh>
 
+        {/* South/front */}
         <Window position={[0, 1.62, 4.84]} scale={[7.2, 2.05, 1]} />
         <Window position={[2.1, 4.72, 4.59]} scale={[5.2, 1.9, 1]} />
-        <Window position={[-5.44, 1.62, 0.5]} scale={[3.4, 2.0, 1]} />
-        <Window position={[5.19, 4.72, -0.7]} scale={[3.1, 1.85, 1]} />
+
+        {/* West/east temporary openings. Rotated 90° so they sit on side façades. */}
+        <Window position={[-5.44, 1.62, 0.5]} scale={[3.4, 2.0, 1]} rotation={[0, Math.PI / 2, 0]} />
+        <Window position={[5.19, 4.72, -0.7]} scale={[3.1, 1.85, 1]} rotation={[0, Math.PI / 2, 0]} />
       </group>
     </group>
   )
