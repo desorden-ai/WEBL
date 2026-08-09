@@ -20,6 +20,7 @@ export default function ExteriorBlockout() {
   const { platform, building } = PROJECT.dimensions
   const lowerHeight = building.floorToFloor
   const upperHeight = building.floorToFloor
+  const parapetHeight = building.parapetHeight
   const platformTop = platform.thickness / 2
 
   return (
@@ -30,25 +31,51 @@ export default function ExteriorBlockout() {
       </mesh>
 
       <group position={[0, platformTop, 0]}>
-        <mesh castShadow receiveShadow position={[0, lowerHeight / 2, 0]}>
-          <boxGeometry args={[building.maxWidth, lowerHeight, building.maxDepth]} />
-          <meshStandardMaterial color="#9b806a" roughness={0.72} />
+        <mesh
+          castShadow
+          receiveShadow
+          position={[0, lowerHeight / 2, building.lower.centerDepth]}
+        >
+          <boxGeometry args={[building.lower.width, lowerHeight, building.lower.depth]} />
+          <meshStandardMaterial color="#8f735e" roughness={0.76} />
         </mesh>
 
-        <mesh castShadow receiveShadow position={[0, lowerHeight + upperHeight / 2, 0]}>
-          <boxGeometry args={[10.3, upperHeight, 9.1]} />
-          <meshStandardMaterial color="#ecebe7" roughness={0.66} />
+        <mesh
+          castShadow
+          receiveShadow
+          position={[0, lowerHeight + upperHeight / 2, building.upper.centerDepth]}
+        >
+          <boxGeometry args={[building.upper.width, upperHeight, building.upper.depth]} />
+          <meshStandardMaterial color="#efefec" roughness={0.62} />
         </mesh>
 
-        <mesh castShadow position={[0, 6.5, 0]}>
-          <boxGeometry args={[10.45, 0.6, 9.25]} />
-          <meshStandardMaterial color="#e6e5e1" roughness={0.7} />
+        <mesh
+          castShadow
+          receiveShadow
+          position={[
+            0,
+            lowerHeight + upperHeight + parapetHeight / 2,
+            building.upper.centerDepth,
+          ]}
+        >
+          <boxGeometry args={[building.upper.width, parapetHeight, building.upper.depth]} />
+          <meshStandardMaterial color="#e9e9e6" roughness={0.68} />
         </mesh>
 
-        <Window position={[0, 1.62, 4.84]} scale={[7.2, 2.05, 1]} />
-        <Window position={[2.1, 4.72, 4.59]} scale={[5.2, 1.9, 1]} />
-        <Window position={[-5.44, 1.62, 0.5]} scale={[3.4, 2.0, 1]} rotation={[0, Math.PI / 2, 0]} />
-        <Window position={[5.19, 4.72, -0.7]} scale={[3.1, 1.85, 1]} rotation={[0, Math.PI / 2, 0]} />
+        {/* Norte + Oeste: fachadas observadas. Huecos provisionales hasta GLB aprobado. */}
+        <Window position={[-3.2, 1.6, 3.84]} scale={[3.5, 2.0, 1]} />
+        <Window
+          position={[-5.44, 1.6, 2.1]}
+          scale={[3.4, 2.0, 1]}
+          rotation={[0, Math.PI / 2, 0]}
+        />
+        <Window position={[-2.6, 4.72, 4.84]} scale={[2.8, 1.7, 1]} />
+        <Window position={[1.15, 4.72, 4.84]} scale={[2.6, 1.85, 1]} />
+        <Window
+          position={[-5.44, 4.72, 0.9]}
+          scale={[2.2, 1.7, 1]}
+          rotation={[0, Math.PI / 2, 0]}
+        />
       </group>
     </group>
   )
