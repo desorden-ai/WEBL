@@ -130,9 +130,9 @@ The flag stays `false` until the GLB passes review.
 - height (`Y`);
 - ground alignment (`minY ≈ 0`).
 
-Contract mismatches are logged with measured vs expected dimensions and the coordinate contract.
+Contract mismatches throw an `ExteriorValidationError` before the asset is rendered. The measured and expected bounds plus the coordinate contract remain attached to the error for diagnostics. `ViewerErrorBoundary` then replaces the viewer with its recoverable error state.
 
-Before production activation, a mismatch must be treated as a failed asset review, not fixed by arbitrary viewer scaling.
+A mismatch is therefore a failed asset review at runtime, not a warning and not something corrected by arbitrary viewer scaling.
 
 ## 10. Acceptance checklist
 
