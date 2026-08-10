@@ -1,29 +1,58 @@
-# WEBL — Scroll 3D Adaptatiu
+# DESWEB3D — WEBL / SOL
 
-Repositori centrat exclusivament en reproduir la web de scroll 3D definida en aquest projecte.
+Rama de desarrollo del visor inmobiliario 3D exterior de DESWEB3D.
 
-## Estructura activa
+## Estado actual
 
-- `public/index.html`: web completa amb HTML, CSS i JavaScript integrats.
-- `public/_headers`: capçaleres HTTP per a Cloudflare.
-- `wrangler.jsonc`: desplegament de `public/` com a Static Assets.
-- `package.json`: scripts de Wrangler.
+V0.1 de infraestructura web:
 
-No hi ha cap sistema de compilació ni dependències de frontend.
+- React + Vite.
+- Three.js + React Three Fiber + Drei.
+- Fondo blanco.
+- Entrada mínima con `CARGAR PROYECTO`.
+- Escena exterior 3D navegable.
+- Órbita 360° con un dedo / ratón.
+- Pinza para zoom.
+- Pan desactivado.
+- Límites verticales y de distancia de cámara.
+- Blockout dimensional temporal de vivienda y plataforma.
 
-## Vista prèvia local
+El blockout **no es geometría arquitectónica aprobada**. Será sustituido por el GLB definitivo cuando la preproducción geométrica en Drive pase revisión.
 
-```bash
-python3 -m http.server 8080 --directory public
-```
+## Fuente de verdad
 
-Obrir `http://localhost:8080`.
+- Documentación y entregables de producción: Google Drive → `DESWEB3D`.
+- Código de desarrollo: `desorden-ai/WEBL`, rama `SOL`.
+- `main` no se modifica desde este flujo.
 
-## Desplegament
+## Desarrollo
 
 ```bash
 npm install
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## Cloudflare
+
+Wrangler sirve `dist/` como Static Assets.
+
+```bash
 npm run deploy
 ```
 
-El Worker configurat és `webl`.
+## Assets web aprobados
+
+Vite usa `static/` como directorio público limpio. El antiguo `public/` queda fuera del build y se considera legacy.
+
+- `static/models/`
+- `static/textures/`
+- `static/environment/`
+
+No integrar borradores de Gemini o assets no aprobados directamente en la web.

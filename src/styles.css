@@ -1,0 +1,190 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+html,
+body {
+  overflow: hidden;
+  background: #ffffff;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+canvas {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+}
+
+.app-shell,
+.viewer,
+.entry-screen,
+.experience-shell,
+.viewer-error {
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+}
+
+.app-shell,
+.experience-shell {
+  position: relative;
+  background: #ffffff;
+}
+
+.entry-screen,
+.viewer-error {
+  display: grid;
+  place-items: center;
+  padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  background: #ffffff;
+}
+
+.entry-button,
+.viewer-error__button {
+  min-width: 190px;
+  min-height: 52px;
+  padding: 14px 22px;
+  border: 1px solid #111111;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-size: 0.79rem;
+  font-weight: 650;
+  letter-spacing: 0.13em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.entry-button:focus-visible,
+.viewer-error__button:focus-visible {
+  outline: 3px solid rgba(17, 17, 17, 0.2);
+  outline-offset: 4px;
+}
+
+.experience-shell .viewer {
+  opacity: 0;
+  transition: opacity 380ms ease;
+}
+
+.experience-shell.is-ready .viewer {
+  opacity: 1;
+}
+
+.viewer {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.viewer canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+.project-loader,
+.viewer-error {
+  position: fixed;
+  inset: 0;
+}
+
+.project-loader {
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #ffffff;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 260ms ease, visibility 0s linear 260ms;
+}
+
+.project-loader.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 160ms ease;
+}
+
+.project-loader__content,
+.viewer-error__content {
+  width: min(320px, 78vw);
+  text-align: center;
+}
+
+.project-loader__label,
+.project-loader__meta,
+.viewer-error__label {
+  margin: 0;
+  color: #111111;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+}
+
+.project-loader__track {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  margin: 18px 0 10px;
+  overflow: hidden;
+  background: #e6e6e6;
+}
+
+.project-loader__bar {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  background: #111111;
+  transition: transform 140ms linear;
+}
+
+.project-loader__meta {
+  color: #737373;
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.viewer-error {
+  z-index: 20;
+}
+
+.viewer-error__label {
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.viewer-error__button {
+  min-width: 140px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-shell .viewer,
+  .project-loader,
+  .project-loader__bar {
+    transition: none;
+  }
+}

@@ -1,12 +1,25 @@
 {
-  "name": "desorden-scroll-site",
-  "version": "1.0.0",
+  "name": "desweb3d",
+  "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "dev": "vite",
+    "test": "node --test",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@react-three/drei": "10.7.7",
+    "@react-three/fiber": "9.6.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "0.185.1"
   },
   "devDependencies": {
-    "wrangler": "^4.0.0"
+    "@vitejs/plugin-react": "6.0.4",
+    "vite": "8.1.5",
+    "wrangler": "4.114.0"
   }
 }
