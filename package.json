@@ -4,11 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "generate:model": "node scripts/generateExteriorGlb.mjs",
+    "predev": "npm run generate:model",
+    "dev": "vite",
+    "pretest": "npm run generate:model",
     "test": "node --test",
-    "check": "npm test && npm run build",
+    "prebuild": "npm run generate:model",
     "build": "vite build",
+    "check": "npm test && npm run build",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy"
   },
