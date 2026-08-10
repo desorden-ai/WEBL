@@ -1,6 +1,6 @@
 export const PROJECT = Object.freeze({
   runtime: {
-    useApprovedExteriorModel: false,
+    useApprovedExteriorModel: true,
   },
   coordinates: {
     glbContract: {

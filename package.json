@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "generate:model": "node scripts/generateExteriorGlb.mjs",
     "test": "node --test",
     "check": "npm test && npm run build",
     "build": "vite build",

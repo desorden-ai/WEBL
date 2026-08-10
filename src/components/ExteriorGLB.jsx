@@ -10,6 +10,7 @@ import {
 export default function ExteriorGLB() {
   const { scene } = useGLTF(PROJECT.assets.exteriorModel)
   const platformTop = PROJECT.dimensions.platform.thickness / 2
+  const { platform } = PROJECT.dimensions
 
   const validation = useMemo(() => {
     scene.updateMatrixWorld(true)
@@ -52,8 +53,14 @@ export default function ExteriorGLB() {
   }
 
   return (
-    <group position={[0, platformTop, 0]}>
-      <primitive object={scene} />
+    <group>
+      <mesh receiveShadow position={[0, 0, 0]}>
+        <boxGeometry args={[platform.width, platform.thickness, platform.depth]} />
+        <meshStandardMaterial color="#b9b9b7" roughness={0.92} />
+      </mesh>
+      <group position={[0, platformTop, 0]}>
+        <primitive object={scene} />
+      </group>
     </group>
   )
 }
