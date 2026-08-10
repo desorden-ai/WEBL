@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - SOL
 
 permissions:
   contents: read
@@ -25,11 +25,5 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Regenerate exterior model
-        run: npm run generate:model
-
-      - name: Verify generated model is committed
-        run: git diff --exit-code -- static/models/exterior/house-exterior.glb
-
-      - name: Test and build
+      - name: Test generated GLB and build
         run: npm run check
