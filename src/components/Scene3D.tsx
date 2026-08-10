@@ -29,10 +29,8 @@ const CameraController: React.FC<{
   };
 
   useEffect(() => {
-    let selectedPreset = preset;
-    if (viewMode === 'plan') selectedPreset = 'top_down';
+    const selectedPreset = viewMode === 'plan' ? 'top_down' : preset;
     const { pos, target } = presetMap[selectedPreset] || presetMap.overview;
-
     if (controlsRef.current) {
       controlsRef.current.target.set(target[0], target[1], target[2]);
       camera.position.set(pos[0], pos[1], pos[2]);
@@ -41,9 +39,7 @@ const CameraController: React.FC<{
     }
   }, [preset, viewMode, camera]);
 
-  useFrame(() => {
-    if (controlsRef.current) controlsRef.current.update();
-  });
+  useFrame(() => controlsRef.current?.update());
 
   return (
     <OrbitControls
@@ -51,7 +47,7 @@ const CameraController: React.FC<{
       enableDamping
       dampingFactor={0.08}
       rotateSpeed={0.8}
-      zoomSpeed={1.0}
+      zoomSpeed={1}
       panSpeed={0.8}
       minDistance={3}
       maxDistance={40}
@@ -63,59 +59,28 @@ const CameraController: React.FC<{
 };
 
 export const Scene3D: React.FC<Scene3DProps> = ({ state, activePreset, onWebGLError }) => {
-  const { timeOfDay } = state;
-
   const lightingConfig = {
-    day: {
-      ambient: 0.9,
-      sunIntensity: 2.2,
-      sunPos: [15, 25, 20] as [number, number, number],
-      bgColor: '#eaf2f8',
-      skyTurbidity: 3,
-      skyRayleigh: 0.8,
-      skyMire: 0.005,
-    },
-    sunset: {
-      ambient: 0.6,
-      sunIntensity: 1.8,
-      sunPos: [25, 6, 15] as [number, number, number],
-      bgColor: '#3b2531',
-      skyTurbidity: 8,
-      skyRayleigh: 3.5,
-      skyMire: 0.01,
-    },
-    night: {
-      ambient: 0.25,
-      sunIntensity: 0.3,
-      sunPos: [-10, 20, -15] as [number, number, number],
-      bgColor: '#0c1017',
-      skyTurbidity: 10,
-      skyRayleigh: 0.2,
-      skyMire: 0.0,
-    },
-  }[timeOfDay];
+    day: { ambient: 0.9, sunIntensity: 2.2, sunPos: [15, 25, 20] as [number, number, number], bgColor: '#eaf2f8', skyTurbidity: 3, skyRayleigh: 0.8, skyMire: 0.005 },
+    sunset: { ambient: 0.6, sunIntensity: 1.8, sunPos: [25, 6, 15] as [number, number, number], bgColor: '#3b2531', skyTurbidity: 8, skyRayleigh: 3.5, skyMire: 0.01 },
+    night: { ambient: 0.25, sunIntensity: 0.3, sunPos: [-10, 20, -15] as [number, number, number], bgColor: '#0c1017', skyTurbidity: 10, skyRayleigh: 0.2, skyMire: 0 },
+  }[state.timeOfDay];
 
   return (
-    <div className="relative w-full h-full bg-[#0d1117] overflow-hidden select-none touch-none">
+    <div className="sol-scene">
       <Canvas
         shadows
+        dpr={[1, 2]}
         camera={{ position: [14, 11, 18], fov: 45, near: 0.1, far: 100 }}
         gl={{ antialias: true, powerPreference: 'high-performance', failIfMajorPerformanceCaveat: false }}
         onCreated={({ gl }) => {
           gl.setClearColor(new THREE.Color(lightingConfig.bgColor));
-          const canvasEl = gl.domElement;
-          canvasEl.addEventListener('webglcontextlost', (event) => {
+          gl.domElement.addEventListener('webglcontextlost', (event) => {
             event.preventDefault();
-            if (onWebGLError) onWebGLError();
+            onWebGLError?.();
           });
         }}
       >
-        <Sky
-          turbidity={lightingConfig.skyTurbidity}
-          rayleigh={lightingConfig.skyRayleigh}
-          mieCoefficient={lightingConfig.skyMire}
-          sunPosition={lightingConfig.sunPos}
-        />
+        <Sky turbidity={lightingConfig.skyTurbidity} rayleigh={lightingConfig.skyRayleigh} mieCoefficient={lightingConfig.skyMire} sunPosition={lightingConfig.sunPos} />
         <ambientLight intensity={lightingConfig.ambient} />
         <directionalLight
           position={lightingConfig.sunPos}
