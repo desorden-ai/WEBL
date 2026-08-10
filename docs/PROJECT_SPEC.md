@@ -52,6 +52,33 @@ Base de trabajo:
 
 Las fachadas Norte y Oeste son las más observables en la referencia maestra. Sur y Este siguen siendo propuestas. Los huecos del blockout son provisionales hasta validar el modelo definitivo.
 
+## Sistema de ejes
+
+La documentación arquitectónica y Three.js no usan el mismo eje vertical, por lo que el contrato queda fijado expresamente.
+
+### Arquitectura / Drive
+
+- `X`: Oeste → Este
+- `Y`: Sur → Norte
+- `Z`: altura
+
+### Three.js / GLB runtime
+
+- `X`: Oeste → Este
+- `Y`: altura
+- `Z`: Sur → Norte
+
+Todo GLB aprobado debe entrar ya en **Y-up**, con:
+
+- `+X = Este`;
+- `+Y = arriba`;
+- `+Z = Norte`;
+- `1 unidad = 1 metro`;
+- origen horizontal en el centro de la huella;
+- origen vertical en cota arquitectónica `0,00 m`.
+
+No se corregirá un asset mal exportado mediante rotaciones o escalados arbitrarios en runtime. El contrato completo vive en `docs/GLB_CONTRACT.md`.
+
 ## Interacción
 
 - 1 dedo / botón izquierdo: orbitar;
@@ -74,14 +101,28 @@ Las fachadas Norte y Oeste son las más observables en la referencia maestra. Su
 - URL de carga: `/models/exterior/house-exterior.glb`;
 - el GLB permanece desactivado mediante `PROJECT.runtime.useApprovedExteriorModel` hasta aprobación expresa;
 - `ExteriorModel.jsx` conmuta entre blockout y GLB sin rehacer el visor;
+- `ExteriorGLB.jsx` valida bounds, altura y alineación de suelo antes de considerar el asset correcto;
 - nunca activar un GLB no validado solo para eliminar el blockout.
+
+## Benchmark A/B/C
+
+La rama `SOL` es la implementación A y referencia funcional.
+
+Dos ramas experimentales comparables existen para evaluar tecnologías distintas sin tocar A:
+
+- `SOL-WEBGPU`: implementación B;
+- `SOL-PLAYCANVAS`: implementación C.
+
+Las tres deben respetar el mismo contrato funcional, geométrico y de assets. La metodología comparativa está definida en Drive en `PROTOCOLO A-B-C — Benchmark visor 3D`.
 
 ## Reglas de integración
 
 1. Drive `DESWEB3D` es la fuente de verdad de producción.
-2. `SOL` es la rama exclusiva de desarrollo de este proyecto.
+2. `SOL` es la rama A de desarrollo principal.
 3. `main` no se modifica desde esta fase.
-4. Assets experimentales no entran en runtime como si fueran aprobados.
-5. Un GLB solo se integra después de revisión aprobada.
-6. Las deducciones geométricas deben seguir marcadas como provisionales hasta que exista evidencia suficiente.
-7. Gemini puede auditar y proponer patches, pero ChatGPT mantiene la aprobación e integración final de cambios en `SOL` salvo orden expresa distinta.
+4. `SOL-WEBGPU` y `SOL-PLAYCANVAS` son ramas experimentales aisladas.
+5. Assets experimentales no entran en runtime como si fueran aprobados.
+6. Un GLB solo se integra después de revisión aprobada.
+7. Las deducciones geométricas deben seguir marcadas como provisionales hasta que exista evidencia suficiente.
+8. Gemini puede auditar, experimentar en su rama asignada y proponer patches, pero ORCH_CHATGPT mantiene la aprobación e integración final.
+9. Ninguna variante A/B/C puede rebajar calidad o funcionalidad para favorecer artificialmente su benchmark.
