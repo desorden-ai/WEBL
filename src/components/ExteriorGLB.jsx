@@ -38,10 +38,15 @@ export default function ExteriorGLB() {
   useEffect(() => {
     scene.traverse((object) => {
       if (!object.isMesh) return
-      object.castShadow = true
+
+      const materials = Array.isArray(object.material) ? object.material : [object.material]
+      const translucent = materials.some((material) =>
+        material && (material.transparent || material.opacity < 0.98),
+      )
+
+      object.castShadow = !translucent
       object.receiveShadow = true
     })
-
   }, [scene])
 
   if (!validation.valid) {
