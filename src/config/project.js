@@ -46,6 +46,7 @@ export const PROJECT = Object.freeze({
       width: 0.25,
       depth: 0.25,
       height: 0.25,
+      ground: 0.05,
     },
   },
   camera: {
