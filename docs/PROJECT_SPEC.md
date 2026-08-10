@@ -101,28 +101,39 @@ No se corregirá un asset mal exportado mediante rotaciones o escalados arbitrar
 - URL de carga: `/models/exterior/house-exterior.glb`;
 - el GLB permanece desactivado mediante `PROJECT.runtime.useApprovedExteriorModel` hasta aprobación expresa;
 - `ExteriorModel.jsx` conmuta entre blockout y GLB sin rehacer el visor;
-- `ExteriorGLB.jsx` valida bounds, altura y alineación de suelo antes de considerar el asset correcto;
+- `ExteriorGLB.jsx` valida bounds, altura y alineación de suelo antes de mostrar el asset como válido;
+- un GLB fuera de contrato debe provocar un estado recuperable, no quedar visible con una simple advertencia;
 - nunca activar un GLB no validado solo para eliminar el blockout.
 
-## Benchmark A/B/C
+## Estrategia de benchmark A/B
 
-La rama `SOL` es la implementación A y referencia funcional.
+### Producto A — activo
 
-Dos ramas experimentales comparables existen para evaluar tecnologías distintas sin tocar A:
+- rama: `SOL`;
+- stack: React + R3F + Three.js;
+- función: implementación principal y referencia funcional.
 
-- `SOL-WEBGPU`: implementación B;
-- `SOL-PLAYCANVAS`: implementación C.
+### Producto B — planificado
 
-Las tres deben respetar el mismo contrato funcional, geométrico y de assets. La metodología comparativa está definida en Drive en `PROTOCOLO A-B-C — Benchmark visor 3D`.
+El Producto B debe utilizar un motor/tecnología suficientemente independiente para que el benchmark sea significativo. El candidato preferente actual es **Babylon.js**, en una futura rama `SOL-BABYLON`.
+
+B **no se inicia** hasta que A alcance el hito funcional mínimo: viewer móvil, contrato GLB, loader/error recovery, cámara/gestos, build validado y primera medición de rendimiento.
+
+### Sandboxes existentes
+
+- `SOL-WEBGPU`: rama existente, **PAUSADA**. Se conserva como sandbox para investigar Three.js `WebGPURenderer`; no cuenta como Producto B porque comparte el ecosistema Three.js con A.
+- `SOL-PLAYCANVAS`: rama existente, **PAUSADA**. Se conserva como candidato experimental C opcional si una tercera comparación aporta valor.
+
+El mismo GLB, dimensiones, cámara funcional equivalente y criterios de calidad deberán usarse en cualquier benchmark. `GEMINI_THINK_AUDITOR` actuará como auditor independiente; `ORCH_CHATGPT` decide la arquitectura final.
 
 ## Reglas de integración
 
 1. Drive `DESWEB3D` es la fuente de verdad de producción.
 2. `SOL` es la rama A de desarrollo principal.
 3. `main` no se modifica desde esta fase.
-4. `SOL-WEBGPU` y `SOL-PLAYCANVAS` son ramas experimentales aisladas.
+4. Las ramas alternativas permanecen aisladas y no se desarrollan sin `ORDEN CHATGPT` expresa.
 5. Assets experimentales no entran en runtime como si fueran aprobados.
 6. Un GLB solo se integra después de revisión aprobada.
 7. Las deducciones geométricas deben seguir marcadas como provisionales hasta que exista evidencia suficiente.
-8. Gemini puede auditar, experimentar en su rama asignada y proponer patches, pero ORCH_CHATGPT mantiene la aprobación e integración final.
-9. Ninguna variante A/B/C puede rebajar calidad o funcionalidad para favorecer artificialmente su benchmark.
+8. Gemini puede auditar, investigar y proponer patches dentro del rol asignado, pero `ORCH_CHATGPT` mantiene la aprobación e integración final.
+9. Ninguna variante puede rebajar calidad o funcionalidad para favorecer artificialmente su benchmark.
