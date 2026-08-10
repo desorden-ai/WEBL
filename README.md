@@ -1,58 +1,52 @@
-# DESWEB3D — WEBL / SOL
+# DESWEB3D
 
-Rama de desarrollo del visor inmobiliario 3D exterior de DESWEB3D.
+Visor web 3D mobile-first para modelos inmobiliarios.
 
-## Estado actual
+## Funciones
 
-V0.1 de infraestructura web:
+- React, Vite, Three.js, React Three Fiber y Drei.
+- Entrada manual para evitar cargar WebGL antes de la interacción del usuario.
+- Órbita 360° con ratón o un dedo.
+- Zoom con rueda o gesto de pinza.
+- Loader de recursos y recuperación ante errores.
+- Blockout integrado para que el visor funcione sin un modelo externo.
+- Carga opcional de un GLB validado por dimensiones, orientación y cota de suelo.
+- Build estático preparado para Cloudflare Workers.
 
-- React + Vite.
-- Three.js + React Three Fiber + Drei.
-- Fondo blanco.
-- Entrada mínima con `CARGAR PROYECTO`.
-- Escena exterior 3D navegable.
-- Órbita 360° con un dedo / ratón.
-- Pinza para zoom.
-- Pan desactivado.
-- Límites verticales y de distancia de cámara.
-- Blockout dimensional temporal de vivienda y plataforma.
-
-El blockout **no es geometría arquitectónica aprobada**. Será sustituido por el GLB definitivo cuando la preproducción geométrica en Drive pase revisión.
-
-## Fuente de verdad
-
-- Documentación y entregables de producción: Google Drive → `DESWEB3D`.
-- Código de desarrollo: `desorden-ai/WEBL`, rama `SOL`.
-- `main` no se modifica desde este flujo.
-
-## Desarrollo
+## Uso local
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-## Build
+## Validación
 
 ```bash
-npm run build
-npm run preview
+npm run check
 ```
 
-## Cloudflare
+## Modelo GLB
 
-Wrangler sirve `dist/` como Static Assets.
+Colocar el modelo aprobado en:
+
+```text
+static/models/exterior/house-exterior.glb
+```
+
+Después, cambiar `useApprovedExteriorModel` a `true` en `src/config/project.js`.
+
+Contrato requerido:
+
+- glTF 2.0 / GLB;
+- `1 unidad = 1 metro`;
+- eje vertical `+Y`;
+- norte `+Z` y este `+X`;
+- origen en el centro de la huella y a cota de suelo;
+- dimensiones dentro de las tolerancias definidas en `src/config/project.js`.
+
+## Publicación
 
 ```bash
 npm run deploy
 ```
-
-## Assets web aprobados
-
-Vite usa `static/` como directorio público limpio. El antiguo `public/` queda fuera del build y se considera legacy.
-
-- `static/models/`
-- `static/textures/`
-- `static/environment/`
-
-No integrar borradores de Gemini o assets no aprobados directamente en la web.

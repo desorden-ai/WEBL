@@ -3,16 +3,6 @@ export const PROJECT = Object.freeze({
     useApprovedExteriorModel: false,
   },
   coordinates: {
-    architectural: {
-      x: 'west-east',
-      y: 'south-north',
-      z: 'height',
-    },
-    three: {
-      x: 'west-east',
-      y: 'height',
-      z: 'south-north',
-    },
     glbContract: {
       upAxis: 'Y',
       northAxis: '+Z',
@@ -62,7 +52,5 @@ export const PROJECT = Object.freeze({
   },
   assets: {
     exteriorModel: '/models/exterior/house-exterior.glb',
-    terrainModel: '/models/terrain/platform.glb',
-    daylightHdri: '/environment/daylight.hdr',
   },
 })

@@ -1,9 +1,7 @@
-# Models
+# Modelos 3D
 
-Directorio de modelos 3D aprobados para el visor DESWEB3D.
+Ruta del exterior aprobado:
 
-Ruta prevista del exterior definitivo:
+`static/models/exterior/house-exterior.glb`
 
-`/models/exterior/house-exterior.glb`
-
-No subir aquí blockouts, borradores ni modelos sin aprobación previa en Drive.
+El visor usa el blockout integrado mientras el modelo no esté presente y activado en `src/config/project.js`.
