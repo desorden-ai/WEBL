@@ -2,6 +2,25 @@ export const PROJECT = Object.freeze({
   runtime: {
     useApprovedExteriorModel: false,
   },
+  coordinates: {
+    architectural: {
+      x: 'west-east',
+      y: 'south-north',
+      z: 'height',
+    },
+    three: {
+      x: 'west-east',
+      y: 'height',
+      z: 'south-north',
+    },
+    glbContract: {
+      upAxis: 'Y',
+      northAxis: '+Z',
+      eastAxis: '+X',
+      origin: 'building-footprint-center-at-ground-level',
+      metersPerUnit: 1,
+    },
+  },
   dimensions: {
     platform: { width: 16, depth: 16, thickness: 0.2 },
     building: {
@@ -20,6 +39,13 @@ export const PROJECT = Object.freeze({
         centerDepth: 0,
       },
       parapetHeight: 0.7,
+    },
+  },
+  validation: {
+    exteriorModelTolerance: {
+      width: 0.25,
+      depth: 0.25,
+      height: 0.25,
     },
   },
   camera: {
