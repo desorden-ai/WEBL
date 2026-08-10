@@ -35,20 +35,25 @@ function ContextMonitor({ onFailure }) {
 }
 
 export default function Experience({ onReady, onFailure }) {
-  const { camera } = PROJECT
+  const { camera, graphics } = PROJECT
 
   return (
     <div className="viewer" aria-label="Visor exterior 3D">
       <Canvas
         shadows
-        dpr={[1, 2.5]}
+        dpr={[1, graphics.maxDpr]}
         camera={{
           position: camera.initialPosition,
           fov: camera.fov,
           near: camera.near,
           far: camera.far,
         }}
-        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+        gl={{
+          antialias: true,
+          alpha: false,
+          powerPreference: 'high-performance',
+          failIfMajorPerformanceCaveat: false,
+        }}
       >
         <ContextMonitor onFailure={onFailure} />
         <color attach="background" args={['#ffffff']} />
