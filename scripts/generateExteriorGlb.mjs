@@ -32,26 +32,25 @@ const boxes = [
   ['East vertical screen', [5.356, 3.15, 0.8], [0.08, 4.9, 2.4], 3],
 ]
 
+const faces = [
+  { n: [1, 0, 0], c: [[1, -1, -1], [1, 1, -1], [1, 1, 1], [1, -1, 1]] },
+  { n: [-1, 0, 0], c: [[-1, -1, 1], [-1, 1, 1], [-1, 1, -1], [-1, -1, -1]] },
+  { n: [0, 1, 0], c: [[-1, 1, -1], [-1, 1, 1], [1, 1, 1], [1, 1, -1]] },
+  { n: [0, -1, 0], c: [[-1, -1, 1], [-1, -1, -1], [1, -1, -1], [1, -1, 1]] },
+  { n: [0, 0, 1], c: [[1, -1, 1], [1, 1, 1], [-1, 1, 1], [-1, -1, 1]] },
+  { n: [0, 0, -1], c: [[-1, -1, -1], [-1, 1, -1], [1, 1, -1], [1, -1, -1]] },
+]
+
 const positions = []
 const normals = []
 const indices = []
-const primitives = []
 
-const faces = [
-  { n: [1, 0, 0], c: [[1,-1,-1],[1,1,-1],[1,1,1],[1,-1,1]] },
-  { n: [-1, 0, 0], c: [[-1,-1,1],[-1,1,1],[-1,1,-1],[-1,-1,-1]] },
-  { n: [0, 1, 0], c: [[-1,1,-1],[-1,1,1],[1,1,1],[1,1,-1]] },
-  { n: [0, -1, 0], c: [[-1,-1,1],[-1,-1,-1],[1,-1,-1],[1,-1,1]] },
-  { n: [0, 0, 1], c: [[1,-1,1],[1,1,1],[-1,1,1],[-1,-1,1]] },
-  { n: [0, 0, -1], c: [[-1,-1,-1],[-1,1,-1],[1,1,-1],[1,-1,-1]] },
-]
-
-for (const [, center, size, material] of boxes) {
-  const vertexStart = positions.length / 3
-  const indexStart = indices.length
+for (const [, center, size] of boxes) {
+  let localVertex = 0
 
   for (const face of faces) {
-    const faceStart = positions.length / 3
+    const faceStart = localVertex
+
     for (const corner of face.c) {
       positions.push(
         center[0] + corner[0] * size[0] / 2,
@@ -59,17 +58,18 @@ for (const [, center, size, material] of boxes) {
         center[2] + corner[2] * size[2] / 2,
       )
       normals.push(...face.n)
+      localVertex += 1
     }
-    indices.push(faceStart, faceStart + 1, faceStart + 2, faceStart, faceStart + 2, faceStart + 3)
-  }
 
-  primitives.push({
-    attributes: { POSITION: 0, NORMAL: 1 },
-    indices: 2,
-    material,
-    mode: 4,
-    extras: { vertexStart, vertexCount: 24, indexStart, indexCount: 36 },
-  })
+    indices.push(
+      faceStart,
+      faceStart + 1,
+      faceStart + 2,
+      faceStart,
+      faceStart + 2,
+      faceStart + 3,
+    )
+  }
 }
 
 const posData = Buffer.from(new Float32Array(positions).buffer)
@@ -90,12 +90,12 @@ const gltf = {
   scene: 0,
   scenes: [{ nodes: boxes.map((_, index) => index) }],
   nodes: boxes.map(([name], index) => ({ name, mesh: index })),
-  meshes: primitives.map((primitive, index) => ({
-    name: boxes[index][0],
+  meshes: boxes.map(([name, , , material], index) => ({
+    name,
     primitives: [{
       attributes: { POSITION: index * 2, NORMAL: index * 2 + 1 },
       indices: index * 3 + 2,
-      material: primitive.material,
+      material,
       mode: 4,
     }],
   })),
@@ -125,6 +125,7 @@ for (let index = 0; index < boxes.length; index += 1) {
     { buffer: 0, byteOffset: normalByteOffset, byteLength: 24 * 12, target: 34962 },
     { buffer: 0, byteOffset: indexByteOffset, byteLength: 36 * 2, target: 34963 },
   )
+
   gltf.accessors.push(
     {
       bufferView: index * 3,
@@ -134,8 +135,20 @@ for (let index = 0; index < boxes.length; index += 1) {
       min: center.map((value, axis) => value - size[axis] / 2),
       max: center.map((value, axis) => value + size[axis] / 2),
     },
-    { bufferView: index * 3 + 1, componentType: 5126, count: 24, type: 'VEC3' },
-    { bufferView: index * 3 + 2, componentType: 5123, count: 36, type: 'SCALAR' },
+    {
+      bufferView: index * 3 + 1,
+      componentType: 5126,
+      count: 24,
+      type: 'VEC3',
+    },
+    {
+      bufferView: index * 3 + 2,
+      componentType: 5123,
+      count: 36,
+      type: 'SCALAR',
+      min: [0],
+      max: [23],
+    },
   )
 }
 
@@ -143,13 +156,16 @@ const jsonSource = JSON.stringify(gltf)
 const jsonLength = align4(Buffer.byteLength(jsonSource))
 const json = Buffer.alloc(jsonLength, 0x20)
 json.write(jsonSource)
+
 const header = Buffer.alloc(12)
 header.writeUInt32LE(0x46546c67, 0)
 header.writeUInt32LE(2, 4)
 header.writeUInt32LE(12 + 8 + json.length + 8 + bin.length, 8)
+
 const jsonHeader = Buffer.alloc(8)
 jsonHeader.writeUInt32LE(json.length, 0)
 jsonHeader.writeUInt32LE(0x4e4f534a, 4)
+
 const binHeader = Buffer.alloc(8)
 binHeader.writeUInt32LE(bin.length, 0)
 binHeader.writeUInt32LE(0x004e4942, 4)
