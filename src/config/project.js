@@ -1,6 +1,8 @@
 export const PROJECT = Object.freeze({
+  version: '0.1.0',
+  title: 'DESWEB3D — VISOR 3D INMOBILIARIO',
   runtime: {
-    useApprovedExteriorModel: true,
+    useApprovedExteriorModel: false,
   },
   coordinates: {
     glbContract: {
@@ -49,6 +51,11 @@ export const PROJECT = Object.freeze({
     maxDistance: 34,
     minPolarAngle: 0.38,
     maxPolarAngle: 1.48,
+  },
+  graphics: {
+    maxDpr: typeof window !== 'undefined'
+      ? Math.min(window.devicePixelRatio || 1, 2)
+      : 1,
   },
   assets: {
     exteriorModel: '/models/exterior/house-exterior.glb',
