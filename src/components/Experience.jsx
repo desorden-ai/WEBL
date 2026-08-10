@@ -1,5 +1,5 @@
-import { Suspense, useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Suspense, useEffect, useRef } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { TOUCH } from 'three'
 import ExteriorModel from './ExteriorModel.jsx'
@@ -17,7 +17,24 @@ function SceneReady({ onReady }) {
   return null
 }
 
-export default function Experience({ onReady }) {
+function ContextMonitor({ onFailure }) {
+  const gl = useThree((state) => state.gl)
+
+  useEffect(() => {
+    const canvas = gl.domElement
+    const handleContextLost = (event) => {
+      event.preventDefault()
+      onFailure?.(new Error('WebGL context lost'))
+    }
+
+    canvas.addEventListener('webglcontextlost', handleContextLost)
+    return () => canvas.removeEventListener('webglcontextlost', handleContextLost)
+  }, [gl, onFailure])
+
+  return null
+}
+
+export default function Experience({ onReady, onFailure }) {
   const { camera } = PROJECT
 
   return (
@@ -33,6 +50,7 @@ export default function Experience({ onReady }) {
         }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
+        <ContextMonitor onFailure={onFailure} />
         <color attach="background" args={['#ffffff']} />
         <hemisphereLight args={['#ffffff', '#c8c8c8', 1.35]} />
         <directionalLight

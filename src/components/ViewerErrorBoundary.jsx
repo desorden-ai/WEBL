@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import ViewerFallback from './ViewerFallback.jsx'
 
 export default class ViewerErrorBoundary extends Component {
   constructor(props) {
@@ -22,16 +23,7 @@ export default class ViewerErrorBoundary extends Component {
 
   render() {
     if (this.state.error) {
-      return (
-        <section className="viewer-error" role="alert">
-          <div className="viewer-error__content">
-            <p className="viewer-error__label">NO SE HA PODIDO CARGAR EL PROYECTO</p>
-            <button className="viewer-error__button" type="button" onClick={this.handleReset}>
-              VOLVER
-            </button>
-          </div>
-        </section>
-      )
+      return <ViewerFallback reason="viewer-error" onReset={this.handleReset} />
     }
 
     return this.props.children

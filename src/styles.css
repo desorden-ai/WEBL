@@ -134,6 +134,17 @@ button {
   text-align: center;
 }
 
+.viewer-error__content {
+  width: min(460px, 88vw);
+}
+
+.viewer-error__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto 30px;
+}
+
 .project-loader__label,
 .project-loader__meta,
 .viewer-error__label {
@@ -173,8 +184,16 @@ button {
 }
 
 .viewer-error__label {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   line-height: 1.6;
+}
+
+.viewer-error__detail {
+  max-width: 390px;
+  margin: 0 auto 22px;
+  color: #666666;
+  font-size: 0.78rem;
+  line-height: 1.55;
 }
 
 .viewer-error__button {
