@@ -9,7 +9,7 @@ export default function App() {
     viewMode: 'exterior',
     activeFloor: 'all',
     constructionProgress: 100,
-    timeOfDay: 'day',
+    timeOfDay: 'night',
     hideRoof: false,
     showLandscaping: true,
     interiorLightsOn: true,
