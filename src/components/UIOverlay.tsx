@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { HouseState, ViewMode, FloorLevel, TimeOfDay, CameraPreset, STAGES } from '../types';
+import React, { useEffect, useState } from 'react';
+import { HouseState, TimeOfDay, CameraPreset, STAGES } from '../types';
 
 interface UIOverlayProps {
   state: HouseState;
@@ -8,10 +8,15 @@ interface UIOverlayProps {
   onSelectPreset: (preset: CameraPreset) => void;
 }
 
-const viewModes: { id: ViewMode; label: string }[] = [
-  { id: 'exterior', label: 'Exterior' },
-  { id: 'dollhouse', label: 'Dollhouse' },
-  { id: 'plan', label: 'Plan' },
+type SectionKey = 'building' | 'views' | 'construction' | 'lighting' | 'scene';
+
+const cameraPresets: { id: CameraPreset; label: string }[] = [
+  { id: 'overview', label: '3/4 Master View' },
+  { id: 'front', label: 'Front Elevation' },
+  { id: 'balcony', label: 'Balcony View' },
+  { id: 'level1_interior', label: 'L1 Living' },
+  { id: 'level2_interior', label: 'L2 Suite' },
+  { id: 'top_down', label: 'Top Site Plan' },
 ];
 
 const times: { id: TimeOfDay; label: string }[] = [
@@ -20,177 +25,137 @@ const times: { id: TimeOfDay; label: string }[] = [
   { id: 'night', label: 'Night' },
 ];
 
-const presets: { id: CameraPreset; label: string }[] = [
-  { id: 'overview', label: 'Orbit' },
-  { id: 'front', label: 'Front' },
-  { id: 'balcony', label: 'Balcony' },
-  { id: 'level1_interior', label: 'L1 Living' },
-  { id: 'level2_interior', label: 'L2 Suite' },
-  { id: 'top_down', label: 'Top' },
-];
+export const UIOverlay: React.FC<UIOverlayProps> = ({ state, onChangeState, activePreset, onSelectPreset }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCleanView, setIsCleanView] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [openSection, setOpenSection] = useState<SectionKey | null>('building');
 
-const floors: { id: FloorLevel; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'level1', label: 'L1' },
-  { id: 'level2', label: 'L2' },
-  { id: 'level3', label: 'L3' },
-];
-
-export const UIOverlay: React.FC<UIOverlayProps> = ({
-  state,
-  onChangeState,
-  activePreset,
-  onSelectPreset,
-}) => {
-  const [showSpecs, setShowSpecs] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
   const currentStage = STAGES.find(
     (stage) => state.constructionProgress >= stage.minProgress && state.constructionProgress <= stage.maxProgress,
   ) || STAGES[STAGES.length - 1];
 
+  useEffect(() => {
+    const syncFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch {
+      // Some embedded browsers block fullscreen. Keep the viewer usable.
+    }
+  };
+
+  const toggleSection = (section: SectionKey) => setOpenSection((current) => current === section ? null : section);
+
+  const setBuilding = (mode: 'exterior' | 'dollhouse' | 'ground' | 'level1' | 'loft' | 'roof-hide') => {
+    onChangeState((prev) => {
+      if (mode === 'dollhouse') return { ...prev, viewMode: 'dollhouse', activeFloor: 'all', hideRoof: false };
+      if (mode === 'ground') return { ...prev, viewMode: 'exterior', activeFloor: 'level1', hideRoof: false };
+      if (mode === 'level1') return { ...prev, viewMode: 'exterior', activeFloor: 'level2', hideRoof: false };
+      if (mode === 'loft') return { ...prev, viewMode: 'exterior', activeFloor: 'level3', hideRoof: false };
+      if (mode === 'roof-hide') return { ...prev, viewMode: 'exterior', activeFloor: 'all', hideRoof: true };
+      return { ...prev, viewMode: 'exterior', activeFloor: 'all', hideRoof: false };
+    });
+  };
+
+  const buildingActive = (mode: 'exterior' | 'dollhouse' | 'ground' | 'level1' | 'loft' | 'roof-hide') => {
+    if (mode === 'dollhouse') return state.viewMode === 'dollhouse';
+    if (mode === 'roof-hide') return state.hideRoof && state.activeFloor === 'all';
+    if (mode === 'ground') return state.activeFloor === 'level1';
+    if (mode === 'level1') return state.activeFloor === 'level2';
+    if (mode === 'loft') return state.activeFloor === 'level3';
+    return state.viewMode === 'exterior' && state.activeFloor === 'all' && !state.hideRoof;
+  };
+
+  if (isCleanView) {
+    return <div className="casa01-clean-restore"><button className="casa01-icon-btn" onClick={() => setIsCleanView(false)} aria-label="Restore interface">◉</button></div>;
+  }
+
   return (
-    <div className="sol-ui">
-      <header className="sol-topbar">
-        <div className="sol-card sol-brand-card">
-          <div className="sol-logo">SOL</div>
-          <div className="sol-brand-copy">
-            <strong>PROJECT SOL</strong>
-            <span>3D Architectural Experience</span>
-          </div>
-          <button className="sol-icon-button" onClick={() => setShowSpecs(true)} aria-label="Project specifications">i</button>
+    <div className="casa01-ui">
+      <header className="casa01-header">
+        <div className="casa01-wordmark" aria-label="CASA SOL CASA 01">
+          <span>CASA</span><span className="accent">SOL</span><span className="accent">—</span><span>CASA</span><span>01</span>
         </div>
-
-        <div className="sol-card sol-segmented" aria-label="View mode">
-          {viewModes.map((mode) => (
-            <button
-              key={mode.id}
-              className={state.viewMode === mode.id ? 'is-active' : ''}
-              onClick={() => onChangeState((prev) => ({ ...prev, viewMode: mode.id }))}
-            >
-              {mode.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="sol-card sol-segmented sol-time-controls" aria-label="Lighting">
-          {times.map((time) => (
-            <button
-              key={time.id}
-              className={state.timeOfDay === time.id ? 'is-active' : ''}
-              onClick={() => onChangeState((prev) => ({ ...prev, timeOfDay: time.id }))}
-            >
-              {time.label}
-            </button>
-          ))}
+        <div className="casa01-top-actions">
+          <button className={`casa01-action-btn casa01-rotate-btn ${state.autoRotate ? 'is-active' : ''}`} onClick={() => onChangeState((prev) => ({ ...prev, autoRotate: !prev.autoRotate }))}>
+            <span className="casa01-action-icon">↻</span><span>Rotate</span>
+          </button>
+          <button className="casa01-icon-btn" onClick={toggleFullscreen} aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}>{isFullscreen ? '↙' : '↗'}</button>
+          <button className="casa01-icon-btn" onClick={() => setIsCleanView(true)} aria-label="Clean view">◉</button>
+          <button className={`casa01-action-btn casa01-menu-btn ${isMenuOpen ? 'is-active' : ''}`} onClick={() => setIsMenuOpen(true)}><span className="casa01-action-icon">☰</span><span>Menu</span></button>
         </div>
       </header>
 
-      <div className="sol-side-controls">
-        <div className="sol-card sol-control-stack">
-          <span className="sol-control-title">Angles</span>
-          {presets.map((preset) => (
-            <button
-              key={preset.id}
-              className={activePreset === preset.id ? 'is-active' : ''}
-              onClick={() => onSelectPreset(preset.id)}
-            >
-              {preset.label}
+      {isMenuOpen && (
+        <div className="casa01-menu-backdrop" onPointerDown={() => setIsMenuOpen(false)}>
+          <aside className="casa01-menu-drawer" onPointerDown={(event) => event.stopPropagation()}>
+            <div className="casa01-menu-head">
+              <div><span className="casa01-menu-kicker">☷</span><strong>CASA 01 CONTROLS</strong></div>
+              <button className="casa01-menu-close" onClick={() => setIsMenuOpen(false)} aria-label="Close menu">×</button>
+            </div>
+
+            <button className={`casa01-turntable ${state.autoRotate ? 'is-active' : ''}`} onClick={() => onChangeState((prev) => ({ ...prev, autoRotate: !prev.autoRotate }))}>
+              ↻ <span>{state.autoRotate ? 'STOP AUTO-ROTATE TURNTABLE' : 'START AUTO-ROTATE TURNTABLE'}</span>
             </button>
-          ))}
-        </div>
 
-        <div className="sol-card sol-control-stack sol-toggle-stack">
-          <span className="sol-control-title">Scene</span>
-          <button
-            className={state.hideRoof ? 'is-active' : ''}
-            onClick={() => onChangeState((prev) => ({ ...prev, hideRoof: !prev.hideRoof }))}
-          >
-            {state.hideRoof ? 'Roof off' : 'Roof'}
-          </button>
-          <button
-            className={state.showLandscaping ? 'is-active' : ''}
-            onClick={() => onChangeState((prev) => ({ ...prev, showLandscaping: !prev.showLandscaping }))}
-          >
-            Trees
-          </button>
-          <button
-            className={state.interiorLightsOn ? 'is-active' : ''}
-            onClick={() => onChangeState((prev) => ({ ...prev, interiorLightsOn: !prev.interiorLightsOn }))}
-          >
-            Lights
-          </button>
-          <button
-            className={state.autoRotate ? 'is-active' : ''}
-            onClick={() => onChangeState((prev) => ({ ...prev, autoRotate: !prev.autoRotate }))}
-          >
-            Rotate
-          </button>
-        </div>
-      </div>
+            <div className="casa01-accordion">
+              <button className="casa01-section-head" onClick={() => toggleSection('building')}><span>⌂ &nbsp; BUILDING &amp; FLOOR VIEWS</span><span>{openSection === 'building' ? '⌄' : '›'}</span></button>
+              {openSection === 'building' && (
+                <div className="casa01-section-body casa01-grid-2">
+                  <button className={buildingActive('exterior') ? 'is-active' : ''} onClick={() => setBuilding('exterior')}>⌂ &nbsp; EXTERIOR</button>
+                  <button className={buildingActive('dollhouse') ? 'is-active' : ''} onClick={() => setBuilding('dollhouse')}>◇ &nbsp; 3D DOLLHOUSE</button>
+                  <button className={buildingActive('ground') ? 'is-active' : ''} onClick={() => setBuilding('ground')}>PLANTA BAJA<br/><small>(+0.0M)</small></button>
+                  <button className={buildingActive('level1') ? 'is-active' : ''} onClick={() => setBuilding('level1')}>PRIMERA PLANTA<br/><small>(+3.2M)</small></button>
+                  <button className={buildingActive('loft') ? 'is-active' : ''} onClick={() => setBuilding('loft')}>PLANTA LOFT<br/><small>(+6.3M)</small></button>
+                  <button className={buildingActive('roof-hide') ? 'is-active' : ''} onClick={() => setBuilding('roof-hide')}>ROOF HIDE</button>
+                </div>
+              )}
+            </div>
 
-      <section className={`sol-bottom-panel ${collapsed ? 'is-collapsed' : ''}`}>
-        <div className="sol-panel-head">
-          <div>
-            <span className="sol-kicker">Construction timeline</span>
-            <strong>{currentStage.name}</strong>
-          </div>
-          <div className="sol-panel-head-actions">
-            <span className="sol-progress-number">{state.constructionProgress}%</span>
-            <button className="sol-icon-button" onClick={() => setCollapsed((value) => !value)} aria-label="Toggle controls">
-              {collapsed ? '+' : '−'}
-            </button>
-          </div>
-        </div>
+            <div className="casa01-accordion">
+              <button className="casa01-section-head" onClick={() => toggleSection('views')}><span>▣ &nbsp; CAMERA &amp; PERSPECTIVE PRESETS</span><span>{openSection === 'views' ? '⌄' : '›'}</span></button>
+              {openSection === 'views' && (
+                <div className="casa01-section-body casa01-grid-2">
+                  {cameraPresets.map((preset) => <button key={preset.id} className={activePreset === preset.id ? 'is-active subtle' : ''} onClick={() => onSelectPreset(preset.id)}>{preset.label}</button>)}
+                </div>
+              )}
+            </div>
 
-        {!collapsed && (
-          <div className="sol-panel-body">
-            <input
-              className="sol-progress-slider"
-              type="range"
-              min="0"
-              max="100"
-              value={state.constructionProgress}
-              onChange={(event) => onChangeState((prev) => ({ ...prev, constructionProgress: Number(event.target.value) }))}
-              aria-label="Construction progress"
-            />
-            <p className="sol-stage-description">{currentStage.description}</p>
-            <div className="sol-floor-row">
-              <span>Floor</span>
-              <div className="sol-segmented sol-floor-buttons">
-                {floors.map((floor) => (
-                  <button
-                    key={floor.id}
-                    className={state.activeFloor === floor.id ? 'is-active' : ''}
-                    onClick={() => onChangeState((prev) => ({ ...prev, activeFloor: floor.id }))}
-                  >
-                    {floor.label}
-                  </button>
-                ))}
-              </div>
+            <div className="casa01-accordion">
+              <button className="casa01-section-head" onClick={() => toggleSection('construction')}><span>✦ &nbsp; CONSTRUCTION PROGRESS ({state.constructionProgress}%)</span><span>{openSection === 'construction' ? '⌄' : '›'}</span></button>
+              {openSection === 'construction' && (
+                <div className="casa01-section-body casa01-slider-block">
+                  <div className="casa01-progress-copy"><span>{currentStage.name}</span><strong>{state.constructionProgress}%</strong></div>
+                  <input type="range" min="0" max="100" value={state.constructionProgress} onChange={(event) => onChangeState((prev) => ({ ...prev, constructionProgress: Number(event.target.value) }))}/>
+                </div>
+              )}
             </div>
-          </div>
-        )}
-      </section>
 
-      {showSpecs && (
-        <div className="sol-modal-backdrop" role="dialog" aria-modal="true" aria-label="Project specifications">
-          <div className="sol-modal">
-            <button className="sol-modal-close" onClick={() => setShowSpecs(false)} aria-label="Close">×</button>
-            <div className="sol-modal-title"><div className="sol-logo">SOL</div><div><strong>Project SOL</strong><span>Studio architectural preview</span></div></div>
-            <div className="sol-spec-block">
-              <span>Envelope</span>
-              <p>7.5 m × 11.5 m footprint, three visual levels, pitched dark zinc roof and charcoal façade.</p>
+            <div className="casa01-accordion">
+              <button className="casa01-section-head" onClick={() => toggleSection('lighting')}><span>☼ &nbsp; LIGHTING ATMOSPHERE</span><span>{openSection === 'lighting' ? '⌄' : '›'}</span></button>
+              {openSection === 'lighting' && (
+                <div className="casa01-section-body casa01-grid-3">
+                  {times.map((time) => <button key={time.id} className={state.timeOfDay === time.id ? 'is-active' : ''} onClick={() => onChangeState((prev) => ({ ...prev, timeOfDay: time.id }))}>{time.label}</button>)}
+                </div>
+              )}
             </div>
-            <div className="sol-spec-block">
-              <span>Interior</span>
-              <p>Walnut floors, open kitchen/living area, master suite, bathroom and loft study.</p>
+
+            <div className="casa01-accordion">
+              <button className="casa01-section-head" onClick={() => toggleSection('scene')}><span>◎ &nbsp; SCENE</span><span>{openSection === 'scene' ? '⌄' : '›'}</span></button>
+              {openSection === 'scene' && (
+                <div className="casa01-section-body casa01-grid-2">
+                  <button className={state.showLandscaping ? 'is-active' : ''} onClick={() => onChangeState((prev) => ({ ...prev, showLandscaping: !prev.showLandscaping }))}>LANDSCAPING</button>
+                  <button className={state.interiorLightsOn ? 'is-active' : ''} onClick={() => onChangeState((prev) => ({ ...prev, interiorLightsOn: !prev.interiorLightsOn }))}>INTERIOR LIGHTS</button>
+                </div>
+              )}
             </div>
-            <div className="sol-spec-block">
-              <span>Outdoor</span>
-              <p>Timber terrace, fire pit, planter beds and simplified 3D landscaping.</p>
-            </div>
-            <button className="sol-primary-button" onClick={() => setShowSpecs(false)}>Close</button>
-          </div>
+          </aside>
         </div>
       )}
     </div>
