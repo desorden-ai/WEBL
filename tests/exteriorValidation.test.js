@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import { PROJECT } from '../src/config/project.js'
 import {
   formatExteriorValidationError,
   validateExteriorBounds,
@@ -19,6 +20,10 @@ const tolerance = {
   height: 0.25,
   ground: 0.05,
 }
+
+test('keeps the exterior GLB disabled until explicit visual approval', () => {
+  assert.equal(PROJECT.runtime.useApprovedExteriorModel, false)
+})
 
 test('accepts an exterior that matches the canonical envelope', () => {
   const result = validateExteriorBounds(expected, expected, tolerance)
