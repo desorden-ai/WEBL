@@ -5,25 +5,31 @@
   "type": "module",
   "scripts": {
     "generate:model": "node scripts/generateExteriorGlb.mjs",
-    "predev": "npm run generate:model",
+    "predev": "npm run restore:studio && node scripts/generateExteriorGlb.mjs",
     "dev": "vite",
-    "pretest": "npm run generate:model",
+    "pretest": "npm run restore:studio && node scripts/generateExteriorGlb.mjs",
     "test": "node --test",
-    "prebuild": "npm run generate:model",
+    "prebuild": "npm run restore:studio && node scripts/generateExteriorGlb.mjs",
     "build": "vite build",
     "check": "npm test && npm run build",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "restore:studio": "node scripts/restoreCasa01Latest.mjs"
   },
   "dependencies": {
     "@react-three/drei": "10.7.8",
     "@react-three/fiber": "9.7.0",
+    "@react-three/postprocessing": "3.0.5",
+    "lucide-react": "0.546.0",
+    "postprocessing": "6.39.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "three": "0.185.1"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "4.1.14",
     "@vitejs/plugin-react": "6.0.4",
+    "tailwindcss": "4.1.14",
     "vite": "8.1.5",
     "wrangler": "4.114.0"
   }

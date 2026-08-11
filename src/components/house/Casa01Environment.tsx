@@ -14,21 +14,24 @@ export function Casa01Environment({ timeOfDay }: Props) {
   const isSunset = timeOfDay === 'sunset';
   const isNight = timeOfDay === 'night';
 
+  // Set scene background dynamically on the THREE.Scene instance
   useEffect(() => {
     if (isDay) {
-      scene.background = new THREE.Color('#deded9');
+      scene.background = new THREE.Color('#deded9'); // Soft warm/light architectural grey
     } else if (isSunset) {
-      scene.background = new THREE.Color('#383236');
+      scene.background = new THREE.Color('#383236'); // Muted warm grey / dusty atmospheric tone
     } else if (isNight) {
-      scene.background = new THREE.Color('#1c2430');
+      scene.background = new THREE.Color('#141922'); // Deep blue charcoal night sky matching reference image
     }
   }, [scene, isDay, isSunset, isNight]);
 
   return (
     <group name="Casa01Environment">
+      {/* DAYLIGHT CONFIGURATION */}
       {isDay && (
         <>
           <ambientLight intensity={1.1} color="#f4f4f0" />
+          {/* Primary Direct Sun */}
           <directionalLight
             position={[14, 20, 16]}
             intensity={1.8}
@@ -44,11 +47,17 @@ export function Casa01Environment({ timeOfDay }: Props) {
             shadow-camera-top={25}
             shadow-camera-bottom={-25}
           />
-          <directionalLight position={[-12, 10, -14]} intensity={0.5} color="#e2e6eb" />
+          {/* Secondary Fill Light on Shaded Side to Prevent Black Shadows */}
+          <directionalLight
+            position={[-12, 10, -14]}
+            intensity={0.5}
+            color="#e2e6eb"
+          />
           <hemisphereLight args={['#e8eff5', '#908880', 0.6]} />
         </>
       )}
 
+      {/* SUNSET / GOLDEN HOUR CONFIGURATION */}
       {isSunset && (
         <>
           <ambientLight intensity={0.7} color="#ffd8c2" />
@@ -68,14 +77,21 @@ export function Casa01Environment({ timeOfDay }: Props) {
             shadow-camera-top={25}
             shadow-camera-bottom={-25}
           />
-          <directionalLight position={[14, 10, -12]} intensity={0.4} color="#a090b0" />
+          <directionalLight
+            position={[14, 10, -12]}
+            intensity={0.4}
+            color="#a090b0"
+          />
           <hemisphereLight args={['#ff9a62', '#2a2230', 0.5]} />
         </>
       )}
 
+      {/* ATMOSPHERIC NIGHT CONFIGURATION */}
       {isNight && (
         <>
+          {/* Lifted Ambient Fill for Silhouette Visibility */}
           <ambientLight intensity={0.55} color="#60748c" />
+          {/* Primary Moon Light */}
           <directionalLight
             position={[12, 22, -12]}
             intensity={0.8}
@@ -92,11 +108,39 @@ export function Casa01Environment({ timeOfDay }: Props) {
             shadow-camera-top={25}
             shadow-camera-bottom={-25}
           />
-          <directionalLight position={[-10, 12, 16]} intensity={0.35} color="#80a0c8" />
+          {/* Secondary Moon Fill on Front */}
+          <directionalLight
+            position={[-10, 12, 16]}
+            intensity={0.35}
+            color="#80a0c8"
+          />
           <hemisphereLight args={['#304058', '#141a22', 0.5]} />
-          <spotLight position={[0, 0.2, 7.5]} target-position={[0, 5, 5.4]} intensity={3.5} color="#ffdfb3" angle={0.6} penumbra={0.5} />
-          <spotLight position={[-2.8, 0.2, 7.0]} target-position={[-2.8, 6, 5.4]} intensity={2.5} color="#ffe6c2" angle={0.5} />
-          <spotLight position={[2.8, 0.2, 7.0]} target-position={[2.8, 6, 5.4]} intensity={2.5} color="#ffe6c2" angle={0.5} />
+
+          {/* Exterior Architectural Facade Spotlights */}
+          <spotLight
+            position={[0, 0.2, 7.5]}
+            target-position={[0, 5, 5.4]}
+            intensity={3.5}
+            color="#ffdfb3"
+            angle={0.6}
+            penumbra={0.5}
+          />
+          <spotLight
+            position={[-2.8, 0.2, 7.0]}
+            target-position={[-2.8, 6, 5.4]}
+            intensity={2.5}
+            color="#ffe6c2"
+            angle={0.5}
+          />
+          <spotLight
+            position={[2.8, 0.2, 7.0]}
+            target-position={[2.8, 6, 5.4]}
+            intensity={2.5}
+            color="#ffe6c2"
+            angle={0.5}
+          />
+
+          {/* Under Eave Downlights */}
           <pointLight position={[0, 9.8, 6.0]} intensity={1.5} color="#ffdfb3" distance={5} />
           <pointLight position={[-2.0, 9.8, 6.0]} intensity={1.2} color="#ffdfb3" distance={5} />
           <pointLight position={[2.0, 9.8, 6.0]} intensity={1.2} color="#ffdfb3" distance={5} />
@@ -105,3 +149,4 @@ export function Casa01Environment({ timeOfDay }: Props) {
     </group>
   );
 }
+

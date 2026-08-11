@@ -23,7 +23,7 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Test generated GLB and build
         run: npm run check

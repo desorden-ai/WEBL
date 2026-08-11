@@ -18,8 +18,8 @@ export const CASA01 = {
   codeName: 'SOL — CASA 01',
   description: 'Modern 3-level vertical residential architecture with compact footprint, sloped roof, and double-height glazed façade.',
   footprint: {
-    width: 6.2,
-    depth: 10.8,
+    width: 6.2, // meters
+    depth: 10.8, // meters
     slabThickness: 0.22,
     wallThickness: 0.18,
   },
@@ -55,7 +55,7 @@ export const CASA01 = {
     highEave: 10.7,
     overhangFront: 0.55,
     overhangSide: 0.35,
-    slopeDirection: 'left-to-right' as const,
+    slopeDirection: 'left-to-right' as const, // High point on left (X=-3.1), low point on right (X=+3.1)
   },
   balconies: {
     upperFront: {
@@ -63,7 +63,7 @@ export const CASA01 = {
       width: 4.9,
       depth: 1.4,
       xCenter: 0,
-      zFrontOffset: 5.4 + 0.7,
+      zFrontOffset: 5.4 + 0.7, // 1.4m depth out from z=5.4
       height: 6.3,
       railingHeight: 1.05,
     },
@@ -93,17 +93,17 @@ export const CASA01 = {
     sideWindowHeight: 1.1,
   },
   materials: {
-    cladding: '#1e2329',
-    claddingAccent: '#16191d',
-    frames: '#111111',
-    warmWood: '#8e6b45',
-    deck: '#b88f63',
-    interiorWall: '#f4f1ea',
-    floorOak: '#c8a47a',
-    planter: '#22262b',
-    glassTint: '#90b8d0',
-    foundationConcrete: '#a0a3a8',
-    steelBeam: '#2d3238',
+    cladding: '#121519', // Deep pitch black anthracite facade panels
+    claddingAccent: '#0e1014',
+    frames: '#111317', // Black aluminum window and door frames
+    warmWood: '#a87848', // Warm amber cedar wood ceiling soffit under eaves and balcony undersides
+    deck: '#a87848', // Natural teak outdoor terrace deck
+    interiorWall: '#f4f1ea', // Off-white warm interior plaster
+    floorOak: '#c8a47a', // Natural oak hardwood flooring
+    planter: '#181b20', // Dark charcoal concrete planters
+    glassTint: '#80a8c8', // Soft ice-blue tinted glass
+    foundationConcrete: '#788898', // Light slate concrete plinth and balcony slabs
+    steelBeam: '#22262c',
   },
 };
 
