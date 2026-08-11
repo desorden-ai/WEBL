@@ -157,7 +157,7 @@ export default function App() {
 
   const toggleFullscreen = () => {
     try {
-      if (!document.fullScreenElement) {
+      if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
       } else {
         if (document.exitFullscreen) {
