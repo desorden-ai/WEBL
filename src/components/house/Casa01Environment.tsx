@@ -2,28 +2,74 @@ import { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { TimeOfDay } from '@/data/casa01Canonical';
+import { Casa01Landscaping } from '@/components/house/Casa01Landscaping';
+import { Casa01CinematicEnvironment } from '@/components/house/Casa01CinematicEnvironment';
+import type { Casa01CameraMode } from '@/components/house/CameraController';
 
 type Props = {
   timeOfDay: TimeOfDay;
+  cameraMode: Casa01CameraMode;
+  isExterior: boolean;
 };
 
-export function Casa01Environment({ timeOfDay }: Props) {
+function atmosphereFor(timeOfDay: TimeOfDay, cameraMode: Casa01CameraMode) {
+  const cinematic = cameraMode === 'cinematic';
+
+  if (timeOfDay === 'day') {
+    return {
+      background: '#deded9',
+      fog: '#c5c8c1',
+      fogNear: cinematic ? 19 : 27,
+      fogFar: cinematic ? 55 : 70,
+    };
+  }
+
+  if (timeOfDay === 'sunset') {
+    return {
+      background: '#383236',
+      fog: '#4a403f',
+      fogNear: cinematic ? 18 : 26,
+      fogFar: cinematic ? 52 : 68,
+    };
+  }
+
+  return {
+    background: '#141922',
+    fog: '#18232e',
+    fogNear: cinematic ? 18 : 26,
+    fogFar: cinematic ? 50 : 66,
+  };
+}
+
+export function Casa01Environment({ timeOfDay, cameraMode, isExterior }: Props) {
   const { scene } = useThree();
 
   const isDay = timeOfDay === 'day';
   const isSunset = timeOfDay === 'sunset';
   const isNight = timeOfDay === 'night';
+  const atmosphere = atmosphereFor(timeOfDay, cameraMode);
 
-  // Set scene background dynamically on the THREE.Scene instance
   useEffect(() => {
-    if (isDay) {
-      scene.background = new THREE.Color('#deded9'); // Soft warm/light architectural grey
-    } else if (isSunset) {
-      scene.background = new THREE.Color('#383236'); // Muted warm grey / dusty atmospheric tone
-    } else if (isNight) {
-      scene.background = new THREE.Color('#141922'); // Deep blue charcoal night sky matching reference image
-    }
-  }, [scene, isDay, isSunset, isNight]);
+    const previousBackground = scene.background;
+    const previousFog = scene.fog;
+
+    scene.background = new THREE.Color(atmosphere.background);
+    scene.fog = isExterior
+      ? new THREE.Fog(atmosphere.fog, atmosphere.fogNear, atmosphere.fogFar)
+      : null;
+
+    return () => {
+      scene.background = previousBackground;
+      scene.fog = previousFog;
+    };
+  }, [
+    atmosphere.background,
+    atmosphere.fog,
+    atmosphere.fogFar,
+    atmosphere.fogNear,
+    isExterior,
+    scene,
+  ]);
 
   return (
     <group name="Casa01Environment">
@@ -146,7 +192,12 @@ export function Casa01Environment({ timeOfDay }: Props) {
           <pointLight position={[2.0, 9.8, 6.0]} intensity={1.2} color="#ffdfb3" distance={5} />
         </>
       )}
+
+      <Casa01Landscaping timeOfDay={timeOfDay} />
+
+      {cameraMode === 'cinematic' && isExterior && (
+        <Casa01CinematicEnvironment timeOfDay={timeOfDay} />
+      )}
     </group>
   );
 }
-

@@ -1,117 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
-import * as THREE from 'three';
+import { useEffect, useState } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { Bloom, DepthOfField, EffectComposer } from '@react-three/postprocessing';
 import { Casa01House } from '@/components/house/Casa01House';
 import { Casa01Environment } from '@/components/house/Casa01Environment';
+import { CameraController, type Casa01CameraMode } from '@/components/house/CameraController';
 import { Casa01Header } from '@/components/ui/Casa01Header';
 import { Casa01Controls, CameraPreset } from '@/components/ui/Casa01Controls';
 import { Casa01RoomDetail } from '@/components/ui/Casa01RoomDetail';
 import { Casa01SpecsModal } from '@/components/ui/Casa01SpecsModal';
 import { Casa01ViewMode, Casa01FloorKey, TimeOfDay, RoomInfo } from '@/data/casa01Canonical';
-
-// Smooth Camera Controller Component
-function CameraController({
-  preset,
-  selectedRoom,
-  isAutoRotating,
-}: {
-  preset: CameraPreset;
-  selectedRoom: RoomInfo | null;
-  isAutoRotating: boolean;
-}) {
-  const { camera, gl } = useThree();
-  const controlsRef = useRef<any>(null);
-  const isTransitioning = useRef<boolean>(true);
-
-  const targetPos = useRef(new THREE.Vector3(14, 8, 16));
-  const targetLookAt = useRef(new THREE.Vector3(0, 4.5, 0));
-
-  useEffect(() => {
-    isTransitioning.current = true;
-    if (selectedRoom) {
-      targetPos.current.set(
-        selectedRoom.position[0] + 3.5,
-        selectedRoom.position[1] + 1.5,
-        selectedRoom.position[2] + 4.0
-      );
-      targetLookAt.current.set(...selectedRoom.cameraTarget);
-      return;
-    }
-
-    switch (preset) {
-      case 'master': // 3/4 Master Perspective
-        targetPos.current.set(14, 8, 16);
-        targetLookAt.current.set(0, 4.5, 0);
-        break;
-      case 'front': // Clean Front Elevation
-        targetPos.current.set(0, 5, 20);
-        targetLookAt.current.set(0, 5, 0);
-        break;
-      case 'side': // Right Side Elevation
-        targetPos.current.set(18, 5, 0);
-        targetLookAt.current.set(0, 5, 0);
-        break;
-      case 'rear': // Rear Elevation
-        targetPos.current.set(0, 5, -20);
-        targetLookAt.current.set(0, 5, 0);
-        break;
-      case 'top': // Top Plan
-        targetPos.current.set(0, 24, 0.1);
-        targetLookAt.current.set(0, 0, 0);
-        break;
-    }
-  }, [preset, selectedRoom]);
-
-  // Stop camera transition immediately when user touches/drags canvas
-  useEffect(() => {
-    const handleUserInteraction = () => {
-      isTransitioning.current = false;
-    };
-    const domElement = gl.domElement;
-    domElement.addEventListener('pointerdown', handleUserInteraction);
-    domElement.addEventListener('touchstart', handleUserInteraction);
-    return () => {
-      domElement.removeEventListener('pointerdown', handleUserInteraction);
-      domElement.removeEventListener('touchstart', handleUserInteraction);
-    };
-  }, [gl]);
-
-  useFrame((_, delta) => {
-    if (!controlsRef.current || !isTransitioning.current) return;
-
-    camera.position.lerp(targetPos.current, Math.min(1, delta * 4));
-    controlsRef.current.target.lerp(targetLookAt.current, Math.min(1, delta * 4));
-    controlsRef.current.update();
-
-    // End transition when camera reaches preset position threshold
-    const posDist = camera.position.distanceTo(targetPos.current);
-    const lookDist = controlsRef.current.target.distanceTo(targetLookAt.current);
-    if (posDist < 0.05 && lookDist < 0.05) {
-      camera.position.copy(targetPos.current);
-      controlsRef.current.target.copy(targetLookAt.current);
-      controlsRef.current.update();
-      isTransitioning.current = false;
-    }
-  });
-
-  return (
-    <OrbitControls
-      ref={controlsRef}
-      enableDamping
-      dampingFactor={0.08}
-      minDistance={3}
-      maxDistance={35}
-      maxPolarAngle={Math.PI / 2 + 0.05} // Prevent camera going below ground level
-      autoRotate={isAutoRotating}
-      autoRotateSpeed={1.5}
-      onStart={() => {
-        isTransitioning.current = false;
-      }}
-    />
-  );
-}
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -120,6 +17,8 @@ export default function App() {
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('night');
   const [progress, setProgress] = useState<number>(100);
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>('master');
+  const [cameraMode, setCameraMode] = useState<Casa01CameraMode>('cinematic');
+  const [isCameraInteracting, setIsCameraInteracting] = useState<boolean>(false);
   const [showDimensions, setShowDimensions] = useState<boolean>(false);
   const [showRoomLabels, setShowRoomLabels] = useState<boolean>(false); // Default OFF
   const [selectedRoom, setSelectedRoom] = useState<RoomInfo | null>(null);
@@ -131,6 +30,12 @@ export default function App() {
 
   // Dynamic bloom settings tailored for nighttime and interior lighting modes
   const isInteriorFocused = viewMode !== 'exterior' || selectedRoom !== null || floorIsolation !== null;
+  const isExteriorPresentation = !isInteriorFocused;
+  const isTechnicalPreset = cameraPreset === 'rear' || cameraPreset === 'top';
+  const isCinematicPresentation = cameraMode === 'cinematic'
+    && isExteriorPresentation
+    && !isTechnicalPreset;
+  const enableCinematicDof = isCinematicPresentation && !isCameraInteracting;
 
   let bloomIntensity = 0.2;
   let bloomThreshold = 0.85;
@@ -145,6 +50,12 @@ export default function App() {
     bloomIntensity = 0.4;
     bloomThreshold = 0.75;
   }
+
+  useEffect(() => {
+    if ((isInteriorFocused || isTechnicalPreset) && isAutoRotating) {
+      setIsAutoRotating(false);
+    }
+  }, [isAutoRotating, isInteriorFocused, isTechnicalPreset]);
 
   // Fullscreen event listener sync
   useEffect(() => {
@@ -184,6 +95,34 @@ export default function App() {
         onToggleAutoRotate={() => setIsAutoRotating(!isAutoRotating)}
       />
 
+      {!isCleanView && isExteriorPresentation && (
+        <div className="absolute left-1/2 top-20 z-30 flex -translate-x-1/2 rounded-full border border-white/15 bg-black/35 p-1 text-[10px] font-semibold tracking-[0.16em] text-white/70 backdrop-blur-md">
+          <button
+            type="button"
+            onClick={() => {
+              setCameraMode('cinematic');
+              if (isTechnicalPreset) setCameraPreset('master');
+            }}
+            className={`rounded-full px-3 py-2 transition-colors ${
+              cameraMode === 'cinematic' ? 'bg-white text-black' : 'text-white/70'
+            }`}
+            aria-pressed={cameraMode === 'cinematic'}
+          >
+            CINEMATIC
+          </button>
+          <button
+            type="button"
+            onClick={() => setCameraMode('explore')}
+            className={`rounded-full px-3 py-2 transition-colors ${
+              cameraMode === 'explore' ? 'bg-white text-black' : 'text-white/70'
+            }`}
+            aria-pressed={cameraMode === 'explore'}
+          >
+            EXPLORE
+          </button>
+        </div>
+      )}
+
       {/* THREE.JS 3D CANVAS */}
       <div
         className="w-full h-full cursor-grab active:cursor-grabbing"
@@ -193,12 +132,16 @@ export default function App() {
       >
         <Canvas
           shadows
-          camera={{ position: [14, 8, 16], fov: 45, near: 0.1, far: 100 }}
+          camera={{ position: [14, 8, 16.5], fov: 45, near: 0.1, far: 100 }}
           gl={{ antialias: true, alpha: false, preserveDrawingBuffer: false }}
           dpr={[1, 1.5]}
         >
           {/* DYNAMIC LIGHTING & ENVIRONMENT */}
-          <Casa01Environment timeOfDay={timeOfDay} />
+          <Casa01Environment
+            timeOfDay={timeOfDay}
+            cameraMode={isCinematicPresentation ? 'cinematic' : 'explore'}
+            isExterior={isExteriorPresentation}
+          />
 
           {/* MASTER CASA 01 3D MODEL */}
           <Casa01House
@@ -217,10 +160,22 @@ export default function App() {
             preset={cameraPreset}
             selectedRoom={selectedRoom}
             isAutoRotating={isAutoRotating}
+            mode={cameraMode}
+            isTechnicalFocus={isInteriorFocused}
+            onInteractionChange={setIsCameraInteracting}
+            onUserTakeover={() => setIsAutoRotating(false)}
           />
 
           {/* ATMOSPHERIC POST-PROCESSING BLOOM */}
           <EffectComposer multisampling={4} enableNormalPass={false}>
+            {enableCinematicDof && (
+              <DepthOfField
+                focusDistance={20.5}
+                focusRange={10}
+                bokehScale={0.65}
+                resolutionScale={0.4}
+              />
+            )}
             <Bloom
               intensity={bloomIntensity}
               luminanceThreshold={bloomThreshold}
@@ -248,6 +203,10 @@ export default function App() {
         setCameraPreset={(preset) => {
           setSelectedRoom(null);
           setCameraPreset(preset);
+          if (preset === 'rear' || preset === 'top') {
+            setCameraMode('explore');
+            setIsAutoRotating(false);
+          }
         }}
         showDimensions={showDimensions}
         setShowDimensions={setShowDimensions}
