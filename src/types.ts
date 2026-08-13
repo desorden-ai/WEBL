@@ -1,11 +1,25 @@
-export type TimeOfDay = 'DAY' | 'SUNSET' | 'NIGHT';
-export type NavigationMode = 'EXPLORE' | 'CINEMATIC';
-
-export type CameraPreset = 'OVERVIEW' | 'FACADE' | 'TERRACE' | 'GROUND';
-
-export interface CameraPresetConfig {
-  id: CameraPreset;
-  label: string;
+export interface CameraPreset {
+  id: string;
+  name: string;
+  description: string;
   position: [number, number, number];
   target: [number, number, number];
+  fov: number;
+}
+
+export interface CameraState {
+  position: [number, number, number];
+  target: [number, number, number];
+  fov: number;
+}
+
+export interface StudioSettings {
+  showGrid: boolean;
+  showAxes: boolean;
+  wireframeMode: boolean;
+  enableFog: boolean;
+  fogColor: string;
+  fogNear: number;
+  fogFar: number;
+  sunPosition: [number, number, number];
 }
