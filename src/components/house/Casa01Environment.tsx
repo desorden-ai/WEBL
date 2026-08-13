@@ -1,203 +1,100 @@
-import { useEffect } from 'react';
-import { useThree } from '@react-three/fiber';
-import * as THREE from 'three';
-import { TimeOfDay } from '@/data/casa01Canonical';
-import { Casa01Landscaping } from '@/components/house/Casa01Landscaping';
-import { Casa01CinematicEnvironment } from '@/components/house/Casa01CinematicEnvironment';
-import type { Casa01CameraMode } from '@/components/house/CameraController';
+import React from 'react';
+import { TimeOfDay } from '../../types';
 
-type Props = {
+interface Casa01EnvironmentProps {
   timeOfDay: TimeOfDay;
-  cameraMode: Casa01CameraMode;
-  isExterior: boolean;
-};
-
-function atmosphereFor(timeOfDay: TimeOfDay, cameraMode: Casa01CameraMode) {
-  const cinematic = cameraMode === 'cinematic';
-
-  if (timeOfDay === 'day') {
-    return {
-      background: '#deded9',
-      fog: '#c5c8c1',
-      fogNear: cinematic ? 19 : 27,
-      fogFar: cinematic ? 55 : 70,
-    };
-  }
-
-  if (timeOfDay === 'sunset') {
-    return {
-      background: '#383236',
-      fog: '#4a403f',
-      fogNear: cinematic ? 18 : 26,
-      fogFar: cinematic ? 52 : 68,
-    };
-  }
-
-  return {
-    background: '#141922',
-    fog: '#18232e',
-    fogNear: cinematic ? 18 : 26,
-    fogFar: cinematic ? 50 : 66,
-  };
 }
 
-export function Casa01Environment({ timeOfDay, cameraMode, isExterior }: Props) {
-  const { scene } = useThree();
-
-  const isDay = timeOfDay === 'day';
-  const isSunset = timeOfDay === 'sunset';
-  const isNight = timeOfDay === 'night';
-  const atmosphere = atmosphereFor(timeOfDay, cameraMode);
-
-  useEffect(() => {
-    const previousBackground = scene.background;
-    const previousFog = scene.fog;
-
-    scene.background = new THREE.Color(atmosphere.background);
-    scene.fog = isExterior
-      ? new THREE.Fog(atmosphere.fog, atmosphere.fogNear, atmosphere.fogFar)
-      : null;
-
-    return () => {
-      scene.background = previousBackground;
-      scene.fog = previousFog;
-    };
-  }, [
-    atmosphere.background,
-    atmosphere.fog,
-    atmosphere.fogFar,
-    atmosphere.fogNear,
-    isExterior,
-    scene,
-  ]);
+export const Casa01Environment: React.FC<Casa01EnvironmentProps> = ({ timeOfDay }) => {
+  // Atmospheric lighting and fog configuration per time of day
+  const envConfig = {
+    DAY: {
+      sunPos: [32, 42, 22] as [number, number, number],
+      sunColor: '#fff5e6',
+      sunIntensity: 2.0,
+      skyColor: '#a2c0d6',
+      ambientColor: '#88a2b6',
+      ambientIntensity: 0.82,
+      fogColor: '#8ca6b8',
+      fogNear: 28,
+      fogFar: 92,
+    },
+    SUNSET: {
+      sunPos: [45, 9, 16] as [number, number, number],
+      sunColor: '#ff8544',
+      sunIntensity: 2.5,
+      skyColor: '#ff9966',
+      ambientColor: '#9c5c4e',
+      ambientIntensity: 0.65,
+      fogColor: '#9a6250',
+      fogNear: 22,
+      fogFar: 82,
+    },
+    NIGHT: {
+      sunPos: [20, 40, -20] as [number, number, number],
+      sunColor: '#5577aa',
+      sunIntensity: 0.42,
+      skyColor: '#0a0e1a',
+      ambientColor: '#141f33',
+      ambientIntensity: 0.42,
+      fogColor: '#0a101d',
+      fogNear: 20,
+      fogFar: 75,
+    },
+  }[timeOfDay];
 
   return (
-    <group name="Casa01Environment">
-      {/* DAYLIGHT CONFIGURATION */}
-      {isDay && (
-        <>
-          <ambientLight intensity={1.1} color="#f4f4f0" />
-          {/* Primary Direct Sun */}
-          <directionalLight
-            position={[14, 20, 16]}
-            intensity={1.8}
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-            shadow-bias={-0.0001}
-            shadow-normalBias={0.02}
-            shadow-camera-near={0.5}
-            shadow-camera-far={60}
-            shadow-camera-left={-25}
-            shadow-camera-right={25}
-            shadow-camera-top={25}
-            shadow-camera-bottom={-25}
-          />
-          {/* Secondary Fill Light on Shaded Side to Prevent Black Shadows */}
-          <directionalLight
-            position={[-12, 10, -14]}
-            intensity={0.5}
-            color="#e2e6eb"
-          />
-          <hemisphereLight args={['#e8eff5', '#908880', 0.6]} />
-        </>
-      )}
+    <>
+      {/* --- LAYERED ATMOSPHERIC SCENE FOG --- */}
+      <fog attach="fog" args={[envConfig.fogColor, envConfig.fogNear, envConfig.fogFar]} />
 
-      {/* SUNSET / GOLDEN HOUR CONFIGURATION */}
-      {isSunset && (
-        <>
-          <ambientLight intensity={0.7} color="#ffd8c2" />
-          <directionalLight
-            position={[-18, 8, 12]}
-            intensity={2.2}
-            color="#ff8c42"
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-            shadow-bias={-0.0001}
-            shadow-normalBias={0.02}
-            shadow-camera-near={0.5}
-            shadow-camera-far={60}
-            shadow-camera-left={-25}
-            shadow-camera-right={25}
-            shadow-camera-top={25}
-            shadow-camera-bottom={-25}
-          />
-          <directionalLight
-            position={[14, 10, -12]}
-            intensity={0.4}
-            color="#a090b0"
-          />
-          <hemisphereLight args={['#ff9a62', '#2a2230', 0.5]} />
-        </>
-      )}
+      {/* --- AMBIENT & DIRECTIONAL LIGHTING --- */}
+      <ambientLight color={envConfig.ambientColor} intensity={envConfig.ambientIntensity} />
+      
+      {/* Primary Directional Sun / Moon Light */}
+      <directionalLight
+        position={envConfig.sunPos}
+        color={envConfig.sunColor}
+        intensity={envConfig.sunIntensity}
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-near={0.5}
+        shadow-camera-far={85}
+        shadow-camera-left={-28}
+        shadow-camera-right={28}
+        shadow-camera-top={28}
+        shadow-camera-bottom={-28}
+        shadow-bias={-0.0001}
+      />
 
-      {/* ATMOSPHERIC NIGHT CONFIGURATION */}
-      {isNight && (
-        <>
-          {/* Lifted Ambient Fill for Silhouette Visibility */}
-          <ambientLight intensity={0.55} color="#60748c" />
-          {/* Primary Moon Light */}
-          <directionalLight
-            position={[12, 22, -12]}
-            intensity={0.8}
-            color="#a0c0e8"
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-            shadow-bias={-0.0001}
-            shadow-normalBias={0.02}
-            shadow-camera-near={0.5}
-            shadow-camera-far={60}
-            shadow-camera-left={-25}
-            shadow-camera-right={25}
-            shadow-camera-top={25}
-            shadow-camera-bottom={-25}
-          />
-          {/* Secondary Moon Fill on Front */}
-          <directionalLight
-            position={[-10, 12, 16]}
-            intensity={0.35}
-            color="#80a0c8"
-          />
-          <hemisphereLight args={['#304058', '#141a22', 0.5]} />
+      {/* Soft Fill Light from Opposite Sky Vector */}
+      <directionalLight
+        position={[-envConfig.sunPos[0], envConfig.sunPos[1] * 0.5, -envConfig.sunPos[2]]}
+        color={timeOfDay === 'SUNSET' ? '#4a5d7c' : timeOfDay === 'NIGHT' ? '#1f2e45' : '#7ba0be'}
+        intensity={0.45}
+      />
 
-          {/* Exterior Architectural Facade Spotlights */}
+      {/* --- NIGHTTIME ARCHITECTURAL & LANDSCAPE SPOTLIGHTS --- */}
+      {timeOfDay === 'NIGHT' && (
+        <group>
+          {/* Deck Walkway Warm Accent Lights */}
+          <pointLight position={[-8, 0.4, 4.2]} color="#ffb066" intensity={1.9} distance={7} />
+          <pointLight position={[0, 0.4, 4.2]} color="#ffb066" intensity={1.9} distance={7} />
+          <pointLight position={[8, 0.4, 4.2]} color="#ffb066" intensity={1.9} distance={7} />
+          
+          {/* Protagonist Tree Base Soft Accent Spotlight */}
           <spotLight
-            position={[0, 0.2, 7.5]}
-            target-position={[0, 5, 5.4]}
-            intensity={3.5}
-            color="#ffdfb3"
-            angle={0.6}
-            penumbra={0.5}
+            position={[-12, 0.3, 14]}
+            target-position={[-14, 6, 11]}
+            color="#ffc88a"
+            intensity={3.8}
+            angle={0.65}
+            penumbra={0.85}
+            distance={16}
           />
-          <spotLight
-            position={[-2.8, 0.2, 7.0]}
-            target-position={[-2.8, 6, 5.4]}
-            intensity={2.5}
-            color="#ffe6c2"
-            angle={0.5}
-          />
-          <spotLight
-            position={[2.8, 0.2, 7.0]}
-            target-position={[2.8, 6, 5.4]}
-            intensity={2.5}
-            color="#ffe6c2"
-            angle={0.5}
-          />
-
-          {/* Under Eave Downlights */}
-          <pointLight position={[0, 9.8, 6.0]} intensity={1.5} color="#ffdfb3" distance={5} />
-          <pointLight position={[-2.0, 9.8, 6.0]} intensity={1.2} color="#ffdfb3" distance={5} />
-          <pointLight position={[2.0, 9.8, 6.0]} intensity={1.2} color="#ffdfb3" distance={5} />
-        </>
+        </group>
       )}
-
-      <Casa01Landscaping timeOfDay={timeOfDay} />
-
-      {cameraMode === 'cinematic' && isExterior && (
-        <Casa01CinematicEnvironment timeOfDay={timeOfDay} />
-      )}
-    </group>
+    </>
   );
-}
+};

@@ -5,9 +5,12 @@ import { gunzipSync } from 'node:zlib';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const chunkRoot = path.join(root, '.studio', 'latest');
+
+// CASA 01 visual source now lives directly in src. Keep restoring only the
+// legacy Studio-generated UI helpers that are still stored in chunk form.
+// Shell and Interior are intentionally excluded so pretest/prebuild cannot
+// overwrite the current visual baseline imported from AI Studio.
 const targets = [
-  'src/components/house/Casa01Interior.tsx',
-  'src/components/house/Casa01Shell.tsx',
   'src/components/ui/Casa01Controls.tsx',
   'src/components/ui/Casa01Header.tsx',
   'src/components/ui/Casa01SpecsModal.tsx',

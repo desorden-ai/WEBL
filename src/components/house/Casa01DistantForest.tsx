@@ -1,0 +1,6 @@
+import React,{useMemo} from 'react';
+import * as THREE from 'three';
+import {TimeOfDay} from '../../types';
+import {getConiferTexture} from './Casa01ForestTextures';
+import {makeDistantBands,FarTree} from './Casa01DistantData';
+export const Casa01DistantForest:React.FC<{timeOfDay:TimeOfDay}>=({timeOfDay})=>{const bands=useMemo(()=>makeDistantBands(),[]);const textures=useMemo(()=>[0,1,2,3].map(v=>getConiferTexture(v,'far')),[]);const tints=useMemo(()=>timeOfDay==='SUNSET'?{a:'#9e7868',b:'#846052',c:'#6a4d40'}:timeOfDay==='NIGHT'?{a:'#283c4b',b:'#1d2c3a',c:'#14202c'}:{a:'#88a69a',b:'#708d82',c:'#5a786e'},[timeOfDay]);const render=(trees:FarTree[],key:string,tint:string,width:number,rough=.92)=>trees.map((tree,idx)=><group key={`${key}_${idx}`} position={tree.pos} rotation={[0,tree.rot,0]}>{[0,Math.PI/2].map((angle,p)=><mesh key={p} position={[0,6*tree.scale[1],0]} rotation={[0,angle,0]} receiveShadow><planeGeometry args={[width*tree.scale[0],12*tree.scale[1]]}/><meshStandardMaterial map={textures[tree.variant%4]} transparent alphaTest={.25} side={THREE.DoubleSide} color={tint} roughness={rough} metalness={.01} depthWrite/></mesh>)}</group>);return <>{render(bands.bandA,'bandA',tints.a,6.2)}{render(bands.bandB,'bandB',tints.b,6)}{render(bands.bandC,'bandC',tints.c,5.8,.95)}</>};
