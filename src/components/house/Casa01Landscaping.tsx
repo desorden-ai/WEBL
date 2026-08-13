@@ -28,14 +28,14 @@ const MID_TREES: TreeInstance[] = [
 ];
 
 const SHRUBS = [
-  [-5.5, 6.5, 1.1],
-  [-4.3, 7.2, 0.8],
-  [4.8, 6.7, 1],
-  [5.8, 5.6, 0.8],
-  [-6.1, -5.5, 1],
-  [5.7, -6.2, 0.9],
-  [-7.2, 1.2, 0.8],
-  [7.1, 0.8, 0.8],
+  [-6.79, 8.03, 1.1],
+  [-5.33, 8.93, 0.8],
+  [5.97, 8.33, 1],
+  [7.24, 6.99, 0.8],
+  [-7.59, -6.84, 1],
+  [7.05, -7.67, 0.9],
+  [-9.17, 1.53, 0.8],
+  [9.09, 1.02, 0.8],
 ] as const;
 
 function palette(timeOfDay: TimeOfDay) {
@@ -69,16 +69,16 @@ function ProtagonistTree({ timeOfDay }: Props) {
   const colors = palette(timeOfDay);
 
   const canopyLayers = [
-    { y: 5.8, radius: 2.35, height: 3.7 },
-    { y: 7.45, radius: 2.0, height: 3.45 },
-    { y: 9.0, radius: 1.62, height: 3.05 },
-    { y: 10.4, radius: 1.2, height: 2.55 },
+    { y: 6.25, radius: 1.82, height: 3.7 },
+    { y: 7.9, radius: 1.55, height: 3.45 },
+    { y: 9.45, radius: 1.25, height: 3.05 },
+    { y: 10.85, radius: 0.93, height: 2.55 },
   ];
 
   return (
-    <group position={[-7.2, 0, 4.2]} rotation={[0, 0, -0.025]} name="Casa01ProtagonistTree">
+    <group position={[-8.9, 0, 5.2]} rotation={[0, 0, -0.025]} name="Casa01ProtagonistTree">
       <mesh position={[0, 5.9, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.3, 0.44, 11.8, 8]} />
+        <cylinderGeometry args={[0.28, 0.4, 11.8, 8]} />
         <meshStandardMaterial color={colors.trunk} roughness={1} />
       </mesh>
 

@@ -63,13 +63,13 @@ export function Casa01CinematicEnvironment({ timeOfDay }: Props) {
       <ForegroundCluster
         position={[-9.4, 0, 10.5]}
         rotation={[0, 0.35, -0.08]}
-        scale={1.05}
+        scale={0.78}
         color={color}
       />
       <ForegroundCluster
         position={[9.8, 0, -5.5]}
         rotation={[0, -0.55, 0.06]}
-        scale={0.84}
+        scale={0.63}
         color={color}
       />
     </group>
