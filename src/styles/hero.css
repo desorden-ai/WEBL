@@ -1,0 +1,64 @@
+.hero-experience,
+.hero-fallback {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #161b1e;
+}
+
+.hero-experience canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 16px max(16px, env(safe-area-inset-left));
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
+.hero-fallback {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #eef2f3;
+}
+
+.hero-fallback__panel {
+  width: min(420px, 100%);
+}
+
+.hero-fallback__eyebrow {
+  color: #9ea9ae;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+
+.hero-fallback h1 {
+  margin: 8px 0 12px;
+  font-size: clamp(28px, 8vw, 48px);
+  font-weight: 500;
+}
+
+.hero-fallback p {
+  color: #b7c0c4;
+  line-height: 1.55;
+}
+
+.hero-fallback button {
+  margin-top: 16px;
+  padding: 10px 16px;
+  border: 1px solid #59656b;
+  border-radius: 999px;
+  background: transparent;
+  color: #eef2f3;
+}

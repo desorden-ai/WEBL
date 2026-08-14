@@ -1,6 +1,0 @@
-import React,{useMemo} from 'react';
-import * as THREE from 'three';
-import {useSolPbrTextures} from '../../materials/useSolPbrTextures';
-import {MOSS_A} from './mossA';import {MOSS_B} from './mossB';import {createMossGeometry} from './MossGeometry';import {FloraInstances} from './FloraInstances';
-const ALL=[...MOSS_A,...MOSS_B];
-export const MossLayer:React.FC<{wireframeMode:boolean}>=({wireframeMode})=>{const pbr=useSolPbrTextures('06_moss',{repeat:[.35,.35],enableNormal:false,enableRoughness:false});const ga=useMemo(()=>createMossGeometry(6001,.85,.08),[]),gb=useMemo(()=>createMossGeometry(6002,.65,.06),[]);const ma=useMemo(()=>new THREE.MeshStandardMaterial({map:pbr.map,normalMap:null,roughnessMap:null,color:new THREE.Color('#9eb898'),roughness:.88,metalness:0,wireframe:wireframeMode}),[pbr.map,wireframeMode]);const mb=useMemo(()=>new THREE.MeshStandardMaterial({map:pbr.map,normalMap:null,roughnessMap:null,color:new THREE.Color('#8ea888'),roughness:.92,metalness:0,wireframe:wireframeMode}),[pbr.map,wireframeMode]);return <><FloraInstances geometry={ga} material={ma} items={ALL.filter(x=>x.kind==='MOSS_A')} lift={.01}/><FloraInstances geometry={gb} material={mb} items={ALL.filter(x=>x.kind==='MOSS_B')} lift={.01}/></>;};

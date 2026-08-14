@@ -4,17 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate:model": "node scripts/generateExteriorGlb.mjs",
-    "predev": "npm run restore:studio && node scripts/generateExteriorGlb.mjs",
     "dev": "vite",
-    "pretest": "npm run restore:studio && node scripts/generateExteriorGlb.mjs",
     "test": "node --test",
-    "prebuild": "npm run restore:studio && node scripts/generateExteriorGlb.mjs",
     "build": "vite build",
     "check": "npm test && npm run build",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy",
-    "restore:studio": "node scripts/restoreCasa01Latest.mjs"
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@react-three/drei": "10.7.8",

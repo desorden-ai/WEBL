@@ -1,5 +1,0 @@
-import React,{useMemo} from 'react';
-import {TimeOfDay} from '../../types';
-import {CrossedConiferTree} from './Casa01ForestAssets';
-type Tree={pos:[number,number,number];scale:[number,number,number];rot:number;variant:0|1|2|3};
-export const Casa01Midground:React.FC<{timeOfDay:TimeOfDay}>=({timeOfDay})=>{const trees=useMemo(()=>{const list:Tree[]=[];let seed=12345;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};const total=48;for(let i=0;i<total;i++){const angle=(i/total)*Math.PI*2+(rnd()-.5)*.25,radius=13+rnd()*16,x=Math.cos(angle)*radius,z=Math.sin(angle)*radius;if(z>-6&&z<25&&Math.abs(x)<14)continue;if(z<=-6&&z>-18&&Math.abs(x)<5)continue;const sy=.94+rnd()*.14,sxz=.90+rnd()*.15;list.push({pos:[x,0,z],scale:[sxz,sy,sxz],rot:rnd()*Math.PI*2,variant:Math.floor(rnd()*4) as 0|1|2|3})}return list},[]);const tint=useMemo(()=>timeOfDay==='SUNSET'?'#c29a84':timeOfDay==='NIGHT'?'#425868':'#b2c8be',[timeOfDay]);return <>{trees.map((tree,idx)=><CrossedConiferTree key={`mid_${idx}`} position={tree.pos} scale={tree.scale} variant={tree.variant} timeOfDay={timeOfDay} type="mid" customTint={tint}/>)}</>};

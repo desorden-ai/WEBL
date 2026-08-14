@@ -1,5 +1,0 @@
-import React,{useLayoutEffect,useRef} from 'react';
-import * as THREE from 'three';
-import {getTerrainHeight} from './RockData';
-export interface FloraItem{position:[number,number];scale:[number,number,number];rotationY:number;tiltX?:number;tiltZ?:number;}
-export const FloraInstances:React.FC<{geometry:THREE.BufferGeometry;material:THREE.Material;items:FloraItem[];lift?:number}>=({geometry,material,items,lift=0})=>{const ref=useRef<THREE.InstancedMesh>(null!);useLayoutEffect(()=>{const dummy=new THREE.Object3D();items.forEach((item,index)=>{const[x,z]=item.position,[sx,sy,sz]=item.scale;dummy.position.set(x,getTerrainHeight(x,z)+lift,z);dummy.rotation.set(item.tiltX||0,item.rotationY,item.tiltZ||0);dummy.scale.set(sx,sy,sz);dummy.updateMatrix();ref.current.setMatrixAt(index,dummy.matrix);});ref.current.instanceMatrix.needsUpdate=true;},[geometry,items,lift]);if(!items.length)return null;return <instancedMesh ref={ref} args={[geometry,material,items.length]} castShadow={false} receiveShadow/>;};

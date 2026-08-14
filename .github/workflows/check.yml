@@ -1,10 +1,12 @@
-name: Check
+name: Check Bosque
 
 on:
-  pull_request:
   push:
     branches:
-      - SOL
+      - bosque
+  pull_request:
+    branches:
+      - bosque
 
 permissions:
   contents: read
@@ -12,6 +14,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,11 +22,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22.12.0'
           cache: npm
 
       - name: Install
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
-      - name: Test generated GLB and build
+      - name: Test hero architecture and build
         run: npm run check
