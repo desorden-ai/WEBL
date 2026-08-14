@@ -1,0 +1,4 @@
+import type {FernItem,FernKind} from './floraTypes';
+const n=(s:string)=>s.startsWith('n')?-Number(s.slice(1)):Number(s);
+const r='f01|FERN_L|34.2|46.8|1.1|1|1.1|0.5;f02|FERN_S|33|45.2|0.9|0.85|0.9|1.8;f03|FERN_L|29.2|40.5|1.05|0.95|1.05|2.4;f04|FERN_M|27|38.8|1|0.9|1|0.9;f05|FERN_S|31.5|42.8|0.85|0.8|0.85|3.1;f06|FERN_M|17.8|29.2|1.1|1|1.1|1.4;f07|FERN_C|24.8|24.5|0.95|0.9|0.95|0.3;f08|FERN_M|19.2|25.5|0.95|0.9|0.95|2.1;f09|FERN_S|20.5|23|0.85|0.8|0.85|0.7;f10|FERN_C|15.5|27.5|1|0.95|1|1.9;f11|FERN_M|12.5|22|1|0.95|1|0.2;f12|FERN_S|11.2|23.5|0.8|0.75|0.8|2.7;f13|FERN_L|15.8|14.8|1.15|1.05|1.15|1.1;f14|FERN_M|17.2|13.2|0.9|0.85|0.9|2.8;f15|FERN_S|13.5|17|0.85|0.8|0.85|0.4;f16|FERN_C|19|11.5|1|0.9|1|1.6;f17|FERN_M|14.2|8.2|0.95|0.9|0.95|3';
+export const FERN_A:FernItem[]=r.split(';').map(x=>{const p=x.split('|'),v=p.slice(2).map(n);return{id:p[0],kind:p[1] as FernKind,position:[v[0],v[1]],scale:[v[2],v[3],v[4]],rotationY:v[5]};});

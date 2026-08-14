@@ -1,0 +1,5 @@
+import React,{useMemo} from 'react';
+import * as THREE from 'three';
+import {LOW_A} from './lowA';import {LOW_B1} from './lowB1';import {LOW_B2} from './lowB2';import {createLowPlantGeometry} from './LowPlantGeometry';import {FloraInstances} from './FloraInstances';
+const ALL=[...LOW_A,...LOW_B1,...LOW_B2];
+export const LowPlantLayer:React.FC<{wireframeMode:boolean}>=({wireframeMode})=>{const gs=useMemo(()=>createLowPlantGeometry(8001,6,.30,false),[]),gb=useMemo(()=>createLowPlantGeometry(8002,5,.40,true),[]);const m=useMemo(()=>new THREE.MeshStandardMaterial({color:new THREE.Color('#263d2d'),roughness:.86,metalness:0,wireframe:wireframeMode,side:THREE.DoubleSide}),[wireframeMode]);const alt=useMemo(()=>new THREE.MeshStandardMaterial({color:new THREE.Color('#304a34'),roughness:.84,metalness:0,wireframe:wireframeMode,side:THREE.DoubleSide}),[wireframeMode]);return <><FloraInstances geometry={gs} material={m} items={ALL.filter(x=>x.kind==='LOW_STEMS')}/><FloraInstances geometry={gb} material={alt} items={ALL.filter(x=>x.kind==='LOW_BROAD')}/></>;};
