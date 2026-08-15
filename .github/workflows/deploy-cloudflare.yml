@@ -24,7 +24,7 @@ jobs:
         shell: bash
         run: |
           if [ -f .bootstrap/viewport.patch ]; then
-            git apply .bootstrap/viewport.patch
+            patch -p3 < .bootstrap/viewport.patch
             rm -f .bootstrap/viewport.patch
             rmdir .bootstrap 2>/dev/null || true
             git config user.name "github-actions[bot]"
