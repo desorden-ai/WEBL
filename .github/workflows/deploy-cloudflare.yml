@@ -65,7 +65,8 @@ jobs:
             exit 0
           fi
           npx --yes wrangler@latest pages project create mansion-refugio-3d --production-branch=main || true
-          npx --yes wrangler@latest pages deploy dist \
+          npx --yes wrangler@latest pages deploy /tmp/mansion-preview \
             --project-name=mansion-refugio-3d \
             --branch=main \
-            --commit-hash="$GITHUB_SHA"
+            --commit-hash="$GITHUB_SHA" \
+            --commit-dirty=true
