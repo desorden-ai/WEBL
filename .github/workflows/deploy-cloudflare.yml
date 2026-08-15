@@ -1,16 +1,20 @@
-name: Publish Mansion Preview
+name: Deploy Mansion Refugio 3D
 
 on:
   push:
     branches:
-      - agent/mansion-refugio-3d-publish
+      - main
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: mansion-refugio-3d-main
+  cancel-in-progress: true
+
 jobs:
-  build-preview:
+  build-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -30,7 +34,7 @@ jobs:
       - name: Typecheck
         run: npm run lint
 
-      - name: Build portable preview
+      - name: Build
         run: npm run build -- --base=./
 
       - name: Publish static preview branch
@@ -49,3 +53,19 @@ jobs:
           git add -A
           git commit -m "Publish mansion refuge static preview"
           git push --force origin HEAD:mansion-refugio-3d-static
+
+      - name: Deploy Cloudflare Pages when credentials are configured
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "Cloudflare credentials are not configured in this repository; static preview remains available."
+            exit 0
+          fi
+          npx --yes wrangler@latest pages project create mansion-refugio-3d --production-branch=main || true
+          npx --yes wrangler@latest pages deploy dist \
+            --project-name=mansion-refugio-3d \
+            --branch=main \
+            --commit-hash="$GITHUB_SHA"
