@@ -11,5 +11,6 @@ Experiencia arquitectónica interactiva, móvil-first, construida con React, Thr
 2. Inicia desarrollo: `npm run dev`
 3. Valida producción: `npm run check`
 4. Previsualiza el build: `npm run preview`
+5. Publica un Worker temporal: `npm run deploy:preview`
 
 No requiere backend, claves API ni variables de entorno.
