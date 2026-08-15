@@ -1,0 +1,26 @@
+name: Export previous mansion source
+
+on:
+  push:
+    branches:
+      - agent/mansion-refugio-3d-base
+    paths:
+      - .github/workflows/export-old-viewport.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout previous mansion branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/mansion-refugio-3d
+      - name: Export previous viewport
+        uses: actions/upload-artifact@v4
+        with:
+          name: previous-viewport
+          path: src/components/Viewport3D.tsx
+          if-no-files-found: error
