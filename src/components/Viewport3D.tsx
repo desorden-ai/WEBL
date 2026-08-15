@@ -1420,157 +1420,310 @@ export function Viewport3D({
       interactiveObjects.push(step);
     }
 
-    // --- 4. Foreground Pine Tree ---
-    const barkMat = new THREE.MeshStandardMaterial({
-      map: barkTex,
-      bumpMap: barkTex,
-      bumpScale: 0.3,
-      roughness: 0.95,
+    // --- 4. Forest — reference-driven true 3D conifers ---
+    // No foreground or mid-distance tree uses billboard planes. The forest is built
+    // from instanced 3D trunks and separated volumetric branch tiers, with a small
+    // procedural needle texture inspired by the supplied spruce references.
+
+    const forestRandomFactory = (initialSeed: number) => {
+      let seed = initialSeed | 0;
+      return () => {
+        seed = (seed + 0x6d2b79f5) | 0;
+        let value = seed;
+        value = Math.imul(value ^ (value >>> 15), value | 1);
+        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+      };
+    };
+
+    const needleCanvas = document.createElement('canvas');
+    needleCanvas.width = 128;
+    needleCanvas.height = 128;
+    const needleCtx = needleCanvas.getContext('2d')!;
+    const needleRandom = forestRandomFactory(0x19af31);
+    needleCtx.fillStyle = '#183021';
+    needleCtx.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 520; i++) {
+      const x = needleRandom() * 128;
+      const y = needleRandom() * 128;
+      const length = 2 + needleRandom() * 7;
+      const green = 62 + Math.floor(needleRandom() * 70);
+      needleCtx.strokeStyle = `rgba(${20 + Math.floor(needleRandom() * 24)}, ${green}, ${
+        28 + Math.floor(needleRandom() * 30)
+      }, ${0.28 + needleRandom() * 0.55})`;
+      needleCtx.lineWidth = 0.5 + needleRandom() * 1.0;
+      needleCtx.beginPath();
+      needleCtx.moveTo(x, y);
+      needleCtx.lineTo(
+        x + (needleRandom() - 0.5) * length,
+        y - length
+      );
+      needleCtx.stroke();
+    }
+    const needleTexture = new THREE.CanvasTexture(needleCanvas);
+    needleTexture.colorSpace = THREE.SRGBColorSpace;
+    needleTexture.wrapS = THREE.RepeatWrapping;
+    needleTexture.wrapT = THREE.RepeatWrapping;
+    needleTexture.repeat.set(2.5, 3.5);
+    needleTexture.anisotropy = Math.min(maxAnisotropy, 8);
+
+    const forestFoliageMat = new THREE.MeshStandardMaterial({
+      map: needleTexture,
+      bumpMap: needleTexture,
+      bumpScale: 0.025,
+      roughness: 0.93,
+      metalness: 0.0,
+      color: '#ffffff',
     });
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.0, 24, 18), barkMat);
-    trunk.position.set(-5.8, 9.0, 16.5);
-    trunk.rotation.z = -0.04;
-    trunk.rotation.x = 0.05;
-    trunk.castShadow = true;
-    trunk.userData.interactiveData = {
-      id: 'pine-trunk',
-      name: 'Pino Centenario Autóctono',
+
+    const terrainHeightAt = (worldX: number, worldZ: number) => {
+      const localY = -(worldZ + 20);
+      return (
+        (localY + 50) * 0.16 +
+        Math.sin(worldX * 0.2) * 0.5 +
+        Math.cos(localY * 0.25) * 0.8 -
+        1.0
+      );
+    };
+
+    const foliagePalette = [
+      new THREE.Color('#183525'),
+      new THREE.Color('#21432d'),
+      new THREE.Color('#2b5035'),
+      new THREE.Color('#365d3d'),
+      new THREE.Color('#426847'),
+    ];
+
+    type TreeProfile = {
+      lowerCrown: number;
+      spread: number;
+      taper: number;
+      tiers: number;
+    };
+
+    // Six shape profiles derived from the attached conifer references.
+    const treeProfiles: TreeProfile[] = [
+      { lowerCrown: 0.34, spread: 0.16, taper: 0.82, tiers: 7 },
+      { lowerCrown: 0.28, spread: 0.19, taper: 0.76, tiers: 8 },
+      { lowerCrown: 0.22, spread: 0.22, taper: 0.72, tiers: 9 },
+      { lowerCrown: 0.31, spread: 0.20, taper: 0.80, tiers: 8 },
+      { lowerCrown: 0.38, spread: 0.17, taper: 0.84, tiers: 7 },
+      { lowerCrown: 0.25, spread: 0.21, taper: 0.74, tiers: 9 },
+    ];
+
+    const heroSpecs = [
+      { x: -11.5, z: 13.5, height: 28.0, radius: 0.52, profile: 4 },
+      { x: -24.0, z: 8.0, height: 30.0, radius: 0.56, profile: 1 },
+      { x: -30.0, z: -8.0, height: 26.0, radius: 0.48, profile: 0 },
+      { x: -22.0, z: -28.0, height: 32.0, radius: 0.60, profile: 2 },
+      { x: 27.0, z: 2.0, height: 29.0, radius: 0.54, profile: 5 },
+      { x: 34.0, z: -16.0, height: 31.0, radius: 0.58, profile: 2 },
+      { x: 23.0, z: -35.0, height: 27.0, radius: 0.50, profile: 3 },
+      { x: -40.0, z: -29.0, height: 33.0, radius: 0.62, profile: 1 },
+      { x: 45.0, z: -36.0, height: 34.0, radius: 0.64, profile: 5 },
+      { x: -47.0, z: 0.0, height: 29.0, radius: 0.55, profile: 0 },
+    ];
+
+    const trunkGeometry = new THREE.CylinderGeometry(0.58, 1.0, 1.0, 10, 4, false);
+    const crownTierGeometry = new THREE.ConeGeometry(1.0, 1.0, 8, 2, false);
+
+    const heroTrunks = new THREE.InstancedMesh(
+      trunkGeometry,
+      new THREE.MeshStandardMaterial({ map: barkTex, bumpMap: barkTex, bumpScale: 0.18, roughness: 0.97, metalness: 0.0, color: '#756d62' }),
+      heroSpecs.length
+    );
+    const heroCrowns = new THREE.InstancedMesh(
+      crownTierGeometry,
+      forestFoliageMat,
+      heroSpecs.length * 10
+    );
+
+    const heroDummy = new THREE.Object3D();
+    let heroCrownIndex = 0;
+
+    heroSpecs.forEach((spec, treeIndex) => {
+      const profile = treeProfiles[spec.profile];
+      const baseY = terrainHeightAt(spec.x, spec.z);
+
+      heroDummy.position.set(spec.x, baseY + spec.height * 0.5, spec.z);
+      heroDummy.rotation.set(0, treeIndex * 0.57, 0);
+      heroDummy.scale.set(spec.radius, spec.height, spec.radius);
+      heroDummy.updateMatrix();
+      heroTrunks.setMatrixAt(treeIndex, heroDummy.matrix);
+
+      for (let tier = 0; tier < profile.tiers; tier++) {
+        const t = tier / Math.max(1, profile.tiers - 1);
+        const y =
+          baseY +
+          spec.height *
+            (profile.lowerCrown + t * (0.94 - profile.lowerCrown));
+        const radius =
+          Math.max(
+            0.35,
+            spec.height *
+              profile.spread *
+              Math.pow(1.0 - t, profile.taper)
+          );
+        const tierHeight =
+          spec.height * (0.115 - t * 0.024);
+
+        heroDummy.position.set(spec.x, y, spec.z);
+        heroDummy.rotation.set(0, treeIndex * 0.57 + tier * 0.39, 0);
+        heroDummy.scale.set(
+          radius,
+          tierHeight,
+          radius * (0.86 + ((treeIndex + tier) % 3) * 0.06)
+        );
+        heroDummy.updateMatrix();
+        heroCrowns.setMatrixAt(heroCrownIndex, heroDummy.matrix);
+        heroCrowns.setColorAt(
+          heroCrownIndex,
+          foliagePalette[(treeIndex + tier) % foliagePalette.length]
+        );
+        heroCrownIndex += 1;
+      }
+    });
+
+    heroCrowns.count = heroCrownIndex;
+
+    for (const mesh of [heroTrunks, heroCrowns]) {
+      mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.castShadow = true;
+      mesh.receiveShadow = mesh === heroTrunks;
+      mesh.frustumCulled = true;
+      mesh.computeBoundingBox();
+      mesh.computeBoundingSphere();
+      scene.add(mesh);
+    }
+    if (heroCrowns.instanceColor) {
+      heroCrowns.instanceColor.needsUpdate = true;
+    }
+
+    heroTrunks.userData.interactiveData = {
+      id: 'pine-forest-hero',
+      name: 'Coníferas 3D del Bosque',
       category: 'paisaje',
-      description: 'Árbol centenario preservado in situ como eje compositivo natural.',
+      description:
+        'Coníferas volumétricas con tronco texturizado y niveles de ramas 3D inspirados en las referencias.',
       targetView: 'general',
       hint: 'Clic para vista frontal paisajística',
       color: '#22c55e',
       icon: '🌲',
     } as InteractiveElementData;
-    scene.add(trunk);
-    interactiveObjects.push(trunk);
-
+    interactiveObjects.push(heroTrunks);
     interactiveObjectsRef.current = interactiveObjects;
 
-    for (let i = 0; i < 6; i++) {
-      const root = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 4.0, 8), barkMat);
-      root.position.set(-5.8 + Math.cos(i) * 1.2, -1.0, 16.5 + Math.sin(i) * 1.2);
-      root.rotation.z = 0.6 * (i % 2 === 0 ? 1 : -1);
-      root.rotation.x = 0.4;
-      scene.add(root);
-    }
+    // --- 5. Mid / Far Forest — true 3D instanced LOD ---
+    const forestRandom = forestRandomFactory(0x6d2b79f5);
+    const treeCandidateCount = 320;
+    const lodTrunks = new THREE.InstancedMesh(
+      new THREE.CylinderGeometry(0.55, 1.0, 1.0, 7, 1, false),
+      new THREE.MeshStandardMaterial({ map: barkTex, bumpMap: barkTex, bumpScale: 0.18, roughness: 0.97, metalness: 0.0, color: '#756d62' }),
+      treeCandidateCount
+    );
+    const lodCrowns = new THREE.InstancedMesh(
+      new THREE.ConeGeometry(1.0, 1.0, 7, 1, false),
+      forestFoliageMat,
+      treeCandidateCount * 7
+    );
 
-    // --- 5. Pine Forest — SEDON-inspired procedural instancing ---
-    // The forest is described by a deterministic seed and rendered in six instanced
-    // draw batches (two crossed billboards x three distance bands) instead of creating
-    // hundreds of independent Group/Mesh objects. Near trees retain shadows; mid/far
-    // bands rely on atmospheric depth and alpha-tested foliage.
-    const nearTreeMat = new THREE.MeshStandardMaterial({
-      map: realisticTreeTexture,
-      transparent: true,
-      alphaTest: 0.4,
-      side: THREE.DoubleSide,
-      roughness: 0.9,
-      color: '#ffffff',
-      depthWrite: true,
-    });
-    const midTreeMat = nearTreeMat.clone();
-    const farTreeMat = nearTreeMat.clone();
-
-    midTreeMat.transparent = false;
-    midTreeMat.alphaTest = 0.42;
-    midTreeMat.depthWrite = true;
-    midTreeMat.color.set('#f3f7f3');
-
-    farTreeMat.transparent = false;
-    farTreeMat.alphaTest = 0.46;
-    farTreeMat.depthWrite = true;
-    farTreeMat.color.set('#dfe9e2');
-
-    const planeGeo = new THREE.PlaneGeometry(6.4, 16.0);
-    const totalTrees = 240;
-
-    type ForestBand = {
-      a: THREE.InstancedMesh;
-      b: THREE.InstancedMesh;
-      count: number;
-      castsShadow: boolean;
-      receivesShadow: boolean;
-    };
-
-    const createForestBand = (
-      material: THREE.MeshStandardMaterial,
-      castsShadow: boolean,
-      receivesShadow: boolean
-    ): ForestBand => ({
-      a: new THREE.InstancedMesh(planeGeo, material, totalTrees),
-      b: new THREE.InstancedMesh(planeGeo, material, totalTrees),
-      count: 0,
-      castsShadow,
-      receivesShadow,
-    });
-
-    const forestBands: ForestBand[] = [
-      createForestBand(nearTreeMat, true, true),
-      createForestBand(midTreeMat, false, true),
-      createForestBand(farTreeMat, false, false),
+    const exteriorCameraSafety = [
+      new THREE.Vector2(0.0, 27.0),
+      new THREE.Vector2(-4.5, 18.0),
+      new THREE.Vector2(18.0, 12.0),
     ];
 
-    // Mulberry32-style deterministic PRNG: the same compact scene description
-    // always reconstructs the same forest across reloads and devices.
-    let forestSeed = 0x6d2b79f5;
-    const forestRandom = () => {
-      forestSeed = (forestSeed + 0x6d2b79f5) | 0;
-      let t = forestSeed;
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
+    const lodDummy = new THREE.Object3D();
+    let lodTreeIndex = 0;
+    let lodCrownIndex = 0;
 
-    const treeTransform = new THREE.Object3D();
+    for (let i = 0; i < treeCandidateCount; i++) {
+      const px = (forestRandom() - 0.5) * 190;
+      const pz = 17.0 - forestRandom() * 190.0;
 
-    for (let i = 0; i < totalTrees; i++) {
-      const px = (forestRandom() - 0.5) * 120;
-      const pz = 8.0 - forestRandom() * 98.0;
+      // House clearing and camera safety: no tree can intersect an exterior camera.
+      if (px > -18.0 && px < 18.0 && pz > -13.0 && pz < 31.0) continue;
+      if (
+        exteriorCameraSafety.some(
+          (point) => Math.hypot(px - point.x, pz - point.y) < 17.0
+        )
+      ) {
+        continue;
+      }
 
-      // Preserve the architectural clearings from the original scene.
-      if (px > -8.0 && px < 8.0 && pz > -5.0 && pz < 28.0) continue;
-      if (px > 5.0 && px < 25.0 && pz > -5.0 && pz < 15.0) continue;
+      const profileIndex = Math.floor(forestRandom() * treeProfiles.length);
+      const profile = treeProfiles[profileIndex];
+      const depth = Math.max(0, -pz);
+      const height =
+        depth < 50
+          ? 17.0 + forestRandom() * 7.0
+          : depth < 105
+          ? 19.0 + forestRandom() * 8.0
+          : 21.0 + forestRandom() * 9.0;
+      const trunkRadius = 0.22 + forestRandom() * 0.17;
+      const baseY = terrainHeightAt(px, pz);
+      const rotation = forestRandom() * Math.PI * 2;
 
-      const scale = pz < -30
-        ? 1.4 + forestRandom() * 1.2
-        : 0.42 + forestRandom() * 0.35;
-      const rotation = forestRandom() * Math.PI;
-      const terrainHeight = (pz + 20) * 0.16 + 8 * scale - 2.0;
+      lodDummy.position.set(px, baseY + height * 0.5, pz);
+      lodDummy.rotation.set(0, rotation, 0);
+      lodDummy.scale.set(trunkRadius, height, trunkRadius);
+      lodDummy.updateMatrix();
+      lodTrunks.setMatrixAt(lodTreeIndex, lodDummy.matrix);
 
-      // Three perceptual LOD bands. The geometry stays tiny while shadows and
-      // material cost fall away with distance.
-      const depth = -pz;
-      const bandIndex = depth < 20 ? 0 : depth < 55 ? 1 : 2;
-      const band = forestBands[bandIndex];
-      const instanceIndex = band.count;
+      const tiers = depth > 100 ? 5 : Math.min(7, profile.tiers);
+      for (let tier = 0; tier < tiers; tier++) {
+        const t = tier / Math.max(1, tiers - 1);
+        const y =
+          baseY +
+          height *
+            (profile.lowerCrown + t * (0.94 - profile.lowerCrown));
+        const radius =
+          Math.max(
+            0.34,
+            height *
+              profile.spread *
+              Math.pow(1.0 - t, profile.taper) *
+              (0.92 + forestRandom() * 0.16)
+          );
+        const tierHeight =
+          height * (0.11 - t * 0.022) * (0.90 + forestRandom() * 0.18);
 
-      treeTransform.position.set(px, terrainHeight, pz);
-      treeTransform.scale.set(scale, scale, scale);
-      treeTransform.rotation.set(0, rotation, 0);
-      treeTransform.updateMatrix();
-      band.a.setMatrixAt(instanceIndex, treeTransform.matrix);
+        lodDummy.position.set(px, y, pz);
+        lodDummy.rotation.set(0, rotation + tier * 0.41, 0);
+        lodDummy.scale.set(
+          radius,
+          tierHeight,
+          radius * (0.88 + forestRandom() * 0.12)
+        );
+        lodDummy.updateMatrix();
+        lodCrowns.setMatrixAt(lodCrownIndex, lodDummy.matrix);
+        lodCrowns.setColorAt(
+          lodCrownIndex,
+          foliagePalette[(profileIndex + tier + i) % foliagePalette.length]
+        );
+        lodCrownIndex += 1;
+      }
 
-      treeTransform.rotation.y = rotation + Math.PI / 2;
-      treeTransform.updateMatrix();
-      band.b.setMatrixAt(instanceIndex, treeTransform.matrix);
-
-      band.count += 1;
+      lodTreeIndex += 1;
     }
 
-    forestBands.forEach((band) => {
-      for (const mesh of [band.a, band.b]) {
-        mesh.count = band.count;
-        mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
-        mesh.instanceMatrix.needsUpdate = true;
-        mesh.castShadow = band.castsShadow;
-        mesh.receiveShadow = band.receivesShadow;
-        mesh.frustumCulled = true;
-        mesh.computeBoundingBox();
-        mesh.computeBoundingSphere();
-        scene.add(mesh);
-      }
-    });
+    lodTrunks.count = lodTreeIndex;
+    lodCrowns.count = lodCrownIndex;
+
+    for (const mesh of [lodTrunks, lodCrowns]) {
+      mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.castShadow = false;
+      mesh.receiveShadow = mesh === lodTrunks;
+      mesh.frustumCulled = true;
+      mesh.computeBoundingBox();
+      mesh.computeBoundingSphere();
+      scene.add(mesh);
+    }
+    if (lodCrowns.instanceColor) {
+      lodCrowns.instanceColor.needsUpdate = true;
+    }
 
     // --- 6. Atmospheric Floating Particles ---
     const particleGeo = new THREE.BufferGeometry();
