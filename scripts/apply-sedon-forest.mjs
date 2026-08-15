@@ -21,9 +21,17 @@ const replacement = `    // --- 5. Pine Forest — SEDON-inspired procedural ins
     // draw batches (two crossed billboards x three distance bands) instead of creating
     // hundreds of independent Group/Mesh objects. Near trees retain shadows; mid/far
     // bands rely on atmospheric depth and alpha-tested foliage.
-    const nearTreeMat = treeMat;
-    const midTreeMat = treeMat.clone();
-    const farTreeMat = treeMat.clone();
+    const nearTreeMat = new THREE.MeshStandardMaterial({
+      map: realisticTreeTexture,
+      transparent: true,
+      alphaTest: 0.4,
+      side: THREE.DoubleSide,
+      roughness: 0.9,
+      color: '#ffffff',
+      depthWrite: true,
+    });
+    const midTreeMat = nearTreeMat.clone();
+    const farTreeMat = nearTreeMat.clone();
 
     midTreeMat.transparent = false;
     midTreeMat.alphaTest = 0.42;
