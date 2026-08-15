@@ -7,7 +7,7 @@ Visualizador arquitectónico 3D de alta fidelidad para una mansión refugio de m
 ## 🌟 Características Principales
 
 - **🎮 Motor 3D en Tiempo Real**: Renderizado procedural con Three.js, sombras suaves, texturas arquitectónicas y materiales físicamente realistas (PBR).
-- **🌲 Bosque procedural instanciado**: distribución determinista por seed, `InstancedMesh`, planos cruzados y tres bandas perceptivas de distancia para reducir objetos y coste de sombras sin cargar modelos de árboles pesados.
+- **🌲 Bosque 3D instanciado**: coníferas volumétricas con troncos texturizados, coronas 3D por niveles, seis perfiles morfológicos y distribución determinista; no utiliza billboards para el bosque cercano, medio o lejano.
 - **🎥 Transiciones Cinematográficas de Cámara**: Curvas Bézier 3D suaves con aceleración cúbica (`easeInOutCubic`) sin destellos ni saltos de ángulo.
 - **🛋️ Múltiples Escenas Arquitectónicas**:
   - *Vista General / Fachada Exterior*
@@ -23,17 +23,17 @@ Visualizador arquitectónico 3D de alta fidelidad para una mansión refugio de m
 
 ---
 
-## 🌲 Renderizado procedural ligero
+## 🌲 Renderizado forestal 3D ligero
 
-El bosque exterior adopta una estrategia inspirada en técnicas de escenas procedurales compactas:
+El bosque exterior combina volumen real y coste de GPU controlado:
 
 - la distribución se reconstruye siempre desde una **seed determinista**;
-- hasta **240 candidatos de árbol** se representan mediante únicamente **6 lotes `InstancedMesh` principales**: dos planos cruzados por tres bandas de distancia;
-- la banda cercana conserva sombras; las bandas media y lejana reducen progresivamente el coste de sombras y material;
-- todos los árboles comparten una única geometría de billboard y una textura procedural reutilizada;
-- los claros alrededor de la arquitectura se conservan explícitamente.
-
-La arquitectura de la mansión, cámaras, interiores, interacción y sistema atmosférico permanecen independientes de esta optimización.
+- los árboles de primer plano usan **troncos 3D y coronas volumétricas por niveles**, con sombras donde aportan profundidad;
+- el bosque medio y lejano mantiene geometría **3D instanciada**, reduciendo segmentos y sombras en lugar de sustituir árboles por planos;
+- se utilizan **seis perfiles de conífera** derivados de las referencias visuales para variar altura de copa, apertura, taper y densidad;
+- la corteza reutiliza la textura procedural existente y el follaje usa una microtextura de agujas generada en runtime;
+- existen zonas de seguridad alrededor de las cámaras exteriores para impedir que un árbol atraviese o tape la cámara;
+- la arquitectura de la mansión, interiores, interacción y sistema atmosférico permanecen independientes de esta optimización.
 
 ---
 
