@@ -1,0 +1,52 @@
+name: Import canonical mansion source
+
+on:
+  push:
+    branches:
+      - agent/mansion-refugio-3d-base
+    paths:
+      - .github/workflows/import-drive-source.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout isolated base branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/mansion-refugio-3d-base
+          fetch-depth: 0
+
+      - name: Fetch canonical ZIP from SOL Drive archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 \
+            'https://drive.usercontent.google.com/download?id=1XnHivTD3V-pIORbhCPq7fHpcRe9iSiD5&export=download&confirm=t' \
+            -o /tmp/mansion-source.zip
+          echo 'd4afe547a50c1b5969bb3fe038fbe2b767579b07747d804dc6063a5e1dc466aa  /tmp/mansion-source.zip' | sha256sum -c -
+          test "$(unzip -Z1 /tmp/mansion-source.zip | grep -vc '/$')" -eq 31
+
+      - name: Replace branch tree with canonical archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/mansion-source
+          mkdir -p /tmp/mansion-source
+          unzip -q /tmp/mansion-source.zip -d /tmp/mansion-source
+          git rm -rf .
+          cp -a /tmp/mansion-source/. .
+          test "$(find . -type f -not -path './.git/*' | wc -l)" -eq 31
+
+      - name: Commit exact source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'ChatGPT CONTROL'
+          git config user.email 'actions@github.com'
+          git add -A
+          git commit -m 'Add mansion refuge 3D base from supplied archive'
+          git push origin HEAD:agent/mansion-refugio-3d-base
