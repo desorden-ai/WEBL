@@ -1,0 +1,77 @@
+name: Verify mansion Bun lock
+
+on:
+  push:
+    branches:
+      - agent/mansion-refugio-3d-base
+    paths:
+      - .github/workflows/test-bun-lock.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Generate current lock
+        shell: bash
+        run: |
+          cat > package.json <<'JSON'
+          {
+            "name": "mansion-refugio-3d",
+            "private": true,
+            "version": "1.0.0",
+            "description": "Experiencia arquitectónica interactiva 3D con Three.js, React y Tailwind CSS",
+            "type": "module",
+            "scripts": {
+              "dev": "vite --port=3000 --host=0.0.0.0",
+              "build": "vite build",
+              "preview": "vite preview",
+              "clean": "rm -rf dist",
+              "lint": "tsc --noEmit",
+              "deploy:cloudflare": "npx wrangler pages deploy dist"
+            },
+            "dependencies": {
+              "@google/genai": "^2.4.0",
+              "@tailwindcss/vite": "^4.1.14",
+              "@types/three": "^0.185.4",
+              "@vitejs/plugin-react": "^5.0.4",
+              "dotenv": "^17.2.3",
+              "express": "^4.21.2",
+              "lucide-react": "^0.546.0",
+              "motion": "^12.23.24",
+              "react": "^19.0.1",
+              "react-dom": "^19.0.1",
+              "three": "^0.185.1",
+              "vite": "^6.2.3"
+            },
+            "devDependencies": {
+              "@types/node": "^22.14.0",
+              "autoprefixer": "^10.4.21",
+              "esbuild": "^0.25.0",
+              "tailwindcss": "^4.1.14",
+              "tsx": "^4.21.0",
+              "typescript": "~5.8.2",
+              "vite": "^6.2.3",
+              "@types/express": "^4.17.21"
+            }
+          }
+          JSON
+          rm -f bun.lock bun.lockb package-lock.json
+          bun install --lockfile-only
+          python - <<'PY'
+          import hashlib, pathlib
+          b=pathlib.Path('bun.lock').read_bytes()
+          sha=hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()
+          print('bun.lock bytes:', len(b))
+          print('bun.lock git blob:', sha)
+          if sha != 'e40a893c005f7fa5d920c4e6ef187231046ffb18':
+              raise SystemExit('LOCK_MISMATCH')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-bun-lock
+          path: bun.lock
