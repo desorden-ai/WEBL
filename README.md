@@ -7,6 +7,7 @@ Visualizador arquitectónico 3D de alta fidelidad para una mansión refugio de m
 ## 🌟 Características Principales
 
 - **🎮 Motor 3D en Tiempo Real**: Renderizado procedural con Three.js, sombras suaves, texturas arquitectónicas y materiales físicamente realistas (PBR).
+- **🌲 Bosque procedural instanciado**: distribución determinista por seed, `InstancedMesh`, planos cruzados y tres bandas perceptivas de distancia para reducir objetos y coste de sombras sin cargar modelos de árboles pesados.
 - **🎥 Transiciones Cinematográficas de Cámara**: Curvas Bézier 3D suaves con aceleración cúbica (`easeInOutCubic`) sin destellos ni saltos de ángulo.
 - **🛋️ Múltiples Escenas Arquitectónicas**:
   - *Vista General / Fachada Exterior*
@@ -19,6 +20,20 @@ Visualizador arquitectónico 3D de alta fidelidad para una mansión refugio de m
 - **🎨 Filtros Visuales**: Colorimetría arquitectónica (Natural, Blanco y Negro Cinematográfico, Sepia Editorial, Vívido).
 - **📱 100% Responsivo y Táctil**: Soporte gestual optimizado para smartphones, tablets y pantallas de ultra-alta resolución.
 - **⚡ Ultrarrápido y sin backend pesado**: SPA estática compilada con Vite lista para CDN global en el *Edge* de Cloudflare.
+
+---
+
+## 🌲 Renderizado procedural ligero
+
+El bosque exterior adopta una estrategia inspirada en técnicas de escenas procedurales compactas:
+
+- la distribución se reconstruye siempre desde una **seed determinista**;
+- hasta **240 candidatos de árbol** se representan mediante únicamente **6 lotes `InstancedMesh` principales**: dos planos cruzados por tres bandas de distancia;
+- la banda cercana conserva sombras; las bandas media y lejana reducen progresivamente el coste de sombras y material;
+- todos los árboles comparten una única geometría de billboard y una textura procedural reutilizada;
+- los claros alrededor de la arquitectura se conservan explícitamente.
+
+La arquitectura de la mansión, cámaras, interiores, interacción y sistema atmosférico permanecen independientes de esta optimización.
 
 ---
 
@@ -37,8 +52,8 @@ Visualizador arquitectónico 3D de alta fidelidad para una mansión refugio de m
 
 ### 1. Clonar el repositorio
 ```bash
-git clone https://github.com/TU_USUARIO/mansion-refugio-3d.git
-cd mansion-refugio-3d
+git clone https://github.com/desorden-ai/WEBL.git
+cd WEBL
 ```
 
 ### 2. Instalar dependencias
@@ -66,13 +81,12 @@ Generará los archivos optimizados en la carpeta `dist/`.
 
 1. Sube tu proyecto a un repositorio en **GitHub**.
 2. Entra en el panel de [Cloudflare Dashboard](https://dash.cloudflare.com/) > **Compute (Workers & Pages)** > **Create** > **Pages** > **Connect to Git**.
-3. Selecciona tu repositorio `mansion-refugio-3d`.
+3. Selecciona tu repositorio `WEBL`.
 4. En los ajustes de compilación (**Build settings**):
    - **Framework preset**: `Vite` (o `None`)
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
-   - **Node.js Version** (Opcional en Variables de Entorno): `NODE_VERSION = 20`
-5. Haz clic en **Save and Deploy**. ¡Tu aplicación estará publicada mundialmente en segundos con HTTPS automático y CDN global!
+5. Haz clic en **Save and Deploy**.
 
 ---
 
@@ -97,12 +111,7 @@ npx wrangler pages deploy dist --project-name=mansion-refugio-3d
 
 ### Opción C: Integración Continua con GitHub Actions
 
-El repositorio incluye un flujo de trabajo preconfigurado en `.github/workflows/deploy-cloudflare.yml`. Para activarlo:
-1. En tu repositorio GitHub, ve a **Settings** > **Secrets and variables** > **Actions**.
-2. Añade:
-   - `CLOUDFLARE_API_TOKEN`: Token de API con permisos para Cloudflare Pages.
-   - `CLOUDFLARE_ACCOUNT_ID`: ID de tu cuenta de Cloudflare.
-3. Cada `push` a la rama `main` compilará y desplegará automáticamente.
+El repositorio incluye un flujo de trabajo preconfigurado en `.github/workflows/deploy-cloudflare.yml`. Cada `push` a `main` ejecuta TypeScript, build, publicación de preview estática y despliegue de Cloudflare Pages cuando están configurados los secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
 
 ---
 
@@ -129,9 +138,9 @@ El repositorio incluye un flujo de trabajo preconfigurado en `.github/workflows/
 │   ├── App.tsx                     # Componente principal
 │   └── main.tsx                    # Punto de entrada
 ├── wrangler.jsonc                  # Configuración Cloudflare Wrangler
-├── wrangler.toml                   # Configuración alternativa Wrangler
 ├── vite.config.ts                  # Configuración de Vite
 ├── package.json
+├── package-lock.json
 └── tsconfig.json
 ```
 
