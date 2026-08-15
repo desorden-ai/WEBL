@@ -1,11 +1,33 @@
+# Node & Dependencies
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build Outputs
 dist/
-.vite/
+dist-ssr/
+build/
+coverage/
+
+# Cloudflare & Serverless
 .wrangler/
-.dev.vars
+.cloudflare/
+
+# Environment Variables
 .env
 .env.*
 !.env.example
-*.log
+
+# OS & Editor Files
 .DS_Store
 Thumbs.db
+*.log
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

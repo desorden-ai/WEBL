@@ -1,0 +1,6 @@
+{
+  "name": "Mansión Refugio 3D",
+  "description": "Experiencia arquitectónica interactiva 3D con desplazamiento automático continuo entre escenas, activación de visualización 360° desde el menú superior e interfaz minimalista con ajustes solares y ambientales.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
