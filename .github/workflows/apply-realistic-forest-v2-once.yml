@@ -31,6 +31,21 @@ jobs:
         with:
           node-version: 22
 
+      - name: Fix forest bark material reference
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/apply-realistic-forest-v2.mjs')
+          source = path.read_text()
+          needle = r"barkMat,\n"
+          replacement = r"new THREE.MeshStandardMaterial({ map: barkTex, bumpMap: barkTex, bumpScale: 0.18, roughness: 0.97, metalness: 0.0, color: '#756d62' }),\n"
+          matches = source.count(needle)
+          if matches != 2:
+              raise SystemExit(f'Expected 2 barkMat references, found {matches}')
+          path.write_text(source.replace(needle, replacement))
+          PY
+
       - name: Apply reference-driven 3D forest
         run: node scripts/apply-realistic-forest-v2.mjs
 
