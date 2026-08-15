@@ -8,10 +8,9 @@ on:
 
 permissions:
   contents: write
-  deployments: write
 
 jobs:
-  build-deploy:
+  build-preview:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -19,20 +18,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Materialize canonical viewport patch
-        shell: bash
-        run: |
-          if [ -f .bootstrap/viewport.patch ]; then
-            git apply -p0 .bootstrap/viewport.patch
-            rm -f .bootstrap/viewport.patch
-            rmdir .bootstrap 2>/dev/null || true
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "Apply canonical mansion viewport"
-            git push origin HEAD:agent/mansion-refugio-3d-publish
-          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -45,12 +30,22 @@ jobs:
       - name: Typecheck
         run: npm run lint
 
-      - name: Build
-        run: npm run build
+      - name: Build portable preview
+        run: npm run build -- --base=./
 
-      - name: Deploy Cloudflare Pages preview
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=mansion-refugio-3d --branch=mansion-base
+      - name: Publish static preview branch
+        shell: bash
+        run: |
+          rm -rf /tmp/mansion-preview
+          mkdir -p /tmp/mansion-preview
+          cp -R dist/. /tmp/mansion-preview/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan mansion-refugio-3d-static
+          git rm -rf . || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -R /tmp/mansion-preview/. .
+          touch .nojekyll
+          git add -A
+          git commit -m "Publish mansion refuge static preview"
+          git push --force origin HEAD:mansion-refugio-3d-static
