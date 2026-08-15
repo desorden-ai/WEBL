@@ -1,0 +1,56 @@
+name: Publish Mansion Preview
+
+on:
+  push:
+    branches:
+      - agent/mansion-refugio-3d-publish
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  deployments: write
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Materialize canonical viewport patch
+        shell: bash
+        run: |
+          if [ -f .bootstrap/viewport.patch ]; then
+            git apply .bootstrap/viewport.patch
+            rm -f .bootstrap/viewport.patch
+            rmdir .bootstrap 2>/dev/null || true
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Apply canonical mansion viewport"
+            git push origin HEAD:agent/mansion-refugio-3d-publish
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy Cloudflare Pages preview
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=mansion-refugio-3d --branch=mansion-base
