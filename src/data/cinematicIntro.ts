@@ -1,5 +1,7 @@
 export const CINEMATIC_INTRO = {
   duration: 10.005,
+  fps: 24,
+  totalFrames: 240,
   videoEndTime: 9.85,
   scrollHeightVh: 650,
   videoEndProgress: 0.96,
