@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Scene } from './components/Scene';
 import { StudioUI } from './components/StudioUI';
+import { getSceneReveal, ScrollCinematicIntro } from './components/ScrollCinematicIntro';
 import { CameraPreset, CameraState, StudioSettings } from './types';
 
 const CAMERA_PRESETS: CameraPreset[] = [
@@ -45,6 +46,7 @@ export default function App() {
     target: CAMERA_PRESETS[0].target,
     fov: CAMERA_PRESETS[0].fov,
   });
+  const [introProgress, setIntroProgress] = useState(0);
 
   const [settings, setSettings] = useState<StudioSettings>({
     showGrid: false,
@@ -69,22 +71,53 @@ export default function App() {
     setActivePreset(CAMERA_PRESETS[0]);
   };
 
+  const sceneReveal = getSceneReveal(introProgress);
+  const shouldMountScene = introProgress >= 0.52;
+  const interactionReady = introProgress >= 0.94;
+  const studioUiVisible = introProgress >= 0.985;
+
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-slate-950 select-none">
-      <Scene
-        activePreset={activePreset}
-        onCameraUpdate={setCameraState}
-        settings={settings}
-      />
-      <StudioUI
-        presets={CAMERA_PRESETS}
-        activePresetId={activePreset?.id || ''}
-        onSelectPreset={handleSelectPreset}
-        cameraState={cameraState}
-        settings={settings}
-        onUpdateSettings={handleUpdateSettings}
-        onResetHeroCamera={handleResetHeroCamera}
-      />
-    </div>
+    <main className="relative min-h-screen w-full overflow-x-hidden bg-black select-none">
+      <div
+        className="fixed inset-0 z-0 bg-slate-950"
+        style={{
+          opacity: shouldMountScene ? Math.max(0.001, sceneReveal) : 0,
+          pointerEvents: interactionReady ? 'auto' : 'none',
+        }}
+        aria-hidden={!interactionReady}
+      >
+        {shouldMountScene && (
+          <Scene
+            activePreset={activePreset}
+            onCameraUpdate={setCameraState}
+            settings={settings}
+            cinematicProgress={sceneReveal}
+          />
+        )}
+      </div>
+
+      <ScrollCinematicIntro onProgress={setIntroProgress} />
+
+      {shouldMountScene && (
+        <div
+          className="fixed inset-0 z-20 transition-opacity duration-500"
+          style={{
+            opacity: studioUiVisible ? 1 : 0,
+            pointerEvents: studioUiVisible ? 'auto' : 'none',
+          }}
+          aria-hidden={!studioUiVisible}
+        >
+          <StudioUI
+            presets={CAMERA_PRESETS}
+            activePresetId={activePreset?.id || ''}
+            onSelectPreset={handleSelectPreset}
+            cameraState={cameraState}
+            settings={settings}
+            onUpdateSettings={handleUpdateSettings}
+            onResetHeroCamera={handleResetHeroCamera}
+          />
+        </div>
+      )}
+    </main>
   );
 }
