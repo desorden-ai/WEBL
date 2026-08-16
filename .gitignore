@@ -11,6 +11,10 @@ dist-ssr/
 build/
 coverage/
 
+# Generated progressive 3D assets
+public/3d-manifest.json
+public/models/mansion.glb
+
 # Cloudflare & Serverless
 .wrangler/
 .cloudflare/
