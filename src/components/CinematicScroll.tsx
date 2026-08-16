@@ -11,9 +11,11 @@ export function CinematicScroll() {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const rafRef = useRef<number | null>(null);
+  const frameRafRef = useRef<number | null>(null);
   const [progress, setProgress] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [frameReadout, setFrameReadout] = useState({ frame: 1, time: 0 });
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -64,6 +66,42 @@ export function CinematicScroll() {
     progress,
     enabled: !reducedMotion,
   });
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setFrameReadout({ frame: 1, time: 0 });
+      return;
+    }
+
+    let lastFrame = -1;
+
+    const updateFrameReadout = () => {
+      const video = videoRef.current;
+      if (video && video.readyState >= HTMLMediaElement.HAVE_METADATA) {
+        const time = Math.max(0, video.currentTime);
+        const frame = Math.min(
+          CINEMATIC_INTRO.totalFrames,
+          Math.max(1, Math.floor(time * CINEMATIC_INTRO.fps) + 1)
+        );
+
+        if (frame !== lastFrame) {
+          lastFrame = frame;
+          setFrameReadout({ frame, time });
+        }
+      }
+
+      frameRafRef.current = requestAnimationFrame(updateFrameReadout);
+    };
+
+    frameRafRef.current = requestAnimationFrame(updateFrameReadout);
+
+    return () => {
+      if (frameRafRef.current !== null) {
+        cancelAnimationFrame(frameRafRef.current);
+        frameRafRef.current = null;
+      }
+    };
+  }, [reducedMotion]);
 
   const sectionHeight = useMemo(
     () => (reducedMotion ? '100dvh' : `${CINEMATIC_INTRO.scrollHeightVh}vh`),
@@ -206,6 +244,41 @@ export function CinematicScroll() {
               'radial-gradient(ellipse at 50% 48%, transparent 42%, rgba(0,0,0,0.08) 68%, rgba(0,0,0,0.38) 100%), linear-gradient(to bottom, rgba(2,8,7,0.14) 0%, transparent 24%, transparent 72%, rgba(1,6,5,0.24) 100%)',
           }}
         />
+
+        {/* Temporary calibration HUD: remove once scroll duration is locked. */}
+        {!reducedMotion && (
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              right: 12,
+              bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+              zIndex: 20,
+              padding: '7px 9px',
+              borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.18)',
+              background: 'rgba(0,0,0,0.58)',
+              boxShadow: '0 4px 18px rgba(0,0,0,0.28)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              color: 'rgba(255,255,255,0.94)',
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+              fontSize: 11,
+              lineHeight: 1.35,
+              letterSpacing: '0.02em',
+              textAlign: 'right',
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}
+          >
+            <div style={{ fontWeight: 700 }}>
+              FRAME {String(frameReadout.frame).padStart(3, '0')} / {CINEMATIC_INTRO.totalFrames}
+            </div>
+            <div style={{ opacity: 0.72 }}>
+              {frameReadout.time.toFixed(2)}s · SCROLL {(progress * 100).toFixed(1)}%
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
