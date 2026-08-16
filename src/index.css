@@ -1,1 +1,113 @@
 @import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  background-color: #030706;
+  color: #f1f5f9;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.glass-panel {
+  background: rgba(8, 14, 13, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.glass-panel-subtle {
+  background: rgba(8, 14, 13, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+input[type="range"] {
+  accent-color: #34d399;
+}
+
+@keyframes filmGrainJitter {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-0.8%, 0.5%, 0); }
+  40% { transform: translate3d(0.6%, -0.7%, 0); }
+  60% { transform: translate3d(-0.4%, -0.3%, 0); }
+  80% { transform: translate3d(0.7%, 0.6%, 0); }
+}
+
+@keyframes fogDriftFar {
+  0% { transform: translate3d(-1%, -1%, 0) scale(1.01) rotate(0deg); }
+  50% { transform: translate3d(1.5%, 1.2%, 0) scale(1.03) rotate(0.4deg); }
+  100% { transform: translate3d(-1%, -1%, 0) scale(1.01) rotate(0deg); }
+}
+
+@keyframes fogDriftNear {
+  0% { transform: translate3d(1.8%, -1.2%, 0) scale(1.04) rotate(-0.3deg); }
+  50% { transform: translate3d(-2%, 1.6%, 0) scale(1.06) rotate(0.5deg); }
+  100% { transform: translate3d(1.8%, -1.2%, 0) scale(1.04) rotate(-0.3deg); }
+}
+
+.animate-fog-far { animation: fogDriftFar 18s ease-in-out infinite; }
+.animate-fog-near { animation: fogDriftNear 24s ease-in-out infinite; }
+.animate-film-grain { animation: filmGrainJitter 0.65s steps(8) infinite; }
+
+@keyframes crtScanlineRoll {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+@keyframes tvNoiseFlicker {
+  0% { opacity: 0.92; }
+  25% { opacity: 1.0; }
+  50% { opacity: 0.88; }
+  75% { opacity: 0.98; }
+  100% { opacity: 0.92; }
+}
+
+@keyframes vhsTrackingGlitch {
+  0%, 93%, 100% {
+    transform: translateY(0) scaleY(1);
+    filter: blur(0px);
+  }
+  94% {
+    transform: translateY(-1.5%) scaleY(1.02);
+    filter: blur(0.6px);
+  }
+  96% {
+    transform: translateY(1%) scaleY(0.99);
+    filter: blur(0.3px);
+  }
+}
+
+.animate-scanline-roll { animation: crtScanlineRoll 10s linear infinite; }
+.animate-tv-noise { animation: filmGrainJitter 0.18s steps(4) infinite, tvNoiseFlicker 0.1s steps(2) infinite; }
+.animate-vhs-tracking { animation: vhsTrackingGlitch 7s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fog-far,
+  .animate-fog-near,
+  .animate-film-grain,
+  .animate-scanline-roll,
+  .animate-tv-noise,
+  .animate-vhs-tracking {
+    animation: none !important;
+  }
+}
