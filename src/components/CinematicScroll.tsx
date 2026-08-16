@@ -8,7 +8,8 @@ import {
 
 type ScrubPhase = 'ready' | 'scrubbing' | 'settled';
 
-const SCRUB_TRAVEL_SCREENS = 1.0;
+// 1 / 1.4 = 0.714285... viewport heights: +40% gesture sensitivity.
+const SCRUB_TRAVEL_SCREENS = 0.7142857;
 const SCRUB_DAMPING_MS = 82;
 const SEEK_INTERVAL_MS = 34;
 const WHEEL_GAIN = 1.55;
