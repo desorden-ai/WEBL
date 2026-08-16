@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git status --short
+          git status --short --untracked-files=all
           python - <<'PY'
           import subprocess
           allowed = {
@@ -92,7 +92,7 @@ jobs:
               'public/cinematic/intro/transition/layer-foreground.webp',
               'public/cinematic/intro/transition/final-depth.png',
           }
-          changed = set(subprocess.check_output(['git', 'status', '--porcelain=v1'], text=True).splitlines())
+          changed = set(subprocess.check_output(['git', 'status', '--porcelain=v1', '--untracked-files=all'], text=True).splitlines())
           paths = {line[3:] for line in changed}
           extra = paths - allowed
           missing = allowed - paths
