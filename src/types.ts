@@ -5,6 +5,8 @@ export interface Chapter {
   iconName: 'compass' | 'building' | 'door-open' | 'sun';
 }
 
+export type GraphicsQuality = 'low' | 'medium' | 'high';
+
 export type LightingMode = 'golden_hour' | 'cinematic' | 'noon' | 'twilight' | 'overcast' | 'night_vision';
 
 export interface AtmosphereConfig {
