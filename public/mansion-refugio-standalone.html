@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#030706" />
+  <title>Mansión Refugio — Cinematic Scroll Standalone</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; width:100%; height:100%; overflow:hidden; overscroll-behavior:none; touch-action:none; background:#030706; }
+    body { position:fixed; inset:0; width:100%; height:100%; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    #experience { position:fixed; inset:0; width:100%; height:100dvh; overflow:hidden; background:#030706; perspective:1050px; perspective-origin:50% 48%; touch-action:none; overscroll-behavior:none; }
+    #video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; opacity:0; transform-origin:50% 48%; backface-visibility:hidden; will-change:filter,transform,opacity; pointer-events:none; }
+    .layer { position:absolute; pointer-events:none; will-change:opacity,transform; }
+    #farFog { inset:-10%; filter:blur(24px); mix-blend-mode:screen; background:radial-gradient(ellipse at 20% 58%,rgba(186,205,199,.34) 0%,rgba(160,181,175,.14) 28%,transparent 58%),radial-gradient(ellipse at 76% 43%,rgba(175,197,191,.25) 0%,transparent 52%),linear-gradient(to top,rgba(160,181,175,.20),transparent 54%); }
+    #nearFog { inset:-16%; filter:blur(30px); mix-blend-mode:screen; background:radial-gradient(ellipse at 12% 76%,rgba(208,224,219,.30) 0%,rgba(183,204,198,.12) 26%,transparent 55%),radial-gradient(ellipse at 88% 64%,rgba(198,217,211,.22) 0%,transparent 46%); }
+    #beams { inset:-12%; filter:blur(16px); mix-blend-mode:screen; background:linear-gradient(104deg,transparent 18%,rgba(217,229,222,.18) 31%,transparent 42%,transparent 57%,rgba(229,198,158,.13) 69%,transparent 79%); }
+    #colorLight { inset:0; mix-blend-mode:soft-light; }
+    #depthShade { inset:0; background:linear-gradient(90deg,rgba(0,0,0,.18) 0%,transparent 18%,transparent 82%,rgba(0,0,0,.16) 100%),radial-gradient(ellipse at 50% 48%,transparent 44%,rgba(0,0,0,.11) 72%,rgba(0,0,0,.38) 100%); mix-blend-mode:multiply; }
+    #vignette { inset:0; background:radial-gradient(ellipse at 50% 48%,transparent 42%,rgba(0,0,0,.08) 68%,rgba(0,0,0,.38) 100%),linear-gradient(to bottom,rgba(2,8,7,.14) 0%,transparent 24%,transparent 72%,rgba(1,6,5,.24) 100%); }
+    #hud { position:absolute; right:12px; bottom:calc(12px + env(safe-area-inset-bottom,0px)); z-index:20; padding:7px 9px; border-radius:8px; border:1px solid rgba(255,255,255,.18); background:rgba(0,0,0,.58); box-shadow:0 4px 18px rgba(0,0,0,.28); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); color:rgba(255,255,255,.94); font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:11px; line-height:1.35; letter-spacing:.02em; text-align:right; pointer-events:none; user-select:none; }
+    #hudFrame { font-weight:700; }
+    #hudMeta { opacity:.72; }
+    @media (prefers-reduced-motion:reduce) { #nearFog,#beams { display:none; } }
+  </style>
+</head>
+<body>
+  <main id="experience" aria-label="Recorrido cinematográfico de Mansión Refugio">
+    <video id="video" src="https://mansion-refugio-3d.pages.dev/cinematic/intro/intro-scroll-720.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
+    <div id="farFog" class="layer" aria-hidden="true"></div>
+    <div id="nearFog" class="layer" aria-hidden="true"></div>
+    <div id="beams" class="layer" aria-hidden="true"></div>
+    <div id="colorLight" class="layer" aria-hidden="true"></div>
+    <div id="depthShade" class="layer" aria-hidden="true"></div>
+    <div id="vignette" class="layer" aria-hidden="true"></div>
+    <div id="hud" aria-hidden="true"><div id="hudFrame">FRAME 020 / 240</div><div id="hudMeta">0.79s · READY · 0.0%</div></div>
+  </main>
+  <script>
+  (() => {
+    'use strict';
+    const CONFIG={fps:24,totalFrames:240,startFrame:20,endFrame:196,videoStartTime:19/24,videoEndTime:195/24,scrubTravelScreens:1/1.4,scrubDampingMs:82,seekIntervalMs:34,wheelGain:1.55};
+    const clamp01=v=>Math.min(1,Math.max(0,v));
+    const smoothstep=(a,b,v)=>{if(a===b)return v<a?0:1;const t=clamp01((v-a)/(b-a));return t*t*(3-2*t)};
+    const video=document.getElementById('video'),farFog=document.getElementById('farFog'),nearFog=document.getElementById('nearFog'),beams=document.getElementById('beams'),colorLight=document.getElementById('colorLight'),depthShade=document.getElementById('depthShade'),vignette=document.getElementById('vignette'),hudFrame=document.getElementById('hudFrame'),hudMeta=document.getElementById('hudMeta');
+    const reducedMotionQuery=matchMedia('(prefers-reduced-motion: reduce)');
+    let reducedMotion=reducedMotionQuery.matches; reducedMotionQuery.addEventListener?.('change',e=>{reducedMotion=e.matches});
+    let touchY=null,targetProgress=0,smoothedProgress=0,lastTick=0,lastSeekAt=0,lastInputAt=0,phase='ready',videoReady=false,lastFrame=-1,lastRenderedProgress=-1;
+    const gestureTravel=()=>Math.max(1,innerHeight*CONFIG.scrubTravelScreens);
+    function applyDelta(deltaY){if(reducedMotion)return;const maxDelta=Math.max(80,innerHeight*.42);const boundedDelta=Math.max(-maxDelta,Math.min(maxDelta,deltaY));const next=clamp01(targetProgress+boundedDelta/gestureTravel());if(Math.abs(next-targetProgress)<.0001)return;targetProgress=next;lastInputAt=performance.now();phase='scrubbing'}
+    addEventListener('wheel',e=>{e.preventDefault();applyDelta(e.deltaY*CONFIG.wheelGain)},{passive:false});
+    addEventListener('touchstart',e=>{if(e.touches.length===1)touchY=e.touches[0].clientY},{passive:true});
+    addEventListener('touchmove',e=>{if(e.touches.length!==1||touchY===null)return;e.preventDefault();const nextY=e.touches[0].clientY,deltaY=touchY-nextY;touchY=nextY;applyDelta(deltaY)},{passive:false});
+    const clearTouch=()=>{touchY=null}; addEventListener('touchend',clearTouch,{passive:true}); addEventListener('touchcancel',clearTouch,{passive:true});
+    function updateVisuals(progress){
+      const lightProgress=smoothstep(.56,.96,progress),atmosphericProgress=smoothstep(.08,.82,progress),fogPeak=1-Math.abs(progress*2-1),fogOpacity=.08+atmosphericProgress*.08+fogPeak*.08;
+      const brightness=.94+lightProgress*.055,contrast=1.06+progress*.035,saturation=.92+lightProgress*.08,warmth=lightProgress*.035;
+      const depthArc=Math.sin(progress*Math.PI),cameraDriftX=Math.sin(progress*Math.PI*2)*2.6,cameraDriftY=(.5-progress)*2.4,cameraYaw=Math.sin(progress*Math.PI*2)*.24,cameraPitch=(.5-progress)*.22,cameraScale=1.024+depthArc*.008,farFogX=(progress-.5)*10,farFogY=8-progress*14,nearFogX=(.5-progress)*22,nearFogY=14-progress*24,beamX=-12+progress*24,depthShadeOpacity=.12+depthArc*.08;
+      video.style.opacity=videoReady?'1':'0'; video.style.filter=`brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) sepia(${warmth})`;
+      video.style.transform=reducedMotion?'translateZ(0) scale(1.002)':`translate3d(${cameraDriftX}px,${cameraDriftY}px,0) rotateX(${cameraPitch}deg) rotateY(${cameraYaw}deg) scale(${cameraScale})`;
+      farFog.style.opacity=videoReady?String(fogOpacity*.82):'0'; farFog.style.transform=reducedMotion?'none':`translate3d(${farFogX}px,${farFogY}px,0) scale(1.02)`;
+      if(!reducedMotion){nearFog.style.opacity=videoReady?String(.045+fogPeak*.07):'0';nearFog.style.transform=`translate3d(${nearFogX}px,${nearFogY}px,0) scale(${1.055+depthArc*.018})`;beams.style.opacity=videoReady?String(.045+lightProgress*.055):'0';beams.style.transform=`translate3d(${beamX}px,${-6+progress*10}px,0) rotate(-7deg) scale(1.08)`}
+      colorLight.style.opacity=videoReady?String(.10+lightProgress*.08):'0'; colorLight.style.background=`linear-gradient(135deg,rgba(22,55,52,${.20-lightProgress*.10}) 0%,transparent 46%,rgba(204,139,76,${.04+lightProgress*.12}) 100%)`;
+      depthShade.style.opacity=videoReady?String(depthShadeOpacity):'0'; vignette.style.opacity=videoReady?'1':'0';
+    }
+    function updateHud(progress){const time=Math.min(CONFIG.videoEndTime,Math.max(CONFIG.videoStartTime,video.currentTime||CONFIG.videoStartTime));const frame=Math.min(CONFIG.endFrame,Math.max(CONFIG.startFrame,Math.floor(time*CONFIG.fps)+1));if(frame!==lastFrame){lastFrame=frame;hudFrame.textContent=`FRAME ${String(frame).padStart(3,'0')} / ${CONFIG.totalFrames}`};const phaseLabel=phase==='scrubbing'?'SCRUB':phase==='settled'?'HOLD':'READY';hudMeta.textContent=`${time.toFixed(2)}s · ${phaseLabel} · ${(progress*100).toFixed(1)}%`}
+    function tick(now){const previousTick=lastTick||now,dt=Math.min(50,Math.max(0,now-previousTick));lastTick=now;const difference=targetProgress-smoothedProgress,alpha=1-Math.exp(-dt/CONFIG.scrubDampingMs),settled=Math.abs(difference)<.00035,nextProgress=settled?targetProgress:smoothedProgress+difference*alpha;smoothedProgress=nextProgress;if(Math.abs(nextProgress-lastRenderedProgress)>.001||settled){lastRenderedProgress=nextProgress;updateVisuals(nextProgress)}if(video.readyState>=HTMLMediaElement.HAVE_METADATA){video.pause();const range=CONFIG.videoEndTime-CONFIG.videoStartTime,desiredTime=CONFIG.videoStartTime+nextProgress*range,timeError=desiredTime-video.currentTime,canSeek=!video.seeking&&now-lastSeekAt>=CONFIG.seekIntervalMs,seekThreshold=settled?.004:.018;if(canSeek&&Math.abs(timeError)>seekThreshold){video.currentTime=desiredTime;lastSeekAt=now}updateHud(nextProgress)}if(phase==='scrubbing'&&now-lastInputAt>90&&Math.abs(targetProgress-nextProgress)<.002)phase='settled';requestAnimationFrame(tick)}
+    video.addEventListener('loadedmetadata',()=>{video.pause();video.currentTime=CONFIG.videoStartTime;targetProgress=0;smoothedProgress=0;lastTick=0;lastSeekAt=0;phase='ready';updateVisuals(0);updateHud(0)});
+    video.addEventListener('seeked',()=>{if(video.currentTime>=CONFIG.videoStartTime-.03){videoReady=true;updateVisuals(smoothedProgress)}});
+    video.addEventListener('canplay',()=>{videoReady=true;updateVisuals(smoothedProgress)});
+    scrollTo(0,0); requestAnimationFrame(tick);
+  })();
+  </script>
+</body>
+</html>
