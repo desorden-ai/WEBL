@@ -1,0 +1,132 @@
+name: Apply Cinematic Scroll Upload
+
+on:
+  push:
+    branches:
+      - agent/cinematic-scroll-upload
+    paths:
+      - .github/workflows/apply-cinematic-scroll-upload.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mansion-cinematic-scroll-upload
+  cancel-in-progress: true
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/cinematic-scroll-upload
+          fetch-depth: 0
+
+      - name: Download production bundle from SOL Drive
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://drive.google.com/uc?export=download&id=1V__t0VKLmnpkktlIHLSe37edMIHHiy-J'
+          curl --fail --location --retry 3 --retry-delay 2 "$URL" -o /tmp/cinematic-production.zip
+          test "$(stat -c '%s' /tmp/cinematic-production.zip)" -eq 7342266
+          echo '9eb6315cc72da51f8222964301969b1342c5e8541649a1cddb316ef5d59c8118  /tmp/cinematic-production.zip' | sha256sum --check --strict
+          rm -rf /tmp/cinematic-production
+          mkdir -p /tmp/cinematic-production
+          unzip -q /tmp/cinematic-production.zip -d /tmp/cinematic-production
+          test -x /tmp/cinematic-production/cinematic_production/apply-to-webl.sh || chmod +x /tmp/cinematic-production/cinematic_production/apply-to-webl.sh
+
+      - name: Checkout current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout -B main origin/main
+
+      - name: Apply bundle and validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          /tmp/cinematic-production/cinematic_production/apply-to-webl.sh "$GITHUB_WORKSPACE"
+
+      - name: Verify changeset
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --short
+          python - <<'PY'
+          import subprocess
+          allowed = {
+              'src/components/CinematicScroll.tsx',
+              'src/components/DepthTransition.tsx',
+              'src/components/Experience.tsx',
+              'src/hooks/useScrollVideo.ts',
+              'src/data/cinematicIntro.ts',
+              'src/main.tsx',
+              'public/cinematic/intro/intro-scroll-720.mp4',
+              'public/cinematic/intro/poster-start.webp',
+              'public/cinematic/intro/poster-end.webp',
+              'public/cinematic/intro/transition/layer-background.webp',
+              'public/cinematic/intro/transition/layer-midground.webp',
+              'public/cinematic/intro/transition/layer-house.webp',
+              'public/cinematic/intro/transition/layer-foreground.webp',
+              'public/cinematic/intro/transition/final-depth.png',
+          }
+          changed = set(subprocess.check_output(['git', 'status', '--porcelain=v1'], text=True).splitlines())
+          paths = {line[3:] for line in changed}
+          extra = paths - allowed
+          missing = allowed - paths
+          if extra:
+              raise SystemExit(f'Unexpected changed files: {sorted(extra)}')
+          if missing:
+              raise SystemExit(f'Expected integration files missing: {sorted(missing)}')
+          print('Changeset allowlist PASS')
+          PY
+
+      - name: Commit validated integration to main
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Add cinematic scroll video-to-3D intro'
+          NEW_SHA="$(git rev-parse HEAD)"
+          echo "sha=$NEW_SHA" >> "$GITHUB_OUTPUT"
+          git push origin HEAD:main
+
+      - name: Publish static preview branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/mansion-preview
+          mkdir -p /tmp/mansion-preview
+          cp -R dist/. /tmp/mansion-preview/
+          git checkout --orphan mansion-refugio-3d-static
+          git rm -rf . || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -R /tmp/mansion-preview/. .
+          touch .nojekyll
+          git add -A
+          git commit -m 'Publish mansion refuge static preview'
+          git push --force origin HEAD:mansion-refugio-3d-static
+
+      - name: Deploy Cloudflare Pages
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DEPLOY_SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          npx --yes wrangler@latest pages deploy /tmp/mansion-preview \
+            --project-name=mansion-refugio-3d \
+            --branch=main \
+            --commit-hash="$DEPLOY_SHA" \
+            --commit-dirty=true
