@@ -236,6 +236,21 @@ export function CinematicScroll() {
   const saturation = 0.92 + lightProgress * 0.08;
   const warmth = lightProgress * 0.035;
 
+  // Lightweight pseudo-3D pass. Everything is deterministic from scrub
+  // progress so forward/reverse travel remains visually identical and stable.
+  const depthArc = Math.sin(progress * Math.PI);
+  const cameraDriftX = Math.sin(progress * Math.PI * 2) * 2.6;
+  const cameraDriftY = (0.5 - progress) * 2.4;
+  const cameraYaw = Math.sin(progress * Math.PI * 2) * 0.24;
+  const cameraPitch = (0.5 - progress) * 0.22;
+  const cameraScale = 1.024 + depthArc * 0.008;
+  const farFogX = (progress - 0.5) * 10;
+  const farFogY = 8 - progress * 14;
+  const nearFogX = (0.5 - progress) * 22;
+  const nearFogY = 14 - progress * 24;
+  const beamX = -12 + progress * 24;
+  const depthShadeOpacity = 0.12 + depthArc * 0.08;
+
   const handleLoadedMetadata = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -281,6 +296,8 @@ export function CinematicScroll() {
         background: '#030706',
         touchAction: 'none',
         overscrollBehavior: 'none',
+        perspective: '1050px',
+        perspectiveOrigin: '50% 48%',
       }}
     >
       <video
@@ -301,21 +318,27 @@ export function CinematicScroll() {
           objectPosition: 'center',
           opacity: videoReady ? 1 : 0,
           filter: `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) sepia(${warmth})`,
-          transform: 'translateZ(0) scale(1.002)',
+          transform: reducedMotion
+            ? 'translateZ(0) scale(1.002)'
+            : `translate3d(${cameraDriftX}px, ${cameraDriftY}px, 0) rotateX(${cameraPitch}deg) rotateY(${cameraYaw}deg) scale(${cameraScale})`,
+          transformOrigin: '50% 48%',
           backfaceVisibility: 'hidden',
           willChange: 'filter, transform',
           pointerEvents: 'none',
         }}
       />
 
+      {/* Far atmospheric layer: moves slowly with the virtual camera. */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute',
-          inset: '-8%',
-          opacity: videoReady ? fogOpacity : 0,
-          transform: `translate3d(${(progress - 0.5) * 8}px, ${8 - progress * 14}px, 0)`,
-          filter: 'blur(22px)',
+          inset: '-10%',
+          opacity: videoReady ? fogOpacity * 0.82 : 0,
+          transform: reducedMotion
+            ? 'none'
+            : `translate3d(${farFogX}px, ${farFogY}px, 0) scale(1.02)`,
+          filter: 'blur(24px)',
           background:
             'radial-gradient(ellipse at 20% 58%, rgba(186,205,199,0.34) 0%, rgba(160,181,175,0.14) 28%, transparent 58%), radial-gradient(ellipse at 76% 43%, rgba(175,197,191,0.25) 0%, transparent 52%), linear-gradient(to top, rgba(160,181,175,0.20), transparent 54%)',
           mixBlendMode: 'screen',
@@ -324,6 +347,45 @@ export function CinematicScroll() {
         }}
       />
 
+      {/* Near fog layer: travels farther and in the opposite direction, creating depth separation. */}
+      {!reducedMotion && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: '-16%',
+            opacity: videoReady ? 0.045 + fogPeak * 0.07 : 0,
+            transform: `translate3d(${nearFogX}px, ${nearFogY}px, 0) scale(${1.055 + depthArc * 0.018})`,
+            filter: 'blur(30px)',
+            background:
+              'radial-gradient(ellipse at 12% 76%, rgba(208,224,219,0.30) 0%, rgba(183,204,198,0.12) 26%, transparent 55%), radial-gradient(ellipse at 88% 64%, rgba(198,217,211,0.22) 0%, transparent 46%)',
+            mixBlendMode: 'screen',
+            willChange: 'opacity, transform',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* Subtle volumetric shafts add z-direction without touching scene geometry. */}
+      {!reducedMotion && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: '-12%',
+            opacity: videoReady ? 0.045 + lightProgress * 0.055 : 0,
+            transform: `translate3d(${beamX}px, ${-6 + progress * 10}px, 0) rotate(-7deg) scale(1.08)`,
+            filter: 'blur(16px)',
+            background:
+              'linear-gradient(104deg, transparent 18%, rgba(217,229,222,0.18) 31%, transparent 42%, transparent 57%, rgba(229,198,158,0.13) 69%, transparent 79%)',
+            mixBlendMode: 'screen',
+            willChange: 'opacity, transform',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* Cool-to-warm light evolution. */}
       <div
         aria-hidden="true"
         style={{
@@ -336,6 +398,23 @@ export function CinematicScroll() {
         }}
       />
 
+      {/* Ground/foreground depth cue: gives the lower frame more visual weight near mid travel. */}
+      {!reducedMotion && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            opacity: videoReady ? depthShadeOpacity : 0,
+            background:
+              'linear-gradient(to top, rgba(0,9,7,0.34) 0%, rgba(0,9,7,0.10) 22%, transparent 48%)',
+            mixBlendMode: 'multiply',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* Filmic contrast patch / vignette. */}
       <div
         aria-hidden="true"
         style={{
