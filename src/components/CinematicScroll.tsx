@@ -1,12 +1,4 @@
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { DepthTransition } from './DepthTransition';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CINEMATIC_INTRO,
   cinematicAsset,
@@ -15,21 +7,10 @@ import {
 } from '../data/cinematicIntro';
 import { useScrollVideo } from '../hooks/useScrollVideo';
 
-interface CinematicScrollProps {
-  threeLayer: ReactNode;
-  controlsLayer: ReactNode;
-  onWarm3D?: () => void;
-}
-
-export function CinematicScroll({
-  threeLayer,
-  controlsLayer,
-  onWarm3D,
-}: CinematicScrollProps) {
+export function CinematicScroll() {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const rafRef = useRef<number | null>(null);
-  const warmed3DRef = useRef(false);
   const [progress, setProgress] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -47,7 +28,7 @@ export function CinematicScroll({
     if (!section) return;
 
     if (reducedMotion) {
-      setProgress(1);
+      setProgress(0);
       return;
     }
 
@@ -78,50 +59,32 @@ export function CinematicScroll({
     };
   }, [updateProgress]);
 
-  useEffect(() => {
-    if (
-      !warmed3DRef.current &&
-      (reducedMotion || progress >= CINEMATIC_INTRO.prefetch3DProgress)
-    ) {
-      warmed3DRef.current = true;
-      onWarm3D?.();
-    }
-  }, [onWarm3D, progress, reducedMotion]);
-
   useScrollVideo({
     videoRef,
-    progress: reducedMotion ? CINEMATIC_INTRO.videoEndProgress : progress,
+    progress,
     enabled: !reducedMotion,
   });
-
-  const videoOpacity = reducedMotion
-    ? 0
-    : 1 - smoothstep(
-        CINEMATIC_INTRO.depthStartProgress,
-        CINEMATIC_INTRO.videoEndProgress + 0.018,
-        progress
-      );
-
-  const posterOpacity = videoReady || reducedMotion ? 0 : 1;
-  const threeOpacity = reducedMotion
-    ? 1
-    : smoothstep(CINEMATIC_INTRO.threeStartProgress, 0.985, progress);
-  const controlsOpacity = reducedMotion
-    ? 1
-    : smoothstep(CINEMATIC_INTRO.controlsStartProgress, 0.995, progress);
-  const threeInteractive =
-    reducedMotion || progress >= CINEMATIC_INTRO.threeInteractiveProgress;
-  const shouldMount3D = reducedMotion || progress >= CINEMATIC_INTRO.mount3DProgress;
 
   const sectionHeight = useMemo(
     () => (reducedMotion ? '100dvh' : `${CINEMATIC_INTRO.scrollHeightVh}vh`),
     [reducedMotion]
   );
 
+  const lightProgress = smoothstep(0.56, 0.96, progress);
+  const atmosphericProgress = smoothstep(0.08, 0.82, progress);
+  const fogPeak = 1 - Math.abs(progress * 2 - 1);
+  const fogOpacity = 0.08 + atmosphericProgress * 0.08 + fogPeak * 0.08;
+  const posterOpacity = videoReady || reducedMotion ? 0 : 1;
+
+  const brightness = 0.94 + lightProgress * 0.055;
+  const contrast = 1.06 + progress * 0.035;
+  const saturation = 0.92 + lightProgress * 0.08;
+  const warmth = lightProgress * 0.035;
+
   return (
     <section
       ref={sectionRef}
-      aria-label="Introducción cinematográfica de Mansión Refugio 3D"
+      aria-label="Recorrido cinematográfico de Mansión Refugio"
       style={{
         position: 'relative',
         width: '100%',
@@ -137,7 +100,8 @@ export function CinematicScroll({
           height: '100dvh',
           overflow: 'hidden',
           background: '#030706',
-          touchAction: threeInteractive ? 'none' : 'pan-y',
+          touchAction: 'pan-y',
+          pointerEvents: 'none',
         }}
       >
         <img
@@ -151,9 +115,8 @@ export function CinematicScroll({
             height: '100%',
             objectFit: 'cover',
             objectPosition: 'center',
-            opacity: posterOpacity,
-            transition: 'opacity 180ms linear',
-            pointerEvents: 'none',
+            opacity: reducedMotion ? 1 : posterOpacity,
+            transition: 'opacity 160ms linear',
           }}
         />
 
@@ -166,8 +129,8 @@ export function CinematicScroll({
             playsInline
             preload="auto"
             aria-hidden="true"
+            onLoadedMetadata={() => setVideoReady(true)}
             onLoadedData={() => setVideoReady(true)}
-            onCanPlay={() => setVideoReady(true)}
             style={{
               position: 'absolute',
               inset: 0,
@@ -175,52 +138,74 @@ export function CinematicScroll({
               height: '100%',
               objectFit: 'cover',
               objectPosition: 'center',
-              opacity: videoOpacity,
-              pointerEvents: 'none',
+              filter: `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) sepia(${warmth})`,
+              transform: 'translateZ(0) scale(1.002)',
+              backfaceVisibility: 'hidden',
+              willChange: 'filter, transform',
+            }}
+          />
+        )}
+
+        {/* Atmospheric veil: softens compression edges without blurring the architecture. */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: '-8%',
+            opacity: fogOpacity,
+            transform: `translate3d(${(progress - 0.5) * 8}px, ${8 - progress * 14}px, 0)`,
+            filter: 'blur(22px)',
+            background:
+              'radial-gradient(ellipse at 20% 58%, rgba(186,205,199,0.34) 0%, rgba(160,181,175,0.14) 28%, transparent 58%), radial-gradient(ellipse at 76% 43%, rgba(175,197,191,0.25) 0%, transparent 52%), linear-gradient(to top, rgba(160,181,175,0.20), transparent 54%)',
+            mixBlendMode: 'screen',
+            willChange: 'opacity, transform',
+          }}
+        />
+
+        {/* Final-frame house light patch. It only appears near the end, where alignment is valid. */}
+        {!reducedMotion && (
+          <img
+            src={cinematicAsset(CINEMATIC_INTRO.assets.house)}
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              opacity: smoothstep(0.80, 0.97, progress) * 0.22,
+              filter: 'brightness(1.34) saturate(1.22) sepia(0.34) hue-rotate(-8deg)',
+              mixBlendMode: 'screen',
               willChange: 'opacity',
             }}
           />
         )}
 
-        {!reducedMotion && <DepthTransition progress={progress} />}
-
-        {shouldMount3D && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              opacity: threeOpacity,
-              pointerEvents: threeInteractive ? 'auto' : 'none',
-              willChange: 'opacity',
-            }}
-          >
-            {threeLayer}
-          </div>
-        )}
-
+        {/* Cool-to-warm lighting evolution, kept deliberately subtle. */}
         <div
           aria-hidden="true"
           style={{
             position: 'absolute',
             inset: 0,
-            pointerEvents: 'none',
-            background:
-              'linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 28%, rgba(0,0,0,0.08) 70%, rgba(0,0,0,0.30) 100%)',
-            opacity: 1 - threeOpacity * 0.7,
+            opacity: 0.10 + lightProgress * 0.08,
+            background: `linear-gradient(135deg, rgba(22,55,52,${0.20 - lightProgress * 0.10}) 0%, transparent 46%, rgba(204,139,76,${0.04 + lightProgress * 0.12}) 100%)`,
+            mixBlendMode: 'soft-light',
           }}
         />
 
+        {/* Filmic contrast patch / vignette. */}
         <div
+          aria-hidden="true"
           style={{
             position: 'absolute',
             inset: 0,
-            opacity: controlsOpacity,
-            pointerEvents: threeInteractive ? 'auto' : 'none',
-            willChange: 'opacity',
+            background:
+              'radial-gradient(ellipse at 50% 48%, transparent 42%, rgba(0,0,0,0.08) 68%, rgba(0,0,0,0.38) 100%), linear-gradient(to bottom, rgba(2,8,7,0.14) 0%, transparent 24%, transparent 72%, rgba(1,6,5,0.24) 100%)',
           }}
-        >
-          {controlsLayer}
-        </div>
+        />
       </div>
     </section>
   );
