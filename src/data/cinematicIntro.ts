@@ -2,7 +2,7 @@ export const CINEMATIC_INTRO = {
   duration: 10.005,
   videoEndTime: 9.85,
   scrollHeightVh: 650,
-  videoEndProgress: 0.78,
+  videoEndProgress: 0.96,
   depthStartProgress: 0.765,
   depthEndProgress: 0.90,
   threeStartProgress: 0.86,
