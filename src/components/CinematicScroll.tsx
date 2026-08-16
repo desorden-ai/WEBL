@@ -6,24 +6,38 @@ import {
   smoothstep,
 } from '../data/cinematicIntro';
 
-type TransitionPhase = 'ready' | 'playing' | 'end';
+type ScrubPhase = 'ready' | 'scrubbing' | 'settled';
+
+const SCRUB_TRAVEL_SCREENS = 1.0;
+const SCRUB_DAMPING_MS = 82;
+const SEEK_INTERVAL_MS = 34;
+const WHEEL_GAIN = 1.55;
 
 export function CinematicScroll() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const frameRafRef = useRef<number | null>(null);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchTriggeredRef = useRef(false);
-  const playingRef = useRef(false);
-  const completedRef = useRef(false);
+  const touchYRef = useRef<number | null>(null);
+  const targetProgressRef = useRef(0);
+  const smoothedProgressRef = useRef(0);
+  const lastTickRef = useRef(0);
+  const lastSeekAtRef = useRef(0);
+  const lastInputAtRef = useRef(0);
+  const phaseRef = useRef<ScrubPhase>('ready');
 
   const [progress, setProgress] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [phase, setPhase] = useState<TransitionPhase>('ready');
+  const [phase, setPhase] = useState<ScrubPhase>('ready');
   const [frameReadout, setFrameReadout] = useState({
     frame: CINEMATIC_INTRO.startFrame,
     time: CINEMATIC_INTRO.videoStartTime,
   });
+
+  const setScrubPhase = (next: ScrubPhase) => {
+    if (phaseRef.current === next) return;
+    phaseRef.current = next;
+    setPhase(next);
+  };
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -62,53 +76,47 @@ export function CinematicScroll() {
     body.style.height = '100%';
     window.scrollTo(0, 0);
 
-    const triggerForward = () => {
-      if (reducedMotion || playingRef.current || completedRef.current) return;
+    const gestureTravel = () =>
+      Math.max(1, window.innerHeight * SCRUB_TRAVEL_SCREENS);
 
-      const video = videoRef.current;
-      if (!video || video.readyState < HTMLMediaElement.HAVE_METADATA) return;
+    const applyDelta = (deltaY: number) => {
+      if (reducedMotion) return;
 
-      playingRef.current = true;
-      setPhase('playing');
-      video.playbackRate = CINEMATIC_INTRO.transitionPlaybackRate;
+      const maxDelta = Math.max(80, window.innerHeight * 0.42);
+      const boundedDelta = Math.max(-maxDelta, Math.min(maxDelta, deltaY));
+      const next = clamp01(
+        targetProgressRef.current + boundedDelta / gestureTravel()
+      );
 
-      if (Math.abs(video.currentTime - CINEMATIC_INTRO.videoStartTime) > 0.05) {
-        video.currentTime = CINEMATIC_INTRO.videoStartTime;
-      }
+      if (Math.abs(next - targetProgressRef.current) < 0.0001) return;
 
-      const playPromise = video.play();
-      playPromise?.catch(() => {
-        playingRef.current = false;
-        setPhase('ready');
-      });
+      targetProgressRef.current = next;
+      lastInputAtRef.current = performance.now();
+      setScrubPhase('scrubbing');
     };
 
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
-      if (event.deltaY > 4) triggerForward();
+      applyDelta(event.deltaY * WHEEL_GAIN);
     };
 
     const onTouchStart = (event: TouchEvent) => {
       if (event.touches.length !== 1) return;
-      touchStartYRef.current = event.touches[0].clientY;
-      touchTriggeredRef.current = false;
+      touchYRef.current = event.touches[0].clientY;
     };
 
     const onTouchMove = (event: TouchEvent) => {
-      if (event.touches.length !== 1 || touchStartYRef.current === null) return;
+      if (event.touches.length !== 1 || touchYRef.current === null) return;
       event.preventDefault();
 
-      if (touchTriggeredRef.current) return;
-      const deltaY = touchStartYRef.current - event.touches[0].clientY;
-      if (deltaY >= CINEMATIC_INTRO.gestureTriggerPx) {
-        touchTriggeredRef.current = true;
-        triggerForward();
-      }
+      const nextY = event.touches[0].clientY;
+      const deltaY = touchYRef.current - nextY;
+      touchYRef.current = nextY;
+      applyDelta(deltaY);
     };
 
     const clearTouch = () => {
-      touchStartYRef.current = null;
-      touchTriggeredRef.current = false;
+      touchYRef.current = null;
     };
 
     window.addEventListener('wheel', onWheel, { passive: false });
@@ -139,28 +147,48 @@ export function CinematicScroll() {
 
   useEffect(() => {
     let lastFrame = -1;
-    let lastProgress = -1;
+    let lastRenderedProgress = -1;
 
-    const updatePlaybackState = () => {
+    const range = CINEMATIC_INTRO.videoEndTime - CINEMATIC_INTRO.videoStartTime;
+
+    const updateScrub = (now: number) => {
+      const previousTick = lastTickRef.current || now;
+      const dt = Math.min(50, Math.max(0, now - previousTick));
+      lastTickRef.current = now;
+
+      const target = targetProgressRef.current;
+      const current = smoothedProgressRef.current;
+      const difference = target - current;
+      const alpha = 1 - Math.exp(-dt / SCRUB_DAMPING_MS);
+      const settled = Math.abs(difference) < 0.00035;
+      const nextProgress = settled ? target : current + difference * alpha;
+
+      smoothedProgressRef.current = nextProgress;
+
+      if (Math.abs(nextProgress - lastRenderedProgress) > 0.001 || settled) {
+        lastRenderedProgress = nextProgress;
+        setProgress(nextProgress);
+      }
+
       const video = videoRef.current;
       if (video && video.readyState >= HTMLMediaElement.HAVE_METADATA) {
-        if (
-          playingRef.current &&
-          video.currentTime >= CINEMATIC_INTRO.videoEndTime - 0.012
-        ) {
-          video.pause();
-          video.currentTime = CINEMATIC_INTRO.videoEndTime;
-          playingRef.current = false;
-          completedRef.current = true;
-          setPhase('end');
+        video.pause();
+
+        const desiredTime =
+          CINEMATIC_INTRO.videoStartTime + nextProgress * range;
+        const timeError = desiredTime - video.currentTime;
+        const canSeek = !video.seeking && now - lastSeekAtRef.current >= SEEK_INTERVAL_MS;
+        const seekThreshold = settled ? 0.004 : 0.018;
+
+        if (canSeek && Math.abs(timeError) > seekThreshold) {
+          video.currentTime = desiredTime;
+          lastSeekAtRef.current = now;
         }
 
         const time = Math.min(
           CINEMATIC_INTRO.videoEndTime,
           Math.max(CINEMATIC_INTRO.videoStartTime, video.currentTime)
         );
-        const range = CINEMATIC_INTRO.videoEndTime - CINEMATIC_INTRO.videoStartTime;
-        const nextProgress = clamp01((time - CINEMATIC_INTRO.videoStartTime) / range);
         const frame = Math.min(
           CINEMATIC_INTRO.endFrame,
           Math.max(
@@ -169,27 +197,31 @@ export function CinematicScroll() {
           )
         );
 
-        if (Math.abs(nextProgress - lastProgress) > 0.001) {
-          lastProgress = nextProgress;
-          setProgress(nextProgress);
-        }
-
         if (frame !== lastFrame) {
           lastFrame = frame;
           setFrameReadout({ frame, time });
         }
       }
 
-      frameRafRef.current = requestAnimationFrame(updatePlaybackState);
+      if (
+        phaseRef.current === 'scrubbing' &&
+        now - lastInputAtRef.current > 90 &&
+        Math.abs(target - nextProgress) < 0.002
+      ) {
+        setScrubPhase('settled');
+      }
+
+      frameRafRef.current = requestAnimationFrame(updateScrub);
     };
 
-    frameRafRef.current = requestAnimationFrame(updatePlaybackState);
+    frameRafRef.current = requestAnimationFrame(updateScrub);
 
     return () => {
       if (frameRafRef.current !== null) {
         cancelAnimationFrame(frameRafRef.current);
         frameRafRef.current = null;
       }
+      lastTickRef.current = 0;
     };
   }, []);
 
@@ -208,12 +240,13 @@ export function CinematicScroll() {
     if (!video) return;
 
     video.pause();
-    video.playbackRate = CINEMATIC_INTRO.transitionPlaybackRate;
     video.currentTime = CINEMATIC_INTRO.videoStartTime;
-    playingRef.current = false;
-    completedRef.current = false;
+    targetProgressRef.current = 0;
+    smoothedProgressRef.current = 0;
+    lastTickRef.current = 0;
+    lastSeekAtRef.current = 0;
     setProgress(0);
-    setPhase('ready');
+    setScrubPhase('ready');
     setFrameReadout({
       frame: CINEMATIC_INTRO.startFrame,
       time: CINEMATIC_INTRO.videoStartTime,
@@ -229,11 +262,11 @@ export function CinematicScroll() {
   };
 
   const phaseLabel =
-    phase === 'playing'
-      ? `PLAY ×${CINEMATIC_INTRO.transitionPlaybackRate.toFixed(1)}`
-      : phase === 'end'
-        ? 'END'
-        : 'READY · 1 SCROLL';
+    phase === 'scrubbing'
+      ? 'SCRUB'
+      : phase === 'settled'
+        ? 'HOLD'
+        : 'READY';
 
   return (
     <section
