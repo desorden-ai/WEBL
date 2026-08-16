@@ -6,6 +6,7 @@ interface LightingAndAtmosphereProps {
   fogNear?: number;
   fogFar?: number;
   sunPosition?: [number, number, number];
+  cinematicProgress?: number;
 }
 
 export const LightingAndAtmosphere: React.FC<LightingAndAtmosphereProps> = ({
@@ -14,29 +15,41 @@ export const LightingAndAtmosphere: React.FC<LightingAndAtmosphereProps> = ({
   fogNear = 72,
   fogFar = 190,
   sunPosition = [28, 32, 22],
+  cinematicProgress = 1,
 }) => {
+  const transition = Math.min(1, Math.max(0, cinematicProgress));
+
+  // During the video -> WebGL handoff the 3D world starts denser, colder and dimmer,
+  // then resolves into the calibrated studio lighting as the video disappears.
+  const effectiveFogNear = Math.max(24, fogNear - (1 - transition) * 38);
+  const effectiveFogFar = Math.max(effectiveFogNear + 42, fogFar - (1 - transition) * 70);
+  const ambientIntensity = 0.18 + transition * 0.34;
+  const hemisphereIntensity = 0.18 + transition * 0.32;
+  const keyIntensity = 0.38 + transition * 0.90;
+  const fillIntensity = 0.08 + transition * 0.18;
+
   return (
     <>
       {/* Overcast Atmospheric Background & Linear Distance Fog */}
       {enableFog ? (
         <>
           <color attach="background" args={[fogColor]} />
-          <fog attach="fog" args={[fogColor, fogNear, fogFar]} />
+          <fog attach="fog" args={[fogColor, effectiveFogNear, effectiveFogFar]} />
         </>
       ) : (
         <color attach="background" args={['#1e293b']} />
       )}
 
       {/* Cool Overcast Ambient Fill */}
-      <ambientLight intensity={0.52} color="#c0cbd5" />
+      <ambientLight intensity={ambientIntensity} color="#c0cbd5" />
 
       {/* Natural Cold Sky-Ground Hemisphere Light */}
-      <hemisphereLight args={['#94a3b8', '#2d3748', 0.50]} />
+      <hemisphereLight args={['#94a3b8', '#2d3748', hemisphereIntensity]} />
 
       {/* Key Cool Overcast Daylight */}
       <directionalLight
         position={sunPosition}
-        intensity={1.28}
+        intensity={keyIntensity}
         color="#e2e8f0"
         castShadow
         shadow-mapSize-width={2048}
@@ -51,7 +64,7 @@ export const LightingAndAtmosphere: React.FC<LightingAndAtmosphereProps> = ({
       />
 
       {/* Secondary Cold Fill */}
-      <directionalLight position={[-25, 20, -20]} intensity={0.26} color="#94a3b8" />
+      <directionalLight position={[-25, 20, -20]} intensity={fillIntensity} color="#94a3b8" />
     </>
   );
 };
