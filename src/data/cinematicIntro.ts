@@ -6,9 +6,11 @@ export const CINEMATIC_INTRO = {
   endFrame: 196,
   videoStartTime: 19 / 24,
   videoEndTime: 195 / 24,
-  // Virtual gesture travel replaces native document scrolling. The value is
-  // expressed in viewport-heights worth of finger/wheel travel.
-  virtualTravelScreens: 3.0,
+  // A single upward wheel/swipe triggers continuous playback of the selected
+  // frame range. Playback is intentionally faster than source speed while
+  // remaining smooth enough for a cinematic camera move.
+  transitionPlaybackRate: 1.8,
+  gestureTriggerPx: 18,
   scrollHeightVh: 100,
   videoEndProgress: 1,
   depthStartProgress: 0.765,
