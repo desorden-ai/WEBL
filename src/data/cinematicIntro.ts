@@ -2,9 +2,15 @@ export const CINEMATIC_INTRO = {
   duration: 10.005,
   fps: 24,
   totalFrames: 240,
-  videoEndTime: 9.85,
-  scrollHeightVh: 650,
-  videoEndProgress: 0.96,
+  startFrame: 20,
+  endFrame: 196,
+  videoStartTime: 19 / 24,
+  videoEndTime: 195 / 24,
+  // Virtual gesture travel replaces native document scrolling. The value is
+  // expressed in viewport-heights worth of finger/wheel travel.
+  virtualTravelScreens: 4.1,
+  scrollHeightVh: 100,
+  videoEndProgress: 1,
   depthStartProgress: 0.765,
   depthEndProgress: 0.90,
   threeStartProgress: 0.86,
