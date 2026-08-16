@@ -5,11 +5,13 @@
   "description": "Experiencia arquitectónica interactiva 3D con Three.js, React y Tailwind CSS",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
+    "dev": "npm run prepare:3d && vite --port=3000 --host=0.0.0.0",
+    "build": "npm run prepare:3d && vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "prepare:3d": "node scripts/optimize-models.mjs",
+    "optimize:models": "node scripts/optimize-models.mjs --force",
     "deploy:cloudflare": "npx wrangler pages deploy dist"
   },
   "dependencies": {
