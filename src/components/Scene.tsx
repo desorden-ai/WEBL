@@ -15,20 +15,17 @@ interface SceneProps {
   activePreset: CameraPreset | null;
   onCameraUpdate: (state: CameraState) => void;
   settings: StudioSettings;
-  cinematicProgress?: number;
 }
 
 export const Scene: React.FC<SceneProps> = ({
   activePreset,
   onCameraUpdate,
   settings,
-  cinematicProgress = 1,
 }) => {
   return (
     <div className="h-screen w-screen bg-slate-950 overflow-hidden">
       <Canvas
         shadows
-        dpr={[1, 2]}
         camera={{
           position: [39, 2.8, 54],
           fov: 36,
@@ -38,7 +35,6 @@ export const Scene: React.FC<SceneProps> = ({
         gl={{
           antialias: true,
           powerPreference: 'high-performance',
-          failIfMajorPerformanceCaveat: false,
         }}
         onCreated={({ gl }) => {
           // Small global exposure lift to preserve the cold/moody calibration while avoiding crushed blacks.
@@ -51,7 +47,6 @@ export const Scene: React.FC<SceneProps> = ({
           fogNear={settings.fogNear}
           fogFar={settings.fogFar}
           sunPosition={settings.sunPosition}
-          cinematicProgress={cinematicProgress}
         />
 
         <HouseBlockout wireframeMode={settings.wireframeMode} />
