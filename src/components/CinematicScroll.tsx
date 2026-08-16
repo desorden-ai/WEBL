@@ -5,16 +5,21 @@ import {
   clamp01,
   smoothstep,
 } from '../data/cinematicIntro';
-import { useScrollVideo } from '../hooks/useScrollVideo';
+
+type TransitionPhase = 'ready' | 'playing' | 'end';
 
 export function CinematicScroll() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const frameRafRef = useRef<number | null>(null);
-  const progressRef = useRef(0);
-  const touchYRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchTriggeredRef = useRef(false);
+  const playingRef = useRef(false);
+  const completedRef = useRef(false);
+
   const [progress, setProgress] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [phase, setPhase] = useState<TransitionPhase>('ready');
   const [frameReadout, setFrameReadout] = useState({
     frame: CINEMATIC_INTRO.startFrame,
     time: CINEMATIC_INTRO.videoStartTime,
@@ -57,53 +62,53 @@ export function CinematicScroll() {
     body.style.height = '100%';
     window.scrollTo(0, 0);
 
-    if (reducedMotion) {
-      return () => {
-        html.style.overflow = previous.htmlOverflow;
-        html.style.overscrollBehavior = previous.htmlOverscroll;
-        html.style.touchAction = previous.htmlTouchAction;
-        body.style.overflow = previous.bodyOverflow;
-        body.style.overscrollBehavior = previous.bodyOverscroll;
-        body.style.touchAction = previous.bodyTouchAction;
-        body.style.position = previous.bodyPosition;
-        body.style.inset = previous.bodyInset;
-        body.style.width = previous.bodyWidth;
-        body.style.height = previous.bodyHeight;
-      };
-    }
+    const triggerForward = () => {
+      if (reducedMotion || playingRef.current || completedRef.current) return;
 
-    const gestureTravel = () =>
-      Math.max(1, window.innerHeight * CINEMATIC_INTRO.virtualTravelScreens);
+      const video = videoRef.current;
+      if (!video || video.readyState < HTMLMediaElement.HAVE_METADATA) return;
 
-    const applyDelta = (deltaY: number) => {
-      const next = clamp01(progressRef.current + deltaY / gestureTravel());
-      if (Math.abs(next - progressRef.current) < 0.0001) return;
-      progressRef.current = next;
-      setProgress(next);
+      playingRef.current = true;
+      setPhase('playing');
+      video.playbackRate = CINEMATIC_INTRO.transitionPlaybackRate;
+
+      if (Math.abs(video.currentTime - CINEMATIC_INTRO.videoStartTime) > 0.05) {
+        video.currentTime = CINEMATIC_INTRO.videoStartTime;
+      }
+
+      const playPromise = video.play();
+      playPromise?.catch(() => {
+        playingRef.current = false;
+        setPhase('ready');
+      });
     };
 
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
-      applyDelta(event.deltaY);
+      if (event.deltaY > 4) triggerForward();
     };
 
     const onTouchStart = (event: TouchEvent) => {
-      if (event.touches.length === 1) {
-        touchYRef.current = event.touches[0].clientY;
-      }
+      if (event.touches.length !== 1) return;
+      touchStartYRef.current = event.touches[0].clientY;
+      touchTriggeredRef.current = false;
     };
 
     const onTouchMove = (event: TouchEvent) => {
-      if (event.touches.length !== 1 || touchYRef.current === null) return;
+      if (event.touches.length !== 1 || touchStartYRef.current === null) return;
       event.preventDefault();
-      const nextY = event.touches[0].clientY;
-      const deltaY = touchYRef.current - nextY;
-      touchYRef.current = nextY;
-      applyDelta(deltaY);
+
+      if (touchTriggeredRef.current) return;
+      const deltaY = touchStartYRef.current - event.touches[0].clientY;
+      if (deltaY >= CINEMATIC_INTRO.gestureTriggerPx) {
+        touchTriggeredRef.current = true;
+        triggerForward();
+      }
     };
 
     const clearTouch = () => {
-      touchYRef.current = null;
+      touchStartYRef.current = null;
+      touchTriggeredRef.current = false;
     };
 
     window.addEventListener('wheel', onWheel, { passive: false });
@@ -132,19 +137,30 @@ export function CinematicScroll() {
     };
   }, [reducedMotion]);
 
-  useScrollVideo({
-    videoRef,
-    progress,
-    enabled: !reducedMotion,
-  });
-
   useEffect(() => {
     let lastFrame = -1;
+    let lastProgress = -1;
 
-    const updateFrameReadout = () => {
+    const updatePlaybackState = () => {
       const video = videoRef.current;
       if (video && video.readyState >= HTMLMediaElement.HAVE_METADATA) {
-        const time = Math.max(CINEMATIC_INTRO.videoStartTime, video.currentTime);
+        if (
+          playingRef.current &&
+          video.currentTime >= CINEMATIC_INTRO.videoEndTime - 0.012
+        ) {
+          video.pause();
+          video.currentTime = CINEMATIC_INTRO.videoEndTime;
+          playingRef.current = false;
+          completedRef.current = true;
+          setPhase('end');
+        }
+
+        const time = Math.min(
+          CINEMATIC_INTRO.videoEndTime,
+          Math.max(CINEMATIC_INTRO.videoStartTime, video.currentTime)
+        );
+        const range = CINEMATIC_INTRO.videoEndTime - CINEMATIC_INTRO.videoStartTime;
+        const nextProgress = clamp01((time - CINEMATIC_INTRO.videoStartTime) / range);
         const frame = Math.min(
           CINEMATIC_INTRO.endFrame,
           Math.max(
@@ -153,16 +169,21 @@ export function CinematicScroll() {
           )
         );
 
+        if (Math.abs(nextProgress - lastProgress) > 0.001) {
+          lastProgress = nextProgress;
+          setProgress(nextProgress);
+        }
+
         if (frame !== lastFrame) {
           lastFrame = frame;
           setFrameReadout({ frame, time });
         }
       }
 
-      frameRafRef.current = requestAnimationFrame(updateFrameReadout);
+      frameRafRef.current = requestAnimationFrame(updatePlaybackState);
     };
 
-    frameRafRef.current = requestAnimationFrame(updateFrameReadout);
+    frameRafRef.current = requestAnimationFrame(updatePlaybackState);
 
     return () => {
       if (frameRafRef.current !== null) {
@@ -185,8 +206,14 @@ export function CinematicScroll() {
   const handleLoadedMetadata = () => {
     const video = videoRef.current;
     if (!video) return;
+
     video.pause();
+    video.playbackRate = CINEMATIC_INTRO.transitionPlaybackRate;
     video.currentTime = CINEMATIC_INTRO.videoStartTime;
+    playingRef.current = false;
+    completedRef.current = false;
+    setProgress(0);
+    setPhase('ready');
     setFrameReadout({
       frame: CINEMATIC_INTRO.startFrame,
       time: CINEMATIC_INTRO.videoStartTime,
@@ -200,6 +227,13 @@ export function CinematicScroll() {
       setVideoReady(true);
     }
   };
+
+  const phaseLabel =
+    phase === 'playing'
+      ? `PLAY ×${CINEMATIC_INTRO.transitionPlaybackRate.toFixed(1)}`
+      : phase === 'end'
+        ? 'END'
+        : 'READY · 1 SCROLL';
 
   return (
     <section
@@ -240,7 +274,6 @@ export function CinematicScroll() {
         }}
       />
 
-      {/* Atmospheric veil: softens compression edges without blurring architecture. */}
       <div
         aria-hidden="true"
         style={{
@@ -257,7 +290,6 @@ export function CinematicScroll() {
         }}
       />
 
-      {/* Cool-to-warm lighting evolution, kept deliberately subtle. */}
       <div
         aria-hidden="true"
         style={{
@@ -270,7 +302,6 @@ export function CinematicScroll() {
         }}
       />
 
-      {/* Filmic contrast patch / vignette. */}
       <div
         aria-hidden="true"
         style={{
@@ -283,7 +314,6 @@ export function CinematicScroll() {
         }}
       />
 
-      {/* Temporary calibration HUD: remove once gesture duration is locked. */}
       {!reducedMotion && (
         <div
           aria-hidden="true"
@@ -313,7 +343,7 @@ export function CinematicScroll() {
             FRAME {String(frameReadout.frame).padStart(3, '0')} / {CINEMATIC_INTRO.totalFrames}
           </div>
           <div style={{ opacity: 0.72 }}>
-            {frameReadout.time.toFixed(2)}s · RANGE {CINEMATIC_INTRO.startFrame}→{CINEMATIC_INTRO.endFrame} · {(progress * 100).toFixed(1)}%
+            {frameReadout.time.toFixed(2)}s · {phaseLabel} · {(progress * 100).toFixed(1)}%
           </div>
         </div>
       )}
