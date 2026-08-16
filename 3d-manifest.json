@@ -1,0 +1,6 @@
+{
+  "enabled": false,
+  "model": "models/mansion.glb",
+  "decoderPath": "https://www.gstatic.com/draco/versioned/decoders/1.5.6/",
+  "generatedAt": "2026-08-16T23:02:55.222Z"
+}
