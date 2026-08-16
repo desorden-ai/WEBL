@@ -39,6 +39,23 @@ jobs:
           unzip -q /tmp/cinematic-production.zip -d /tmp/cinematic-production
           test -x /tmp/cinematic-production/cinematic_production/apply-to-webl.sh || chmod +x /tmp/cinematic-production/cinematic_production/apply-to-webl.sh
 
+      - name: Patch Vite base URL compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('/tmp/cinematic-production/cinematic_production/src/data/cinematicIntro.ts')
+          text = path.read_text()
+          old = "export const cinematicAsset = (relativePath: string) =>\n  `${import.meta.env.BASE_URL}${relativePath}`;"
+          new = "export const cinematicAsset = (relativePath: string) => relativePath;"
+          if old not in text:
+              raise SystemExit('Expected import.meta.env asset helper not found')
+          path.write_text(text.replace(old, new))
+          print('Vite base URL compatibility patch PASS')
+          PY
+
       - name: Checkout current main
         shell: bash
         run: |
