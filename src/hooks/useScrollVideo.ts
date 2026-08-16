@@ -8,12 +8,13 @@ interface UseScrollVideoOptions {
 }
 
 export function useScrollVideo({ videoRef, progress, enabled = true }: UseScrollVideoOptions) {
-  const targetTimeRef = useRef(0);
+  const targetTimeRef = useRef(CINEMATIC_INTRO.videoStartTime);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const normalized = clamp01(progress / CINEMATIC_INTRO.videoEndProgress);
-    targetTimeRef.current = normalized * CINEMATIC_INTRO.videoEndTime;
+    const normalized = clamp01(progress);
+    const span = CINEMATIC_INTRO.videoEndTime - CINEMATIC_INTRO.videoStartTime;
+    targetTimeRef.current = CINEMATIC_INTRO.videoStartTime + normalized * span;
   }, [progress]);
 
   useEffect(() => {
@@ -25,12 +26,12 @@ export function useScrollVideo({ videoRef, progress, enabled = true }: UseScroll
         video.pause();
         const target = Math.min(
           CINEMATIC_INTRO.videoEndTime,
-          Math.max(0, targetTimeRef.current)
+          Math.max(CINEMATIC_INTRO.videoStartTime, targetTimeRef.current)
         );
         const delta = target - video.currentTime;
 
-        // The source is encoded with a 6-frame GOP (~250 ms at 24 fps), so direct
-        // seeking remains responsive on mobile without decoding from the start.
+        // GOP 6 (~250 ms at 24 fps): direct seeking remains responsive while
+        // the gesture controller coalesces progress into the latest target.
         if (!video.seeking && Math.abs(delta) > 0.025) {
           video.currentTime = target;
         }
