@@ -8,7 +8,7 @@ export const CINEMATIC_INTRO = {
   videoEndTime: 195 / 24,
   // Virtual gesture travel replaces native document scrolling. The value is
   // expressed in viewport-heights worth of finger/wheel travel.
-  virtualTravelScreens: 4.1,
+  virtualTravelScreens: 3.0,
   scrollHeightVh: 100,
   videoEndProgress: 1,
   depthStartProgress: 0.765,
