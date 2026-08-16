@@ -1,17 +1,26 @@
-# Cloudflare Pages Headers Configuration
-
-# Security & Base Headers for all routes
+# Cloudflare Pages — seguridad y caché
 /*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' blob: https://www.gstatic.com; worker-src 'self' blob:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests
 
-# Cache static immutable assets built by Vite
+# Bundles Vite versionados
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Cache 3D textures, models, images and icons
+# Modelos 3D optimizados
+/models/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# Texturas 3D
+/textures/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Imágenes no versionadas: revalidación semanal
 /*.svg
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 /*.png
@@ -20,3 +29,7 @@
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 /*.webp
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# Vídeo cinematográfico: caché larga pero no immutable porque la ruta no lleva hash
+/cinematic/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
