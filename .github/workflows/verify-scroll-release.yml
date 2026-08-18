@@ -1,0 +1,93 @@
+name: Verify scroll release
+
+on:
+  push:
+    branches:
+      - SOL
+    paths:
+      - .github/workflows/verify-scroll-release.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout SOL
+        uses: actions/checkout@v4
+        with:
+          ref: SOL
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build existing scroll release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s static/scroll.html
+          test -s static/cinematic/scroll-bg-720.mp4
+          npm ci
+          npm run build
+          test -s dist/scroll.html
+          test -s dist/cinematic/scroll-bg-720.mp4
+
+      - name: Deploy and verify Cloudflare
+        id: deploy
+        continue-on-error: true
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "result=SKIPPED_MISSING_SECRETS" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          npx wrangler deploy
+          for attempt in 1 2 3 4 5; do
+            if curl -fLsS "https://sol.desorden-help-76b.workers.dev/scroll.html" -o /tmp/scroll.html \
+              && grep -q "SOL — Scroll Background" /tmp/scroll.html; then
+              echo "result=VERIFIED" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "result=FAILED_HTTP_VERIFICATION" >> "$GITHUB_OUTPUT"
+          exit 1
+
+      - name: Record release status
+        if: always()
+        shell: bash
+        env:
+          RELEASE_RESULT: ${{ steps.deploy.outputs.result }}
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+        run: |
+          set -euo pipefail
+          git pull --rebase origin SOL
+          mkdir -p static/release
+          RESULT="${RELEASE_RESULT:-FAILED_BEFORE_RESULT}"
+          if [ "$DEPLOY_OUTCOME" = "failure" ] && [ "$RESULT" = "FAILED_BEFORE_RESULT" ]; then
+            RESULT="FAILED_DEPLOY"
+          fi
+          cat > static/release/scroll-background.txt <<EOF
+          status=${RESULT}
+          url=https://sol.desorden-help-76b.workers.dev/scroll.html
+          branch=SOL
+          source_commit=$(git rev-parse HEAD)
+          checked_by=verify-scroll-release.yml
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add static/release/scroll-background.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Record scroll release status: ${RESULT}"
+            git push origin HEAD:SOL
+          fi
