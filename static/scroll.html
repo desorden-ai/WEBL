@@ -149,9 +149,11 @@
   </main>
 
   <div class="story-overlays">
-    <article class="story-card" data-start="0.05" data-end="0.25"><span class="tag">DESORDEN STUDIO</span><h2>Impacto visual directo al grano.</h2><p>Historias diseñadas para atrapar en los primeros segundos.</p></article>
-    <article class="story-card story-card--right" data-start="0.30" data-end="0.55"><span class="tag">PRODUCCIÓN</span><h2>Cinematografía vertical &amp; ritmo milimétrico.</h2><p>Cada frame cuenta, cada transición tiene un porqué.</p></article>
-    <article class="story-card" data-start="0.60" data-end="0.85"><span class="tag">IDENTIDAD</span><h2>Rompe el feed. Destaca del resto.</h2><p>Contenido premium creado para generar retención y marca.</p></article>
+    <article class="story-card" data-start="0.03" data-end="0.18"><span class="tag">DESORDEN</span><h2>Impacto visual directo al grano.</h2><p>Historias diseñadas para atrapar en los primeros segundos.</p></article>
+    <article class="story-card story-card--right" data-start="0.22" data-end="0.38"><span class="tag">PRODUCCIÓN</span><h2>Cinematografía vertical &amp; ritmo milimétrico.</h2><p>Cada frame cuenta, cada transición tiene un porqué.</p></article>
+    <article class="story-card" data-start="0.42" data-end="0.58"><span class="tag">IDENTIDAD</span><h2>Rompe el feed. Destaca del resto.</h2><p>Contenido premium creado para generar retención y marca.</p></article>
+    <article class="story-card story-card--right" data-start="0.62" data-end="0.78"><span class="tag">IA VISUAL</span><h2>Lo imposible entra en plano.</h2><p>Dirección de arte, imagen y movimiento creados con inteligencia artificial.</p></article>
+    <article class="story-card" data-start="0.82" data-end="0.98"><span class="tag">CONTACTO</span><h2>Hagamos algo imposible de ignorar.</h2><p>Vídeo, fotografía, dron, IA y web para marcas que quieren destacar.</p></article>
   </div>
 
   <aside class="qa-debug" id="qaDebug" aria-label="Métricas QA de scroll">
@@ -706,14 +708,12 @@
         targetTime=0;
         try{video.currentTime=0}catch(_){ }
         applyLook();
-        updateHud();
         seekLatest(true);
         maybeRevealExperience();
       });
       video.addEventListener('seeked',()=>{
         seeking=false;
         scrollQa?.noteVideoEvent('seeked');
-        updateHud();
         if(Math.abs((video.currentTime||0)-targetTime)>.012)ensureRender();
       });
       ['seeking','waiting','stalled'].forEach(type=>video.addEventListener(type,()=>scrollQa?.noteVideoEvent(type)));
