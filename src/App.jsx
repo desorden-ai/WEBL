@@ -5,19 +5,22 @@ import ViewerErrorBoundary from './components/ViewerErrorBoundary.jsx'
 
 export default function App() {
   const [started, setStarted] = useState(false)
-  const [ready, setReady] = useState(false)
+  const [experienceReady, setExperienceReady] = useState(false)
+  const [loaderFinished, setLoaderFinished] = useState(false)
   const [failed, setFailed] = useState(false)
   const [session, setSession] = useState(0)
 
   const startProject = () => {
-    setReady(false)
+    setExperienceReady(false)
+    setLoaderFinished(false)
     setFailed(false)
     setStarted(true)
   }
 
   const resetProject = () => {
     setStarted(false)
-    setReady(false)
+    setExperienceReady(false)
+    setLoaderFinished(false)
     setFailed(false)
     setSession((value) => value + 1)
   }
@@ -33,15 +36,19 @@ export default function App() {
       )}
 
       {started && (
-        <div className={`experience-shell${ready ? ' is-ready' : ''}`}>
+        <div className={`experience-shell${loaderFinished ? ' is-ready' : ''}`}>
           <ViewerErrorBoundary
             key={session}
             onError={() => setFailed(true)}
             onReset={resetProject}
           >
-            <Experience onReady={() => setReady(true)} />
+            <Experience onReady={() => setExperienceReady(true)} />
           </ViewerErrorBoundary>
-          <ProjectLoader visible={!ready && !failed} />
+          <ProjectLoader
+            visible={!loaderFinished && !failed}
+            ready={experienceReady}
+            onComplete={() => setLoaderFinished(true)}
+          />
         </div>
       )}
     </main>
