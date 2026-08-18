@@ -57,7 +57,7 @@ jobs:
           mkdir -p static/cinematic
           ffmpeg -y -hide_banner -loglevel error \
             -i /tmp/scroll-source-4k.mp4 \
-            -vf "trim=start_frame=63:end_frame=240,setpts=PTS-STARTPTS,scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black" \
+            -vf "trim=start_frame=63:end_frame=240,setpts=N/(24*TB),scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black" \
             -an \
             -c:v libx264 \
             -preset medium \
@@ -65,6 +65,7 @@ jobs:
             -profile:v high \
             -level 4.0 \
             -pix_fmt yuv420p \
+            -r 24 \
             -g 6 \
             -keyint_min 6 \
             -sc_threshold 0 \
@@ -81,17 +82,21 @@ jobs:
           RATE=$(ffprobe -v error -select_streams v:0 \
             -show_entries stream=r_frame_rate \
             -of default=nk=1:nw=1 static/cinematic/scroll-bg-720.mp4)
+          AVG_RATE=$(ffprobe -v error -select_streams v:0 \
+            -show_entries stream=avg_frame_rate \
+            -of default=nk=1:nw=1 static/cinematic/scroll-bg-720.mp4)
           DURATION=$(ffprobe -v error \
             -show_entries format=duration \
             -of default=nk=1:nw=1 static/cinematic/scroll-bg-720.mp4)
-          echo "frames=${FRAMES} rate=${RATE} duration=${DURATION}"
+          echo "frames=${FRAMES} rate=${RATE} avg_rate=${AVG_RATE} duration=${DURATION}"
           test "${FRAMES}" = "${EXPECTED_FRAMES}"
           test "${RATE}" = "24/1"
+          test "${AVG_RATE}" = "24/1"
           python3 - <<'PY'
           import os
           duration = float(os.popen("ffprobe -v error -show_entries format=duration -of default=nk=1:nw=1 static/cinematic/scroll-bg-720.mp4").read().strip())
           expected = 177 / 24
-          assert abs(duration - expected) < 0.03, (duration, expected)
+          assert abs(duration - expected) < 0.001, (duration, expected)
           PY
 
       - name: Keep HUD on source frame numbering
