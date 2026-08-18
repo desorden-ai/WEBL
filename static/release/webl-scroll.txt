@@ -1,5 +1,5 @@
 STATUS=VERIFIED
-SOURCE_SHA=2bd368009c8a73ace4cd25a4cbd653def2c0d368
+SOURCE_SHA=e8edc192a6f244f65de19b630ed97c788bbfab64
 URL=https://webl.desorden-help-76b.workers.dev/scroll
-MARKER=DESORDEN_SCROLL_PRELOADER_V2
-FLOW=stream-preload,3d-gold-letters,real-progress,story-overlays
+MARKER=DESORDEN_SCROLL_LOCKED_V4_NO_FULLSCREEN
+FLOW=stream-preload,cookie-gate,virtual-scroll,no-fullscreen,video-contain
