@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Experience from './components/Experience.jsx'
 import ProjectLoader from './components/ProjectLoader.jsx'
+import StoryOverlays from './components/StoryOverlays.jsx'
 import ViewerErrorBoundary from './components/ViewerErrorBoundary.jsx'
 
 export default function App() {
@@ -44,6 +45,9 @@ export default function App() {
           >
             <Experience onReady={() => setExperienceReady(true)} />
           </ViewerErrorBoundary>
+
+          {loaderFinished && <StoryOverlays />}
+
           <ProjectLoader
             visible={!loaderFinished && !failed}
             ready={experienceReady}
