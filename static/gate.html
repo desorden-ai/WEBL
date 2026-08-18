@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="DESORDEN — experiencia cinematográfica">
+<title>DESORDEN</title>
+<style>
+:root{--bg:#000;--fg:#f5f5f5;--muted:rgba(255,255,255,.48);--line:rgba(255,255,255,.18);--accent:#E39400}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#000;color:var(--fg);overflow:hidden;overscroll-behavior:none;touch-action:none;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{position:fixed;inset:0;height:100svh}
+#loaderPage,#faceLayer,#experienceLayer{position:fixed;inset:0;background:#000}
+#loaderPage{z-index:30;display:grid;place-items:center;opacity:1;transform:scale(1);transition:opacity .65s cubic-bezier(.2,.75,.2,1),transform .65s cubic-bezier(.2,.75,.2,1)}
+#loaderPage.exit{opacity:0;transform:scale(.965);pointer-events:none}
+#gateStack{display:grid;justify-items:center;gap:26px;width:100%;transform:translateY(-2vh)}
+#letters{width:min(96px,24vw);aspect-ratio:1;display:grid;place-items:center;overflow:hidden}
+#loaderVideo{width:100%;height:100%;object-fit:contain;display:block;background:#000;pointer-events:none}
+#cookieBox{width:min(330px,84vw);padding:16px;display:grid;gap:13px;border:1px solid var(--line);background:rgba(255,255,255,.018)}
+.title{font-size:9px;line-height:1;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.76)}#cookieCopy{margin:0;font-size:10px;line-height:1.55;color:var(--muted)}
+.cookieActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cookieBtn{appearance:none;min-height:40px;border:1px solid var(--line);background:#000;color:#fff;cursor:pointer;font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase}.cookieBtn:active{transform:scale(.975)}.cookieBtn:disabled{opacity:.42}#acceptCookies{color:var(--accent);border-color:rgba(227,148,0,.7)}#cookieState{min-height:10px;font-size:8px;line-height:1.4;letter-spacing:.08em;color:rgba(255,255,255,.32)}
+#faceLayer{z-index:20;opacity:0;transform:scale(1.018);pointer-events:none;transition:opacity .72s cubic-bezier(.2,.75,.2,1),transform .72s cubic-bezier(.2,.75,.2,1)}#faceLayer.visible{opacity:1;transform:scale(1);pointer-events:auto}#faceLayer.exit{opacity:0;transform:scale(.985);pointer-events:none}
+#experienceLayer{z-index:10;opacity:0;transform:scale(1.01);pointer-events:none;transition:opacity .8s cubic-bezier(.2,.75,.2,1),transform .8s cubic-bezier(.2,.75,.2,1)}#experienceLayer.visible{opacity:1;transform:scale(1);pointer-events:auto}
+iframe{display:block;width:100%;height:100%;border:0;background:#000}
+@media(max-width:520px){#cookieBox{width:min(315px,86vw)}}
+</style>
+</head>
+<body>
+<section id="experienceLayer" aria-hidden="true"><iframe id="experienceFrame" title="DESORDEN cinematic experience" src="/scroll.html" loading="eager"></iframe></section>
+<section id="faceLayer" aria-hidden="true"><iframe id="faceFrame" title="DESORDEN portrait interaction" src="/face-rebuilt.html" loading="eager"></iframe></section>
+<section id="loaderPage" aria-label="Carga DESORDEN y preferencias de cookies">
+  <div id="gateStack">
+    <main id="letters" aria-hidden="true"><video id="loaderVideo" muted playsinline preload="auto"></video></main>
+    <aside id="cookieBox" aria-label="Preferencias de cookies"><div class="title">Cookies</div><p id="cookieCopy"></p><div class="cookieActions"><button class="cookieBtn" id="rejectCookies" type="button">Rechazar</button><button class="cookieBtn" id="acceptCookies" type="button">Aceptar</button></div><div id="cookieState" aria-live="polite"></div></aside>
+  </div>
+</section>
+<script src="/loader-48.js"></script>
+<script>
+(()=>{
+ const FPS=24,FINAL_FRAME=138,MIN_VISUAL_MS=4700;
+ const loaderPage=document.getElementById('loaderPage'),loaderVideo=document.getElementById('loaderVideo'),faceLayer=document.getElementById('faceLayer'),faceFrame=document.getElementById('faceFrame'),experienceLayer=document.getElementById('experienceLayer'),acceptBtn=document.getElementById('acceptCookies'),rejectBtn=document.getElementById('rejectCookies'),copy=document.getElementById('cookieCopy'),state=document.getElementById('cookieState');
+ if(window.DESORDEN_LOADER_B64) loaderVideo.src='data:video/mp4;base64,'+window.DESORDEN_LOADER_B64;
+ let consent=readConsent(),network=.02,shown=0,lastFrame=-1,pending=null,seeking=false,loaded=false,entering=false,started=performance.now(),lastTs=started;
+ if(new URLSearchParams(location.search).get('reset-consent')==='1'){document.cookie='desorden_cookie_consent=; Max-Age=0; Path=/; SameSite=Lax';consent=null}
+ const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+ function writeConsent(v){const p=[`desorden_cookie_consent=${encodeURIComponent(v)}`,'Max-Age=31536000','Path=/','SameSite=Lax'];if(location.protocol==='https:')p.push('Secure');document.cookie=p.join('; ')}
+ function readConsent(){const m=document.cookie.match(/(?:^|;\s*)desorden_cookie_consent=([^;]+)/);return m?decodeURIComponent(m[1]):null}
+ function ui(){acceptBtn.disabled=false;rejectBtn.disabled=false;if(consent==='accepted'){copy.textContent='Preferencia aceptada. Entraremos cuando la carga llegue a la N.';state.textContent='PREFERENCIA GUARDADA: ACEPTADA';acceptBtn.disabled=true;rejectBtn.disabled=true}else if(consent==='rejected'){copy.textContent='Has rechazado las cookies. La carga puede finalizar, pero el rostro seguirá bloqueado hasta que aceptes.';state.textContent='PREFERENCIA GUARDADA: RECHAZADA'}else{copy.textContent='Usamos una cookie de preferencia para recordar tu elección. Acepta para entrar en la experiencia interactiva.';state.textContent=''}}
+ function seek(t){pending=t;if(seeking)return;const run=()=>{if(pending==null)return;const x=pending;pending=null;seeking=true;const done=()=>{seeking=false;if(pending!=null)run()};loaderVideo.addEventListener('seeked',done,{once:true});try{loaderVideo.currentTime=x}catch{seeking=false};setTimeout(()=>{if(seeking){seeking=false;if(pending!=null)run()}},75)};run()}
+ function maybeEnter(){if(entering||!loaded||consent!=='accepted')return;entering=true;faceLayer.setAttribute('aria-hidden','false');faceLayer.classList.add('visible');requestAnimationFrame(()=>loaderPage.classList.add('exit'));setTimeout(()=>loaderPage.style.display='none',720)}
+ function animate(ts){const dt=Math.min(.05,Math.max(.001,(ts-lastTs)/1000));lastTs=ts;const visual=clamp((ts-started)/MIN_VISUAL_MS);const eased=1-Math.pow(1-visual,1.55);const target=loaded?eased:Math.min(eased,network<1?Math.max(.02,network):.995);shown+=(target-shown)*(1-Math.exp(-8*dt));if(loaded&&visual>=1&&1-shown<.001)shown=1;const f=Math.min(FINAL_FRAME,Math.round(shown*FINAL_FRAME));if(f!==lastFrame){lastFrame=f;seek(f/FPS)};if(loaded&&visual>=1&&shown>.998)maybeEnter();requestAnimationFrame(animate)}
+ async function preloadExperience(){try{const r=await fetch('/cinematic/scroll-bg-720.mp4',{cache:'force-cache'});if(!r.ok)throw new Error(`HTTP ${r.status}`);const total=Number(r.headers.get('content-length'))||0;if(r.body){const reader=r.body.getReader();let got=0;for(;;){const x=await reader.read();if(x.done)break;got+=x.value.byteLength;if(total>0)network=Math.min(.995,got/total)}}else{await r.blob()}network=1;loaded=true}catch(err){console.error(err);state.textContent='ERROR DE CARGA — RECARGA LA PÁGINA'}}
+ acceptBtn.addEventListener('click',()=>{writeConsent('accepted');consent='accepted';ui();maybeEnter()});rejectBtn.addEventListener('click',()=>{writeConsent('rejected');consent='rejected';ui()});
+ addEventListener('message',e=>{if(e.data?.type!=='desorden-face-complete')return;experienceLayer.setAttribute('aria-hidden','false');experienceLayer.classList.add('visible');faceLayer.classList.add('exit');setTimeout(()=>{faceLayer.style.display='none'},850)});
+ loaderVideo.addEventListener('loadedmetadata',()=>{try{loaderVideo.currentTime=0}catch{}},{once:true});
+ ui();preloadExperience();requestAnimationFrame(animate);
+})();
+</script>
+</body></html>
