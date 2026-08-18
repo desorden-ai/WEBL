@@ -53,7 +53,7 @@
     .scroll-stage,.sticky{position:fixed;inset:0;width:100%;height:100vh;overflow:hidden;background:#000;touch-action:none}
     @supports(height:100svh){.scroll-stage,.sticky{height:100svh}}
     .sticky{isolation:isolate;display:flex;align-items:flex-end;justify-content:center}
-    video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;background:#000;transform:translateZ(0);filter:brightness(.942) saturate(.78) grayscale(.08) contrast(1.035);will-change:filter;pointer-events:none;backface-visibility:hidden}
+    video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;background:#000;transform:translateZ(0);filter:brightness(.942) saturate(.78) grayscale(.08) contrast(1.02);will-change:filter;pointer-events:none;backface-visibility:hidden}
     .dark-base,.veil,.vignette,.atmo,.motion-shade{position:absolute;inset:0;pointer-events:none}
     .dark-base{z-index:1;background:rgba(0,0,0,.028)}
     .veil{z-index:2;background:linear-gradient(180deg,rgba(0,0,0,.14),rgba(0,0,0,.028) 24%,rgba(0,0,0,.005) 52%,rgba(0,0,0,.03) 80%,rgba(0,0,0,.12))}
@@ -69,8 +69,8 @@
     .story-card{--story-opacity:0;--story-y:44px;--story-blur:10px;--story-scale:.97;position:absolute;left:clamp(24px,7vw,120px);top:50%;width:min(82vw,570px);color:#fff;opacity:var(--story-opacity);transform:translate3d(0,calc(-50% + var(--story-y)),0) scale(var(--story-scale));filter:blur(var(--story-blur));will-change:opacity,transform,filter}
     .story-card--right{left:auto;right:clamp(24px,7vw,120px);text-align:right}
     .story-card .tag{display:inline-block;margin-bottom:15px;color:var(--gold);font-size:10px;font-weight:800;letter-spacing:.3em;text-transform:uppercase}
-    .story-card h2{margin:0 0 17px;font-size:clamp(2.4rem,6vw,5.5rem);line-height:.94;font-weight:900;letter-spacing:-.045em;text-wrap:balance}
-    .story-card p{max-width:410px;margin:0;color:rgba(255,255,255,.67);font-size:clamp(.95rem,1.4vw,1.15rem);line-height:1.48}
+    .story-card h2{margin:0 0 17px;font-size:clamp(2.4rem,6vw,5.5rem);line-height:.94;font-weight:900;letter-spacing:-.045em;text-wrap:balance;text-shadow:0 2px 12px rgba(0,0,0,.45)}
+    .story-card p{max-width:410px;margin:0;color:rgba(255,255,255,.67);font-size:clamp(.95rem,1.4vw,1.15rem);line-height:1.48;text-shadow:0 2px 12px rgba(0,0,0,.45)}
     .story-card--right p{margin-left:auto}
 
     /* QA METRICS — only rendered with ?scroll-debug=1 */
@@ -99,14 +99,15 @@
     @media(min-width:769px) and (hover:hover) and (pointer:fine){
       body{background:radial-gradient(circle at 50% 35%,#29200e 0%,#0b0b0b 38%,#030303 75%)}
       body::before{content:"";position:fixed;inset:-12%;background:radial-gradient(ellipse at 50% 40%,rgba(245,179,0,.1),transparent 32%),radial-gradient(ellipse at 18% 82%,rgba(46,55,67,.18),transparent 38%);filter:blur(36px);pointer-events:none}
-      .scroll-stage{inset:auto;top:50%;left:50%;width:min(440px,calc(100vw - 48px));height:min(880px,calc(100vh - 48px));transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.14);border-radius:36px;box-shadow:0 30px 90px rgba(0,0,0,.7),0 0 0 9px rgba(255,255,255,.025);isolation:isolate}
+      .scroll-stage{inset:auto;top:auto;left:auto;right:clamp(28px,5vw,92px);bottom:clamp(24px,4vh,56px);width:min(34vw,440px);height:min(80vh,780px);transform:none;border:1px solid rgba(255,255,255,.14);border-radius:36px;box-shadow:0 30px 90px rgba(0,0,0,.7),0 0 0 9px rgba(255,255,255,.025);isolation:isolate}
       .sticky{position:absolute;inset:0;width:100%;height:100%;border-radius:inherit}
       video{border-radius:inherit}
-      .story-overlays{inset:auto;top:50%;left:50%;width:min(440px,calc(100vw - 48px));height:min(880px,calc(100vh - 48px));transform:translate(-50%,-50%);border-radius:36px}
-      #loader-screen{inset:auto;top:50%;left:50%;width:min(440px,calc(100vw - 48px));height:min(880px,calc(100vh - 48px));transform:translate(-50%,-50%);border-radius:36px;box-shadow:0 30px 90px rgba(0,0,0,.7)}
+      .story-overlays{inset:0;width:auto;height:auto;transform:none;border-radius:0}
+      .story-card,.story-card--right{left:calc((100% - min(34vw,440px) - clamp(28px,5vw,92px))/2);right:auto;top:50%;width:min(54vw,680px);text-align:center;transform:translate3d(-50%,calc(-50% + var(--story-y)),0) scale(var(--story-scale))}
+      .story-card p,.story-card--right p{margin-left:auto;margin-right:auto}
       .consent-banner{width:min(400px,calc(100vw - 64px))}
     }
-    @media(prefers-reduced-motion:reduce){.story-card{filter:none!important}}
+    @media(prefers-reduced-motion:reduce){.story-card{filter:none!important;transition:none!important}.hint{display:none}}
   </style>
 </head>
 <body>
@@ -184,6 +185,7 @@
       const KEY_STEP=.07776;
       const urlParams=new URLSearchParams(location.search);
       const SCROLL_DEBUG=urlParams.get('scroll-debug')==='1'||urlParams.get('debug')==='1';
+      const REDUCED_MOTION=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       const sticky=document.getElementById('sticky');
       const video=document.getElementById('video');
@@ -504,10 +506,13 @@
         loaderStatus.textContent='EXPERIENCIA LISTA';
         setTimeout(()=>{
           loaderScreen.classList.add('loaded');
-          interactionEnabled=true;
+          interactionEnabled=!REDUCED_MOTION;
           targetProgress=0;
           smoothProgress=0;
-          ensureRender();
+          if(REDUCED_MOTION){
+            sticky.classList.add('reduced-motion');
+            setStoryProgress(.15);
+          }else ensureRender();
         },FINAL_HOLD_MS);
       };
 
@@ -611,7 +616,7 @@
         const p=smoothProgress,absMotion=Math.min(1,Math.abs(motion)*8);
         const brightness=.946-p*.013-absMotion*.003;
         const saturation=.78+p*.01;
-        const contrast=1.035+p*.008;
+        const contrast=1.02+p*.006;
         video.style.filter=`brightness(${brightness.toFixed(3)}) saturate(${saturation.toFixed(3)}) grayscale(.08) contrast(${contrast.toFixed(3)})`;
         vignette.style.opacity=String(.22+p*.04);
         atmo.style.opacity=String(.05+p*.025);
