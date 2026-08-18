@@ -1,5 +1,5 @@
 STATUS=VERIFIED
-SOURCE_SHA=aec83a790036fbec06228781cec90f109f4ee033
+SOURCE_SHA=73f5d1cae2208bfa2846d925dc8c836c7061e161
 URL=https://webl.desorden-help-76b.workers.dev/scroll
 MARKER=DESORDEN_SCROLL_LOCKED_V5_CONSENT
-FLOW=stream-preload,consent-mode-v2,virtual-scroll,no-fullscreen,video-bottom-contain,scrub-120
+FLOW=flat-gold-loader-80,anton-like,consent-mode-v2,virtual-scroll,no-fullscreen,video-bottom-contain,scrub-144
