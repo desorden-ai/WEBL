@@ -82,6 +82,15 @@
     .story-card p{max-width:410px;margin:0;color:rgba(255,255,255,.67);font-size:clamp(.95rem,1.4vw,1.15rem);line-height:1.48}
     .story-card--right p{margin-left:auto}
 
+    /* QA METRICS — only rendered with ?scroll-debug=1 */
+    .qa-debug{display:none;position:fixed;z-index:40;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));width:min(310px,calc(100vw - 24px));padding:12px;border:1px solid rgba(245,179,0,.38);border-radius:10px;background:rgba(5,5,5,.92);color:#fff;font-family:var(--font-mono);font-size:10px;line-height:1.45;box-shadow:0 12px 34px rgba(0,0,0,.55);user-select:text;-webkit-user-select:text}
+    .scroll-debug .qa-debug{display:block}
+    .qa-debug__title{color:var(--gold);font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+    .qa-debug__summary{margin:8px 0;white-space:pre-wrap;color:rgba(255,255,255,.82);font-variant-numeric:tabular-nums}
+    .qa-debug__actions{display:flex;flex-wrap:wrap;gap:6px}
+    .qa-debug button{min-height:32px;padding:5px 8px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:#151515;color:#fff;font:inherit;cursor:pointer;touch-action:manipulation}
+    .qa-debug button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
     @media(max-width:700px){
       #loader-screen{justify-content:center;padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom))}
       .loader-stage{width:min(47vw,188px)}
@@ -148,6 +157,16 @@
     <article class="story-card" data-start="0.60" data-end="0.85"><span class="tag">IDENTIDAD</span><h2>Rompe el feed. Destaca del resto.</h2><p>Contenido premium creado para generar retención y marca.</p></article>
   </div>
 
+  <aside class="qa-debug" id="qaDebug" aria-label="Métricas QA de scroll">
+    <div class="qa-debug__title">Scroll QA · local</div>
+    <pre class="qa-debug__summary" id="qaDebugSummary">Inicializando métricas…</pre>
+    <div class="qa-debug__actions">
+      <button type="button" id="qaCopy">Copiar JSON</button>
+      <button type="button" id="qaDownload">Descargar</button>
+      <button type="button" id="qaMarkBlack">Marcar negro</button>
+    </div>
+  </aside>
+
   <script>
     (()=>{
       'use strict';
@@ -167,6 +186,8 @@
       const TOUCH_TRAVEL_SCREENS=3.0556;
       const WHEEL_TRAVEL_PX=2222;
       const KEY_STEP=.0648;
+      const urlParams=new URLSearchParams(location.search);
+      const SCROLL_DEBUG=urlParams.get('scroll-debug')==='1';
 
       const sticky=document.getElementById('sticky');
       const video=document.getElementById('video');
@@ -177,6 +198,11 @@
       const hudTime=document.getElementById('hudTime');
       const hudProgress=document.getElementById('hudProgress');
       const storyCards=[...document.querySelectorAll('.story-card')];
+      const qaDebug=document.getElementById('qaDebug');
+      const qaDebugSummary=document.getElementById('qaDebugSummary');
+      const qaCopy=document.getElementById('qaCopy');
+      const qaDownload=document.getElementById('qaDownload');
+      const qaMarkBlack=document.getElementById('qaMarkBlack');
 
       const loaderScreen=document.getElementById('loader-screen');
       const loaderPercent=document.getElementById('loader-percent');
@@ -194,6 +220,200 @@
       const clamp01=v=>clamp(v,0,1);
       const lerp=(a,b,t)=>a+(b-a)*t;
 
+      const createScrollDebug=()=>{
+        document.documentElement.classList.add('scroll-debug');
+        qaDebug.hidden=false;
+
+        const startedAt=performance.now();
+        const cap=6000;
+        const samples={
+          inputHandlerDelayMs:[],inputToRafMs:[],rafIntervalMs:[],seekAssignmentIntervalMs:[],
+          seekDurationMs:[],assignmentToVisibleMs:[],inputToVisibleMs:[],memoryBytes:[]
+        };
+        const counters={inputs:0,seekAssignments:0,seeking:0,seeked:0,waiting:0,stalled:0,
+          rapidReversals:0,longFrames:0,readinessAnomalies:0,manualBlackFrames:0};
+        const preload={startedAtMs:null,responseAtMs:null,firstByteAtMs:null,completedAtMs:null,
+          totalBytes:null,loadedBytes:0,status:'pending',fallback:false};
+        const manualAnomalies=[];
+        const push=(list,value)=>{if(Number.isFinite(value)){list.push(Number(value.toFixed(3)));if(list.length>cap)list.shift()}};
+        const percentile=(values,p)=>{
+          if(!values.length)return null;
+          const sorted=[...values].sort((a,b)=>a-b);
+          return sorted[Math.min(sorted.length-1,Math.max(0,Math.ceil((p/100)*sorted.length)-1))];
+        };
+        const stats=values=>({count:values.length,min:values.length?Math.min(...values):null,
+          p50:percentile(values,50),p75:percentile(values,75),p95:percentile(values,95),
+          p99:percentile(values,99),max:values.length?Math.max(...values):null});
+
+        let lastInput=null,lastRafAt=null,lastRafInputId=0,lastSeekAt=null,lastDirection=0,lastDirectionAt=0;
+        let activeSeek=null,pendingPresentation=null,frameCallbackPending=false,lastVisibleInputId=0,lastMemoryAt=0,lastPanelAt=0;
+
+        const eventClock=event=>{
+          let value=Number(event.timeStamp);
+          if(value>1e12)value-=performance.timeOrigin;
+          return Number.isFinite(value)&&value>=0?value:performance.now();
+        };
+        const sampleMemory=now=>{
+          if(now-lastMemoryAt<250)return;
+          lastMemoryAt=now;
+          const memory=performance.memory;
+          if(memory&&Number.isFinite(memory.usedJSHeapSize))push(samples.memoryBytes,memory.usedJSHeapSize);
+        };
+        const playbackQuality=()=>{
+          if(typeof video.getVideoPlaybackQuality==='function'){
+            const quality=video.getVideoPlaybackQuality();
+            return {method:'getVideoPlaybackQuality',totalVideoFrames:quality.totalVideoFrames,
+              droppedVideoFrames:quality.droppedVideoFrames,corruptedVideoFrames:quality.corruptedVideoFrames};
+          }
+          if(Number.isFinite(video.webkitDecodedFrameCount))return {method:'webkit',
+            totalVideoFrames:video.webkitDecodedFrameCount,droppedVideoFrames:video.webkitDroppedFrameCount};
+          return {method:'unsupported'};
+        };
+        const report=()=>{
+          const now=performance.now();
+          const memory=samples.memoryBytes.length?{
+            method:'performance.memory (JS heap only)',samples:samples.memoryBytes.length,
+            firstBytes:samples.memoryBytes[0],peakBytes:Math.max(...samples.memoryBytes),
+            deltaBytes:samples.memoryBytes[samples.memoryBytes.length-1]-samples.memoryBytes[0]
+          }:{method:'unsupported',samples:0};
+          const assignmentSpan=samples.seekAssignmentIntervalMs.reduce((sum,value)=>sum+value,0);
+          return {
+            schema:'desorden-scroll-qa/v1',capturedAt:new Date().toISOString(),durationMs:Number((now-startedAt).toFixed(1)),
+            context:{device:urlParams.get('qa-device')||null,browser:urlParams.get('qa-browser')||null,
+              network:urlParams.get('qa-network')||null,notes:urlParams.get('qa-notes')||null},
+            environment:{userAgent:navigator.userAgent,platform:navigator.platform||null,language:navigator.language,
+              viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio},hardwareConcurrency:navigator.hardwareConcurrency||null,
+              deviceMemoryGb:navigator.deviceMemory||null,connection:navigator.connection?{
+                effectiveType:navigator.connection.effectiveType,downlinkMbps:navigator.connection.downlink,
+                rttMs:navigator.connection.rtt,saveData:navigator.connection.saveData}:null,
+              requestVideoFrameCallback:typeof video.requestVideoFrameCallback==='function'},
+            constants:{DAMPING_MS,SEEK_INTERVAL_MS,TOUCH_TRAVEL_SCREENS,WHEEL_TRAVEL_PX,KEY_STEP,FPS,
+              SOURCE_FRAME_START,SOURCE_FRAME_END},
+            preload:{...preload,durationMs:preload.completedAtMs!=null&&preload.startedAtMs!=null?
+              Number((preload.completedAtMs-preload.startedAtMs).toFixed(1)):null,
+              throughputMbps:preload.completedAtMs!=null&&preload.firstByteAtMs!=null&&preload.loadedBytes?
+                Number(((preload.loadedBytes*8)/(preload.completedAtMs-preload.firstByteAtMs)/1000).toFixed(3)):null},
+            counters,current:{targetProgress,smoothProgress,currentTime:video.currentTime,readyState:video.readyState,seeking:video.seeking},
+            metrics:{inputHandlerDelayMs:stats(samples.inputHandlerDelayMs),inputToRafMs:stats(samples.inputToRafMs),
+              rafIntervalMs:stats(samples.rafIntervalMs),seekAssignmentIntervalMs:stats(samples.seekAssignmentIntervalMs),
+              seekAssignmentHz:assignmentSpan>0?Number((((samples.seekAssignmentIntervalMs.length+1)*1000)/assignmentSpan).toFixed(2)):null,
+              seekDurationMs:stats(samples.seekDurationMs),assignmentToVisibleMs:stats(samples.assignmentToVisibleMs),
+              inputToVisibleMs:stats(samples.inputToVisibleMs)},
+            memory,playbackQuality:playbackQuality(),manualAnomalies
+          };
+        };
+        const valueOrDash=value=>Number.isFinite(value)?value.toFixed(1):'—';
+        const updatePanel=force=>{
+          const now=performance.now();
+          if(!force&&now-lastPanelAt<250)return;
+          lastPanelAt=now;
+          const data=report();
+          qaDebugSummary.textContent=[
+            `gestos ${data.counters.inputs} · seeks ${data.counters.seekAssignments}`,
+            `input→rAF p95 ${valueOrDash(data.metrics.inputToRafMs.p95)} ms`,
+            `seek p95 ${valueOrDash(data.metrics.seekDurationMs.p95)} ms`,
+            `visible p95 ${valueOrDash(data.metrics.inputToVisibleMs.p95)} ms`,
+            `rAF p95 ${valueOrDash(data.metrics.rafIntervalMs.p95)} ms · >50 ${data.counters.longFrames}`,
+            `waiting ${data.counters.waiting} · stalled ${data.counters.stalled}`,
+            `dropped ${data.playbackQuality.droppedVideoFrames??'—'} · reversas ${data.counters.rapidReversals}`
+          ].join('\n');
+        };
+        const requestPresentation=()=>{
+          if(frameCallbackPending||typeof video.requestVideoFrameCallback!=='function')return;
+          frameCallbackPending=true;
+          video.requestVideoFrameCallback((now,metadata)=>{
+            frameCallbackPending=false;
+            if(pendingPresentation){
+              const closeEnough=Math.abs(metadata.mediaTime-pendingPresentation.targetTime)<.16;
+              if(closeEnough){
+                push(samples.assignmentToVisibleMs,now-pendingPresentation.assignedAt);
+                if(pendingPresentation.inputAt!=null&&pendingPresentation.inputId!==lastVisibleInputId){
+                  push(samples.inputToVisibleMs,Math.max(0,now-pendingPresentation.inputAt));
+                  lastVisibleInputId=pendingPresentation.inputId;
+                }
+                pendingPresentation=null;
+              }
+            }
+            updatePanel(false);
+            if(pendingPresentation)requestPresentation();
+          });
+        };
+
+        const api={
+          noteInput(event,delta){
+            const now=performance.now(),direction=Math.sign(delta);
+            counters.inputs+=1;
+            push(samples.inputHandlerDelayMs,Math.max(0,now-eventClock(event)));
+            lastInput={id:counters.inputs,at:now};
+            if(direction&&lastDirection&&direction!==lastDirection&&now-lastDirectionAt<=300)counters.rapidReversals+=1;
+            if(direction){lastDirection=direction;lastDirectionAt=now}
+            updatePanel(false);
+          },
+          noteRaf(now){
+            if(lastRafAt!=null&&now-lastRafAt<250){
+              const interval=now-lastRafAt;
+              push(samples.rafIntervalMs,interval);
+              if(interval>50)counters.longFrames+=1;
+            }
+            lastRafAt=now;
+            if(lastInput&&lastInput.id!==lastRafInputId){
+              push(samples.inputToRafMs,Math.max(0,now-lastInput.at));
+              lastRafInputId=lastInput.id;
+            }
+            sampleMemory(now);
+            updatePanel(false);
+          },
+          noteSeekAssignment(time){
+            if(!interactionEnabled||!lastInput)return;
+            const now=performance.now();
+            counters.seekAssignments+=1;
+            if(lastSeekAt!=null)push(samples.seekAssignmentIntervalMs,now-lastSeekAt);
+            lastSeekAt=now;
+            activeSeek={assignedAt:now,targetTime:time,inputAt:lastInput.at,inputId:lastInput.id};
+            pendingPresentation={...activeSeek};
+            requestPresentation();
+          },
+          noteVideoEvent(type){
+            if(!interactionEnabled)return;
+            if((type==='seeking'||type==='seeked')&&!activeSeek)return;
+            if(type in counters)counters[type]+=1;
+            const now=performance.now();
+            if(type==='seeked'&&activeSeek){push(samples.seekDurationMs,now-activeSeek.assignedAt);activeSeek=null}
+            if((type==='waiting'||type==='stalled')&&interactionEnabled)counters.readinessAnomalies+=1;
+            updatePanel(true);
+          },
+          preloadStart(){preload.startedAtMs=performance.now()-startedAt;preload.status='fetching'},
+          preloadResponse(total){preload.responseAtMs=performance.now()-startedAt;preload.totalBytes=Number.isFinite(total)&&total>0?total:null},
+          preloadChunk(loaded){if(preload.firstByteAtMs==null)preload.firstByteAtMs=performance.now()-startedAt;preload.loadedBytes=loaded},
+          preloadComplete(status='complete'){preload.completedAtMs=performance.now()-startedAt;preload.status=status;updatePanel(true)},
+          preloadFallback(){preload.fallback=true;preload.status='fallback'},
+          markBlackFrame(){
+            counters.manualBlackFrames+=1;
+            manualAnomalies.push({type:'black-screen',atMs:Number((performance.now()-startedAt).toFixed(1)),
+              progress:Number(smoothProgress.toFixed(4)),currentTime:Number(video.currentTime.toFixed(4))});
+            updatePanel(true);
+          },
+          getReport:report,
+          reset(){location.reload()},
+          download(){
+            const blob=new Blob([`${JSON.stringify(report(),null,2)}\n`],{type:'application/json'});
+            const href=URL.createObjectURL(blob),link=document.createElement('a');
+            link.href=href;link.download=`desorden-scroll-qa-${Date.now()}.json`;link.click();
+            setTimeout(()=>URL.revokeObjectURL(href),1000);
+          }
+        };
+        window.DESORDEN_SCROLL_QA=api;
+        qaCopy.addEventListener('click',async()=>{
+          const json=JSON.stringify(report(),null,2);
+          try{await navigator.clipboard.writeText(json);qaCopy.textContent='Copiado'}
+          catch(_){api.download();qaCopy.textContent='Descargado'}
+          setTimeout(()=>{qaCopy.textContent='Copiar JSON'},1200);
+        });
+        qaDownload.addEventListener('click',api.download);
+        qaMarkBlack.addEventListener('click',api.markBlackFrame);
+        updatePanel(true);
+        return api;
+      };
       window.dataLayer=window.dataLayer||[];
       const gtag=function(){window.dataLayer.push(arguments)};
       gtag('consent','default',{
@@ -213,6 +433,7 @@
       let blobUrl=null,downloadDone=false,videoReady=false,consentResolved=false,loaderFinished=false;
       let realLoadProgress=0,displayLoadProgress=0,loaderRaf=0,loaderStartedAt=performance.now();
       let currentLetterIndex=0,letterAnimating=false,queuedLetterIndex=null;
+      const scrollQa=SCROLL_DEBUG?createScrollDebug():null;
 
       const readConsent=()=>{
         try{return localStorage.getItem(CONSENT_STORAGE_KEY)}catch(_){return null}
@@ -246,7 +467,6 @@
         maybeRevealExperience();
       };
 
-      const urlParams=new URLSearchParams(location.search);
       if(urlParams.get('reset-consent')==='1'){
         clearConsent();
         urlParams.delete('reset-consent');
@@ -338,10 +558,18 @@
 
       const preloadVideo=async()=>{
         try{
+          scrollQa?.preloadStart();
           const response=await fetch(VIDEO_URL,{cache:'force-cache'});
           if(!response.ok)throw new Error(`HTTP ${response.status}`);
-          if(!response.body){await installBlob(await response.blob());return}
           const total=Number(response.headers.get('content-length'));
+          scrollQa?.preloadResponse(total);
+          if(!response.body){
+            const blob=await response.blob();
+            scrollQa?.preloadChunk(blob.size);
+            scrollQa?.preloadComplete();
+            await installBlob(blob);
+            return;
+          }
           const reader=response.body.getReader();
           const chunks=[];
           let loaded=0;
@@ -351,17 +579,21 @@
             if(!value)continue;
             chunks.push(value);
             loaded+=value.byteLength;
+            scrollQa?.preloadChunk(loaded);
             if(Number.isFinite(total)&&total>0)realLoadProgress=clamp01(loaded/total);
             else realLoadProgress=Math.min(.94,realLoadProgress+.025);
           }
+          scrollQa?.preloadComplete();
           await installBlob(new Blob(chunks,{type:'video/mp4'}));
         }catch(error){
           console.warn('[DESORDEN] Streaming preload fallback:',error);
+          scrollQa?.preloadFallback();
           video.src=VIDEO_URL;
           video.preload='auto';
           video.load();
           video.addEventListener('canplaythrough',()=>{
             videoReady=true;downloadDone=true;realLoadProgress=1;
+            scrollQa?.preloadComplete('fallback-ready');
             loaderStatus.textContent=consentResolved?'PREPARANDO EXPERIENCIA':'CONFIGURA PRIVACIDAD PARA ENTRAR';
             maybeRevealExperience();
           },{once:true});
@@ -412,12 +644,14 @@
         if(!force&&now-lastSeekAt<SEEK_INTERVAL_MS)return;
         lastSeekAt=now;
         seeking=true;
+        scrollQa?.noteSeekAssignment(targetTime);
         try{video.currentTime=targetTime}catch(_){seeking=false}
       };
 
       const render=now=>{
         raf=0;
         if(!metadataReady)return;
+        scrollQa?.noteRaf(now);
         const dt=Math.min(50,Math.max(1,now-lastTick));
         lastTick=now;
         const damping=1-Math.exp(-dt/DAMPING_MS);
@@ -443,7 +677,11 @@
 
       window.addEventListener('wheel',event=>{
         event.preventDefault();
-        if(interactionEnabled)nudgeProgress(event.deltaY/WHEEL_TRAVEL_PX);
+        if(interactionEnabled){
+          const delta=event.deltaY/WHEEL_TRAVEL_PX;
+          scrollQa?.noteInput(event,delta);
+          nudgeProgress(delta);
+        }
       },{passive:false});
 
       sticky.addEventListener('pointerdown',event=>{
@@ -457,7 +695,9 @@
         event.preventDefault();
         const deltaY=pointerY-event.clientY;
         pointerY=event.clientY;
-        nudgeProgress(deltaY/(Math.max(1,window.innerHeight)*TOUCH_TRAVEL_SCREENS));
+        const delta=deltaY/(Math.max(1,window.innerHeight)*TOUCH_TRAVEL_SCREENS);
+        scrollQa?.noteInput(event,delta);
+        nudgeProgress(delta);
       },{passive:false});
       const endPointer=()=>{pointerActive=false};
       sticky.addEventListener('pointerup',endPointer);
@@ -465,8 +705,8 @@
 
       window.addEventListener('keydown',event=>{
         if(!interactionEnabled)return;
-        if(['ArrowDown','PageDown',' '].includes(event.key)){event.preventDefault();nudgeProgress(KEY_STEP)}
-        if(['ArrowUp','PageUp'].includes(event.key)){event.preventDefault();nudgeProgress(-KEY_STEP)}
+        if(['ArrowDown','PageDown',' '].includes(event.key)){event.preventDefault();scrollQa?.noteInput(event,KEY_STEP);nudgeProgress(KEY_STEP)}
+        if(['ArrowUp','PageUp'].includes(event.key)){event.preventDefault();scrollQa?.noteInput(event,-KEY_STEP);nudgeProgress(-KEY_STEP)}
       });
 
       video.addEventListener('loadedmetadata',()=>{
@@ -483,9 +723,11 @@
       });
       video.addEventListener('seeked',()=>{
         seeking=false;
+        scrollQa?.noteVideoEvent('seeked');
         updateHud();
         if(Math.abs((video.currentTime||0)-targetTime)>.012)ensureRender();
       });
+      ['seeking','waiting','stalled'].forEach(type=>video.addEventListener(type,()=>scrollQa?.noteVideoEvent(type)));
 
       window.addEventListener('resize',ensureRender,{passive:true});
       window.addEventListener('orientationchange',ensureRender,{passive:true});
