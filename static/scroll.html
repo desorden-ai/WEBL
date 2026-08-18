@@ -8,10 +8,10 @@
   <style>
     * { box-sizing: border-box; }
     :root {
-      --hud-bg: rgba(0,0,0,.38);
+      --hud-bg: rgba(0,0,0,.26);
       --hud-border: rgba(255,255,255,.12);
       --hud-text: rgba(255,255,255,.94);
-      --hud-muted: rgba(255,255,255,.52);
+      --hud-muted: rgba(255,255,255,.58);
     }
     html,body { margin:0; width:100%; min-height:100%; background:#000; color:#fff; }
     body { overflow-x:hidden; overscroll-behavior-y:none; font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
@@ -20,23 +20,23 @@
     video {
       position:absolute; inset:-2%; width:104%; height:104%; object-fit:cover; object-position:center; display:block;
       background:#000; transform:translate3d(0,0,0) scale(1.035); transform-origin:50% 50%;
-      filter:brightness(.67) saturate(.88) contrast(1.10); will-change:transform,filter; pointer-events:none; backface-visibility:hidden;
+      filter:brightness(.90) saturate(.96) contrast(1.05); will-change:transform,filter; pointer-events:none; backface-visibility:hidden;
     }
     .dark-base,.veil,.vignette,.atmo,.motion-shade { position:absolute; inset:0; pointer-events:none; }
-    .dark-base { z-index:1; background:rgba(0,0,0,.16); }
-    .veil { z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.68),rgba(0,0,0,.22) 20%,rgba(0,0,0,.08) 48%,rgba(0,0,0,.26) 74%,rgba(0,0,0,.66)); }
-    .vignette { z-index:3; opacity:.66; background:radial-gradient(circle at 50% 46%,rgba(0,0,0,0) 28%,rgba(0,0,0,.12) 52%,rgba(0,0,0,.82)); will-change:opacity; }
-    .atmo { z-index:4; opacity:.20; background:radial-gradient(ellipse at 50% 38%,rgba(170,190,200,.10),transparent 42%),linear-gradient(180deg,rgba(12,20,24,.08),rgba(0,0,0,.18)); mix-blend-mode:screen; will-change:opacity,transform; }
-    .motion-shade { z-index:4; opacity:0; background:linear-gradient(90deg,rgba(0,0,0,.18),transparent 28%,transparent 72%,rgba(0,0,0,.18)); will-change:opacity,transform; }
+    .dark-base { z-index:1; background:rgba(0,0,0,.035); }
+    .veil { z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.26),rgba(0,0,0,.07) 21%,rgba(0,0,0,.02) 50%,rgba(0,0,0,.09) 76%,rgba(0,0,0,.30)); }
+    .vignette { z-index:3; opacity:.36; background:radial-gradient(circle at 50% 46%,rgba(0,0,0,0) 36%,rgba(0,0,0,.06) 60%,rgba(0,0,0,.48)); will-change:opacity; }
+    .atmo { z-index:4; opacity:.14; background:radial-gradient(ellipse at 50% 38%,rgba(170,190,200,.10),transparent 42%),linear-gradient(180deg,rgba(12,20,24,.04),rgba(0,0,0,.08)); mix-blend-mode:screen; will-change:opacity,transform; }
+    .motion-shade { z-index:4; opacity:0; background:linear-gradient(90deg,rgba(0,0,0,.08),transparent 28%,transparent 72%,rgba(0,0,0,.08)); will-change:opacity,transform; }
     .hud {
       position:absolute; z-index:6; top:max(16px,env(safe-area-inset-top)); left:max(16px,env(safe-area-inset-left)); min-width:156px;
       padding:12px 14px 11px; border:1px solid var(--hud-border); border-radius:14px; background:var(--hud-bg);
-      -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); pointer-events:none; user-select:none;
+      -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); pointer-events:none; user-select:none;
     }
     .hud-label { margin:0 0 7px; color:var(--hud-muted); font-size:9px; line-height:1; font-weight:700; letter-spacing:.22em; text-transform:uppercase; }
     .hud-frame { margin:0; color:var(--hud-text); font-size:clamp(21px,5vw,31px); line-height:.9; font-weight:750; letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
     .hud-meta { display:flex; gap:10px; margin-top:9px; color:var(--hud-muted); font-size:10px; line-height:1; font-weight:650; letter-spacing:.08em; text-transform:uppercase; font-variant-numeric:tabular-nums; }
-    .hint { position:absolute; z-index:6; left:50%; bottom:max(26px,env(safe-area-inset-bottom)); transform:translateX(-50%); color:rgba(255,255,255,.66); font-size:10px; line-height:1; font-weight:650; letter-spacing:.24em; text-transform:uppercase; white-space:nowrap; pointer-events:none; transition:opacity .32s linear,transform .32s ease; }
+    .hint { position:absolute; z-index:6; left:50%; bottom:max(26px,env(safe-area-inset-bottom)); transform:translateX(-50%); color:rgba(255,255,255,.72); font-size:10px; line-height:1; font-weight:650; letter-spacing:.24em; text-transform:uppercase; white-space:nowrap; pointer-events:none; transition:opacity .32s linear,transform .32s ease; }
     .started .hint { opacity:0; transform:translateX(-50%) translateY(8px); }
   </style>
 </head>
@@ -65,7 +65,6 @@
       const SOURCE_FRAME_COUNT = SOURCE_FRAME_END - SOURCE_FRAME_START + 1;
       const DAMPING_MS = 92;
       const SEEK_INTERVAL_MS = 34;
-
       const stage = document.getElementById('stage');
       const sticky = document.getElementById('sticky');
       const video = document.getElementById('video');
@@ -75,128 +74,58 @@
       const frameCurrent = document.getElementById('frameCurrent');
       const hudTime = document.getElementById('hudTime');
       const hudProgress = document.getElementById('hudProgress');
-
       let duration = SOURCE_FRAME_COUNT / FPS;
-      let ready = false;
-      let seeking = false;
-      let raf = 0;
-      let lastTick = performance.now();
-      let lastSeekAt = 0;
-      let lastTargetProgress = 0;
-      let targetProgress = 0;
-      let smoothProgress = 0;
-      let targetTime = 0;
-      let motion = 0;
-
+      let ready = false, seeking = false, raf = 0;
+      let lastTick = performance.now(), lastSeekAt = 0, lastTargetProgress = 0;
+      let targetProgress = 0, smoothProgress = 0, targetTime = 0, motion = 0;
       const clamp = (v,min,max) => Math.max(min,Math.min(max,v));
       const lerp = (a,b,t) => a + (b-a)*t;
       const smoothstep = (a,b,v) => { const t=clamp((v-a)/Math.max(.0001,b-a),0,1); return t*t*(3-2*t); };
-
-      const getProgress = () => {
-        const rect = stage.getBoundingClientRect();
-        const travel = Math.max(1,stage.offsetHeight-window.innerHeight);
-        return clamp(-rect.top/travel,0,1);
-      };
-
+      const getProgress = () => { const rect=stage.getBoundingClientRect(); const travel=Math.max(1,stage.offsetHeight-window.innerHeight); return clamp(-rect.top/travel,0,1); };
       const updateHud = () => {
-        const t = Number.isFinite(video.currentTime) ? video.currentTime : 0;
-        const localIndex = clamp(Math.round(t*FPS),0,SOURCE_FRAME_COUNT-1);
-        const sourceFrame = clamp(SOURCE_FRAME_START+localIndex,SOURCE_FRAME_START,SOURCE_FRAME_END);
-        frameCurrent.textContent = String(sourceFrame).padStart(3,'0');
-        hudTime.textContent = `${t.toFixed(2)}s`;
-        hudProgress.textContent = `${Math.round(smoothProgress*100)}%`;
+        const t=Number.isFinite(video.currentTime)?video.currentTime:0;
+        const localIndex=clamp(Math.round(t*FPS),0,SOURCE_FRAME_COUNT-1);
+        const sourceFrame=clamp(SOURCE_FRAME_START+localIndex,SOURCE_FRAME_START,SOURCE_FRAME_END);
+        frameCurrent.textContent=String(sourceFrame).padStart(3,'0');
+        hudTime.textContent=`${t.toFixed(2)}s`;
+        hudProgress.textContent=`${Math.round(smoothProgress*100)}%`;
       };
-
       const applyCinematicLook = () => {
-        const p=smoothProgress;
-        const absMotion=Math.min(1,Math.abs(motion)*9);
-        const direction=Math.sign(motion);
-        const entrance=smoothstep(0,.16,p);
-        const ending=smoothstep(.78,1,p);
-        const scale=1.035+p*.045+absMotion*.012;
-        const x=direction*absMotion*7;
-        const y=-8-p*16;
-        const rotate=direction*absMotion*.10;
-        const brightness=.67-p*.035-absMotion*.018;
-        const saturation=.88+p*.055;
-        const contrast=1.10+p*.055;
+        const p=smoothProgress, absMotion=Math.min(1,Math.abs(motion)*9), direction=Math.sign(motion);
+        const entrance=smoothstep(0,.16,p), ending=smoothstep(.78,1,p);
+        const scale=1.035+p*.045+absMotion*.010, x=direction*absMotion*6, y=-6-p*13, rotate=direction*absMotion*.08;
+        const brightness=.90-p*.025-absMotion*.010, saturation=.96+p*.025, contrast=1.05+p*.025;
         video.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${scale.toFixed(4)}) rotate(${rotate.toFixed(3)}deg)`;
         video.style.filter=`brightness(${brightness.toFixed(3)}) saturate(${saturation.toFixed(3)}) contrast(${contrast.toFixed(3)})`;
-        vignette.style.opacity=String(.66+p*.10+ending*.06);
-        atmo.style.opacity=String(.18+entrance*.08+ending*.08);
-        atmo.style.transform=`translate3d(${(-direction*absMotion*5).toFixed(2)}px,${(p*-6).toFixed(2)}px,0) scale(${(1+p*.018).toFixed(4)})`;
-        motionShade.style.opacity=String(absMotion*.24);
-        motionShade.style.transform=`translateX(${(direction*absMotion*10).toFixed(2)}px)`;
+        vignette.style.opacity=String(.34+p*.07+ending*.03);
+        atmo.style.opacity=String(.12+entrance*.05+ending*.05);
+        atmo.style.transform=`translate3d(${(-direction*absMotion*4).toFixed(2)}px,${(p*-5).toFixed(2)}px,0) scale(${(1+p*.014).toFixed(4)})`;
+        motionShade.style.opacity=String(absMotion*.11);
+        motionShade.style.transform=`translateX(${(direction*absMotion*8).toFixed(2)}px)`;
         sticky.classList.toggle('started',p>.015);
       };
-
       const seekLatest = (force=false) => {
         if(!ready||seeking) return;
-        const now=performance.now();
-        targetTime=smoothProgress*Math.max(0,duration-(1/FPS));
+        const now=performance.now(); targetTime=smoothProgress*Math.max(0,duration-(1/FPS));
         const delta=Math.abs((video.currentTime||0)-targetTime);
-        if(!force&&delta<.010) return;
-        if(!force&&now-lastSeekAt<SEEK_INTERVAL_MS) return;
-        lastSeekAt=now;
-        seeking=true;
-        try { video.currentTime=targetTime; } catch(_) { seeking=false; }
+        if(!force&&delta<.010) return; if(!force&&now-lastSeekAt<SEEK_INTERVAL_MS) return;
+        lastSeekAt=now; seeking=true; try{video.currentTime=targetTime}catch(_){seeking=false}
       };
-
       const tick = now => {
-        raf=0;
-        if(!ready) return;
-        const dt=Math.min(50,Math.max(1,now-lastTick));
-        lastTick=now;
-        const damping=1-Math.exp(-dt/DAMPING_MS);
-        smoothProgress=lerp(smoothProgress,targetProgress,damping);
-        motion*=Math.exp(-dt/118);
+        raf=0; if(!ready) return;
+        const dt=Math.min(50,Math.max(1,now-lastTick)); lastTick=now;
+        const damping=1-Math.exp(-dt/DAMPING_MS); smoothProgress=lerp(smoothProgress,targetProgress,damping); motion*=Math.exp(-dt/118);
         if(Math.abs(targetProgress-smoothProgress)<.00008) smoothProgress=targetProgress;
-        applyCinematicLook();
-        updateHud();
-        seekLatest();
-        const pd=Math.abs(targetProgress-smoothProgress);
-        const td=Math.abs((video.currentTime||0)-targetTime);
-        if(pd>.00008||td>.014||Math.abs(motion)>.001) raf=requestAnimationFrame(tick);
-        else seekLatest(true);
+        applyCinematicLook(); updateHud(); seekLatest();
+        const pd=Math.abs(targetProgress-smoothProgress), td=Math.abs((video.currentTime||0)-targetTime);
+        if(pd>.00008||td>.014||Math.abs(motion)>.001) raf=requestAnimationFrame(tick); else seekLatest(true);
       };
-
-      const schedule = () => {
-        const next=getProgress();
-        const delta=next-lastTargetProgress;
-        lastTargetProgress=next;
-        targetProgress=next;
-        motion=clamp(motion+delta*7.5,-.16,.16);
-        if(!raf){ lastTick=performance.now(); raf=requestAnimationFrame(tick); }
-      };
-
-      video.addEventListener('loadedmetadata',()=>{
-        duration=Number.isFinite(video.duration)&&video.duration>0 ? video.duration : SOURCE_FRAME_COUNT/FPS;
-        ready=true;
-        targetProgress=getProgress();
-        lastTargetProgress=targetProgress;
-        smoothProgress=targetProgress;
-        targetTime=smoothProgress*Math.max(0,duration-(1/FPS));
-        try{ video.currentTime=targetTime; }catch(_){}
-        applyCinematicLook(); updateHud(); seekLatest(true);
-      },{once:true});
-
-      video.addEventListener('seeked',()=>{
-        seeking=false; updateHud();
-        if(Math.abs((video.currentTime||0)-targetTime)>.014&&!raf){ lastTick=performance.now(); raf=requestAnimationFrame(tick); }
-      });
-
-      const unlock=()=>{
-        if(!ready) return;
-        const p=video.play();
-        if(p&&typeof p.then==='function') p.then(()=>video.pause()).catch(()=>{});
-      };
-
-      addEventListener('scroll',schedule,{passive:true});
-      addEventListener('resize',schedule,{passive:true});
-      addEventListener('orientationchange',schedule,{passive:true});
-      addEventListener('touchstart',unlock,{once:true,passive:true});
-      addEventListener('pointerdown',unlock,{once:true,passive:true});
-      schedule();
+      const schedule = () => { const next=getProgress(); const delta=next-lastTargetProgress; lastTargetProgress=next; targetProgress=next; motion=clamp(motion+delta*7.5,-.16,.16); if(!raf){lastTick=performance.now(); raf=requestAnimationFrame(tick);} };
+      video.addEventListener('loadedmetadata',()=>{ duration=Number.isFinite(video.duration)&&video.duration>0?video.duration:SOURCE_FRAME_COUNT/FPS; ready=true; targetProgress=getProgress(); lastTargetProgress=targetProgress; smoothProgress=targetProgress; targetTime=smoothProgress*Math.max(0,duration-(1/FPS)); try{video.currentTime=targetTime}catch(_){} applyCinematicLook(); updateHud(); seekLatest(true); },{once:true});
+      video.addEventListener('seeked',()=>{ seeking=false; updateHud(); if(Math.abs((video.currentTime||0)-targetTime)>.014&&!raf){lastTick=performance.now(); raf=requestAnimationFrame(tick);} });
+      const unlock=()=>{ if(!ready)return; const p=video.play(); if(p&&typeof p.then==='function')p.then(()=>video.pause()).catch(()=>{}); };
+      addEventListener('scroll',schedule,{passive:true}); addEventListener('resize',schedule,{passive:true}); addEventListener('orientationchange',schedule,{passive:true});
+      addEventListener('touchstart',unlock,{once:true,passive:true}); addEventListener('pointerdown',unlock,{once:true,passive:true}); schedule();
     })();
   </script>
 </body>
