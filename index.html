@@ -1,15 +1,182 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0a0a" />
-    <meta name="description" content="SOL — CASA 01 · visor arquitectónico 3D" />
-    <meta name="sol-build" content="2026-08-11T23:10+02:00" />
-    <title>SOL — CASA 01</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="DESORDEN — experiencia cinematográfica">
+  <title>DESORDEN</title>
+  <style>
+    :root{--bg:#000;--text:#f5f5f5;--muted:rgba(255,255,255,.48);--line:rgba(255,255,255,.18);--accent:#E39400}
+    *{box-sizing:border-box}
+    html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);overflow:hidden;overscroll-behavior:none;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{position:fixed;inset:0;height:100svh}
+    #preloader{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#000;opacity:1;transform:scale(1);transition:opacity .7s cubic-bezier(.2,.75,.2,1),transform .7s cubic-bezier(.2,.75,.2,1)}
+    #preloader.exit{opacity:0;transform:scale(.965);pointer-events:none}
+    #preloadStack{display:grid;justify-items:center;gap:26px;width:100%;transform:translateY(-2vh)}
+    #loaderBox{width:min(96px,24vw);aspect-ratio:1;display:grid;place-items:center;overflow:hidden}
+    #loaderVideo{width:100%;height:100%;object-fit:contain;display:block;background:#000;pointer-events:none}
+    #cookieBox{width:min(330px,84vw);padding:16px;display:grid;gap:13px;border:1px solid var(--line);background:#000}
+    .cookieTitle{font-size:9px;line-height:1;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.76)}
+    #cookieText{margin:0;font-size:10px;line-height:1.55;color:var(--muted)}
+    .cookieActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .cookieButton{appearance:none;min-height:40px;border:1px solid var(--line);background:#000;color:#fff;cursor:pointer;font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;transition:border-color .2s ease,background .2s ease,transform .1s ease}
+    .cookieButton:active{transform:scale(.975)}
+    #acceptCookies{color:var(--accent);border-color:rgba(227,148,0,.7)}
+    #acceptCookies:hover{border-color:var(--accent);background:rgba(227,148,0,.07)}
+    #cookieState{min-height:10px;font-size:8px;line-height:1.4;letter-spacing:.08em;color:rgba(255,255,255,.32)}
+    #facePage{position:fixed;inset:0;z-index:10;background:#000;opacity:0;transform:scale(1.02);pointer-events:none;transition:opacity .8s cubic-bezier(.2,.75,.2,1),transform .8s cubic-bezier(.2,.75,.2,1)}
+    #facePage.visible{opacity:1;transform:scale(1);pointer-events:auto}
+    #faceVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;filter:brightness(.68) saturate(.9) contrast(1.08)}
+    @media(max-width:520px){#loaderBox{width:min(90px,24vw)}#cookieBox{width:min(315px,86vw)}}
+    @media(prefers-reduced-motion:reduce){#preloader,#facePage{transition-duration:.15s}}
+  </style>
+</head>
+<body>
+  <section id="preloader">
+    <div id="preloadStack">
+      <div id="loaderBox">
+        <video id="loaderVideo" muted playsinline preload="auto" aria-hidden="true">
+          <source src="./assets/desorden-loader.mp4" type="video/mp4">
+        </video>
+      </div>
+      <aside id="cookieBox" aria-label="Preferencias de cookies">
+        <div class="cookieTitle">Cookies</div>
+        <p id="cookieText">Utilizamos una cookie de preferencia para recordar tu elección. Acepta para entrar en la experiencia.</p>
+        <div class="cookieActions">
+          <button id="rejectCookies" class="cookieButton" type="button">Rechazar</button>
+          <button id="acceptCookies" class="cookieButton" type="button">Aceptar</button>
+        </div>
+        <div id="cookieState" role="status" aria-live="polite"></div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="facePage" aria-hidden="true">
+    <video id="faceVideo" muted playsinline preload="metadata" aria-hidden="true"></video>
+  </section>
+
+  <script>
+  (()=>{
+    const FPS=24;
+    const FINAL_FRAME=138;
+    const FACE_VIDEO_URL="./cinematic/scroll-bg-720.mp4";
+    const NEXT_URL="./scroll.html";
+
+    const preloader=document.getElementById("preloader");
+    const loaderVideo=document.getElementById("loaderVideo");
+    const facePage=document.getElementById("facePage");
+    const faceVideo=document.getElementById("faceVideo");
+    const acceptButton=document.getElementById("acceptCookies");
+    const rejectButton=document.getElementById("rejectCookies");
+    const cookieText=document.getElementById("cookieText");
+    const cookieState=document.getElementById("cookieState");
+
+    let loadTarget=0,loadShown=0,lastFrame=-1,pendingSeek=null,seeking=false;
+    let faceLoaded=false,faceBlobURL=null,entering=false,previousTime=performance.now();
+
+    const clamp=(v,min=0,max=1)=>Math.min(max,Math.max(min,v));
+
+    function getCookieConsent(){
+      const match=document.cookie.match(/(?:^|;\s*)desorden_cookie_consent=([^;]+)/);
+      return match?decodeURIComponent(match[1]):null;
+    }
+
+    function saveCookieConsent(value){
+      const cookie=[`desorden_cookie_consent=${encodeURIComponent(value)}`,"Max-Age=31536000","Path=/","SameSite=Lax"];
+      if(location.protocol==="https:") cookie.push("Secure");
+      document.cookie=cookie.join("; ");
+    }
+
+    let consent=getCookieConsent();
+
+    function updateCookieUI(){
+      if(consent==="accepted"){
+        cookieText.textContent="Preferencia aceptada. Entraremos cuando la carga haya finalizado.";
+        cookieState.textContent="PREFERENCIA GUARDADA: ACEPTADA";
+      }else if(consent==="rejected"){
+        cookieText.textContent="Has rechazado las cookies. La carga puede finalizar, pero la experiencia permanecerá bloqueada hasta que aceptes.";
+        cookieState.textContent="PREFERENCIA GUARDADA: RECHAZADA";
+      }else{
+        cookieText.textContent="Utilizamos una cookie de preferencia para recordar tu elección. Acepta para entrar en la experiencia.";
+        cookieState.textContent="";
+      }
+    }
+
+    function seekLoader(time){
+      pendingSeek=time;
+      if(seeking)return;
+      const execute=()=>{
+        if(pendingSeek===null)return;
+        const t=pendingSeek;pendingSeek=null;seeking=true;
+        const finished=()=>{seeking=false;if(pendingSeek!==null)execute()};
+        loaderVideo.addEventListener("seeked",finished,{once:true});
+        try{loaderVideo.currentTime=t}catch{seeking=false}
+        setTimeout(()=>{if(seeking){seeking=false;if(pendingSeek!==null)execute()}},90);
+      };
+      execute();
+    }
+
+    function render(time){
+      const dt=Math.min(.05,Math.max(.001,(time-previousTime)/1000));
+      previousTime=time;
+      const smoothing=1-Math.exp(-8*dt);
+      loadShown+=(loadTarget-loadShown)*smoothing;
+      if(loadTarget>=1&&1-loadShown<.001)loadShown=1;
+      const frame=Math.min(FINAL_FRAME,Math.round(loadShown*FINAL_FRAME));
+      if(frame!==lastFrame){lastFrame=frame;seekLoader(frame/FPS)}
+      requestAnimationFrame(render);
+    }
+
+    async function preloadFaceVideo(){
+      try{
+        const response=await fetch(FACE_VIDEO_URL,{cache:"force-cache"});
+        if(!response.ok)throw new Error(`HTTP ${response.status}`);
+        const total=Number(response.headers.get("content-length"));
+        if(!response.body){
+          const blob=await response.blob();
+          faceBlobURL=URL.createObjectURL(blob);faceVideo.src=faceBlobURL;faceLoaded=true;loadTarget=1;tryEnter();return;
+        }
+        const reader=response.body.getReader(),chunks=[];let received=0;
+        while(true){
+          const result=await reader.read();if(result.done)break;
+          chunks.push(result.value);received+=result.value.byteLength;
+          if(total>0)loadTarget=Math.min(.995,received/total);
+        }
+        const blob=new Blob(chunks,{type:"video/mp4"});
+        faceBlobURL=URL.createObjectURL(blob);faceVideo.src=faceBlobURL;loadTarget=1;faceLoaded=true;tryEnter();
+      }catch(error){
+        console.error("Error cargando experiencia:",error);
+        cookieState.textContent="ERROR DE CARGA — RECARGA LA PÁGINA";
+      }
+    }
+
+    function tryEnter(){
+      if(!faceLoaded||consent!=="accepted"||entering)return;
+      entering=true;
+      const waitForN=()=>{
+        if(loadShown<.998){requestAnimationFrame(waitForN);return}
+        facePage.setAttribute("aria-hidden","false");
+        facePage.classList.add("visible");
+        try{faceVideo.currentTime=.001}catch{}
+        requestAnimationFrame(()=>preloader.classList.add("exit"));
+        setTimeout(()=>{location.replace(NEXT_URL)},850);
+      };
+      waitForN();
+    }
+
+    acceptButton.addEventListener("click",()=>{saveCookieConsent("accepted");consent="accepted";updateCookieUI();tryEnter()});
+    rejectButton.addEventListener("click",()=>{saveCookieConsent("rejected");consent="rejected";updateCookieUI()});
+
+    loaderVideo.addEventListener("loadedmetadata",()=>{
+      try{loaderVideo.currentTime=0}catch{}
+      preloadFaceVideo();
+    },{once:true});
+
+    loaderVideo.addEventListener("error",()=>{cookieState.textContent="ERROR DEL LOADER — RECARGA LA PÁGINA"});
+    updateCookieUI();
+    requestAnimationFrame(render);
+  })();
+  </script>
+</body>
 </html>
