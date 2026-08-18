@@ -12,6 +12,7 @@
     "prebuild": "npm run restore:studio && node scripts/generateExteriorGlb.mjs",
     "build": "vite build",
     "check": "npm test && npm run build",
+    "benchmark:scroll": "node scripts/benchmark-scroll-media.mjs",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
     "restore:studio": "node scripts/restoreCasa01Latest.mjs"
