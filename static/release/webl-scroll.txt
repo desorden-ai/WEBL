@@ -1,5 +1,5 @@
 STATUS=VERIFIED
-SOURCE_SHA=eac9c2f3ffc12c8c8f9bf535fe178076a0b3c36e
+SOURCE_SHA=c3ea785aba6094ed66e2d1a8f2e6cef0f08bc04e
 URL=https://webl.desorden-help-76b.workers.dev/scroll
 MARKER=DESORDEN_SCROLL_PRELOADER_V2
 FLOW=stream-preload,3d-gold-letters,real-progress,story-overlays
