@@ -1,0 +1,148 @@
+name: Rebuild scroll range 64-240
+
+on:
+  push:
+    branches:
+      - SOL
+    paths:
+      - .github/workflows/rebuild-scroll-range-64-240.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rebuild-scroll-range-64-240
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SOURCE_DRIVE_ID: 1V__t0VKLmnpkktlIHLSe37edMIHHiy-J
+      SOURCE_FRAME_START: '64'
+      SOURCE_FRAME_END: '240'
+      EXPECTED_FRAMES: '177'
+      FPS: '24'
+
+    steps:
+      - name: Checkout SOL
+        uses: actions/checkout@v4
+        with:
+          ref: SOL
+          fetch-depth: 0
+
+      - name: Install ffmpeg
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+
+      - name: Download 4K source
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 --retry-delay 2 \
+            "https://drive.usercontent.google.com/download?id=${SOURCE_DRIVE_ID}&export=download&confirm=t" \
+            -o /tmp/scroll-source-4k.mp4
+          ffprobe -v error \
+            -show_entries format=duration,size:stream=codec_name,width,height,r_frame_rate \
+            -of default=nw=1 /tmp/scroll-source-4k.mp4
+
+      - name: Encode exact frames 64 through 240
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p static/cinematic
+          ffmpeg -y -hide_banner -loglevel error \
+            -i /tmp/scroll-source-4k.mp4 \
+            -vf "trim=start_frame=63:end_frame=240,setpts=PTS-STARTPTS,scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black" \
+            -an \
+            -c:v libx264 \
+            -preset medium \
+            -crf 22 \
+            -profile:v high \
+            -level 4.0 \
+            -pix_fmt yuv420p \
+            -g 6 \
+            -keyint_min 6 \
+            -sc_threshold 0 \
+            -movflags +faststart \
+            static/cinematic/scroll-bg-720.mp4
+
+      - name: Verify frame-accurate output
+        shell: bash
+        run: |
+          set -euo pipefail
+          FRAMES=$(ffprobe -v error -count_frames -select_streams v:0 \
+            -show_entries stream=nb_read_frames \
+            -of default=nk=1:nw=1 static/cinematic/scroll-bg-720.mp4)
+          RATE=$(ffprobe -v error -select_streams v:0 \
+            -show_entries stream=r_frame_rate \
+            -of default=nk=1:nw=1 static/cinematic/scroll-bg-720.mp4)
+          DURATION=$(ffprobe -v error \
+            -show_entries format=duration \
+            -of default=nk=1:nw=1 static/cinematic/scroll-bg-720.mp4)
+          echo "frames=${FRAMES} rate=${RATE} duration=${DURATION}"
+          test "${FRAMES}" = "${EXPECTED_FRAMES}"
+          test "${RATE}" = "24/1"
+          python3 - <<'PY'
+          import os
+          duration = float(os.popen("ffprobe -v error -show_entries format=duration -of default=nk=1:nw=1 static/cinematic/scroll-bg-720.mp4").read().strip())
+          expected = 177 / 24
+          assert abs(duration - expected) < 0.03, (duration, expected)
+          PY
+
+      - name: Keep HUD on source frame numbering
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('static/scroll.html')
+          s = p.read_text()
+
+          s = s.replace(
+              'const FPS = 24;\n      const DAMPING_MS = 92;',
+              'const FPS = 24;\n      const SOURCE_FRAME_START = 64;\n      const SOURCE_FRAME_END = 240;\n      const DAMPING_MS = 92;'
+          )
+          s = s.replace(
+              'const getTotalFrames = () => Math.max(1, Math.round(duration * FPS));',
+              'const getTotalFrames = () => SOURCE_FRAME_END;'
+          )
+          s = s.replace(
+              'const current = clamp(Math.round(currentTime * FPS) + 1, 1, total);',
+              'const current = clamp(Math.round(currentTime * FPS) + SOURCE_FRAME_START, SOURCE_FRAME_START, SOURCE_FRAME_END);'
+          )
+          s = s.replace(
+              '<span id="frameCurrent">001</span> / <span id="frameTotal">240</span>',
+              '<span id="frameCurrent">064</span> / <span id="frameTotal">240</span>'
+          )
+
+          if 'SOURCE_FRAME_START = 64' not in s:
+              raise SystemExit('HUD frame-range patch failed')
+          p.write_text(s)
+          PY
+
+      - name: Validate HTML range metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "SOURCE_FRAME_START = 64" static/scroll.html
+          grep -q "SOURCE_FRAME_END = 240" static/scroll.html
+          grep -q 'frameCurrent">064' static/scroll.html
+
+      - name: Commit trimmed asset and HUD range
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add static/cinematic/scroll-bg-720.mp4 static/scroll.html
+          if git diff --cached --quiet; then
+            echo "No generated changes."
+            exit 0
+          fi
+          git commit -m "Use scroll frames 64-240"
+          git push origin HEAD:SOL
