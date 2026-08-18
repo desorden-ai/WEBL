@@ -53,7 +53,7 @@
     .scroll-stage,.sticky{position:fixed;inset:0;width:100%;height:100vh;overflow:hidden;background:#000;touch-action:none}
     @supports(height:100svh){.scroll-stage,.sticky{height:100svh}}
     .sticky{isolation:isolate;display:flex;align-items:flex-end;justify-content:center}
-    video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;background:#000;transform:translateZ(0);filter:brightness(.945) saturate(.965) contrast(1.05);will-change:filter;pointer-events:none;backface-visibility:hidden}
+    video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;background:#000;transform:translateZ(0);filter:brightness(.942) saturate(.78) grayscale(.08) contrast(1.035);will-change:filter;pointer-events:none;backface-visibility:hidden}
     .dark-base,.veil,.vignette,.atmo,.motion-shade{position:absolute;inset:0;pointer-events:none}
     .dark-base{z-index:1;background:rgba(0,0,0,.028)}
     .veil{z-index:2;background:linear-gradient(180deg,rgba(0,0,0,.14),rgba(0,0,0,.028) 24%,rgba(0,0,0,.005) 52%,rgba(0,0,0,.03) 80%,rgba(0,0,0,.12))}
@@ -173,7 +173,7 @@
       const SOURCE_FRAME_COUNT=SOURCE_FRAME_END-SOURCE_FRAME_START+1;
       const DAMPING_MS=78;
       const SEEK_INTERVAL_MS=28;
-      const MIN_LOADER_MS=7200;
+      const MIN_LOADER_MS=1800;
       const FINAL_HOLD_MS=520;
       const VIDEO_URL='/cinematic/scroll-bg-720.mp4';
       const LETTERS=['D','E','S','O','R','D','E','N'];
@@ -609,10 +609,10 @@
 
       const applyLook=()=>{
         const p=smoothProgress,absMotion=Math.min(1,Math.abs(motion)*8);
-        const brightness=.948-p*.016-absMotion*.003;
-        const saturation=.965+p*.008;
-        const contrast=1.052+p*.014;
-        video.style.filter=`brightness(${brightness.toFixed(3)}) saturate(${saturation.toFixed(3)}) contrast(${contrast.toFixed(3)})`;
+        const brightness=.946-p*.013-absMotion*.003;
+        const saturation=.78+p*.01;
+        const contrast=1.035+p*.008;
+        video.style.filter=`brightness(${brightness.toFixed(3)}) saturate(${saturation.toFixed(3)}) grayscale(.08) contrast(${contrast.toFixed(3)})`;
         vignette.style.opacity=String(.22+p*.04);
         atmo.style.opacity=String(.05+p*.025);
         motionShade.style.opacity=String(absMotion*.035);
