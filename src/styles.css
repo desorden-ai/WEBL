@@ -118,63 +118,49 @@ button {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 260ms ease, visibility 0s linear 260ms;
+  transition: opacity 320ms ease, visibility 0s linear 320ms;
 }
 
 .project-loader.is-visible {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transition: opacity 160ms ease;
+  transition: opacity 180ms ease;
 }
 
-.project-loader__content,
-.viewer-error__content {
-  width: min(320px, 78vw);
-  text-align: center;
-}
-
-.project-loader__label,
-.project-loader__meta,
-.viewer-error__label {
-  margin: 0;
-  color: #111111;
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: 0.12em;
-}
-
-.project-loader__track {
-  position: relative;
-  width: 100%;
-  height: 2px;
-  margin: 18px 0 10px;
-  overflow: hidden;
-  background: #e6e6e6;
-}
-
-.project-loader__bar {
+.project-loader__letter {
   position: absolute;
-  inset: 0;
-  transform-origin: left center;
-  background: #111111;
-  transition: transform 140ms linear;
-}
-
-.project-loader__meta {
-  color: #737373;
-  font-size: 0.64rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  color: #111111;
+  font-size: clamp(72px, 15vw, 220px);
+  font-weight: 900;
+  line-height: 0.8;
+  letter-spacing: -0.055em;
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+  font-variant-numeric: tabular-nums;
 }
 
 .viewer-error {
   z-index: 20;
 }
 
+.viewer-error__content {
+  width: min(320px, 78vw);
+  text-align: center;
+}
+
 .viewer-error__label {
-  margin-bottom: 20px;
+  margin: 0 0 20px;
+  color: #111111;
+  font-size: 0.72rem;
+  font-weight: 650;
   line-height: 1.6;
+  letter-spacing: 0.12em;
 }
 
 .viewer-error__button {
@@ -183,8 +169,7 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   .experience-shell .viewer,
-  .project-loader,
-  .project-loader__bar {
+  .project-loader {
     transition: none;
   }
 }
