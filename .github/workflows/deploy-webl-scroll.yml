@@ -1,6 +1,6 @@
 name: Deploy WEBL scroll from SOL
 
-# retrigger: 2026-08-18T21:33+02:00
+# retrigger: 2026-08-18T21:49+02:00
 on:
   push:
     branches:
@@ -48,6 +48,7 @@ jobs:
           test -s dist/scroll.html
           test -s dist/cinematic/scroll-bg-720.mp4
           grep -q "DESORDEN_SCROLL_PRELOADER_V2" dist/scroll.html
+          grep -q "DESORDEN_SCROLL_LOCKED_V4_NO_FULLSCREEN" dist/scroll.html
           grep -q "DESCARGANDO EXPERIENCIA" dist/scroll.html
           grep -q "DESORDEN STUDIO" dist/scroll.html
 
@@ -68,7 +69,7 @@ jobs:
           set -euo pipefail
           for attempt in 1 2 3 4 5 6; do
             if curl -fLsS --max-time 20 "https://webl.desorden-help-76b.workers.dev/scroll" -o /tmp/scroll.html; then
-              if grep -q "DESORDEN_SCROLL_PRELOADER_V2" /tmp/scroll.html; then
+              if grep -q "DESORDEN_SCROLL_LOCKED_V4_NO_FULLSCREEN" /tmp/scroll.html; then
                 exit 0
               fi
             fi
@@ -86,8 +87,8 @@ jobs:
           STATUS=VERIFIED
           SOURCE_SHA=${GITHUB_SHA}
           URL=https://webl.desorden-help-76b.workers.dev/scroll
-          MARKER=DESORDEN_SCROLL_PRELOADER_V2
-          FLOW=stream-preload,3d-gold-letters,real-progress,story-overlays
+          MARKER=DESORDEN_SCROLL_LOCKED_V4_NO_FULLSCREEN
+          FLOW=stream-preload,cookie-gate,virtual-scroll,no-fullscreen,video-contain
           EOF
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
