@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>SOL — Scroll Background</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; min-height: 100%; background: #000; }
+    body { overscroll-behavior-y: none; }
+    .scroll-stage { position: relative; height: 600vh; background: #000; }
+    .sticky { position: sticky; top: 0; width: 100%; height: 100svh; overflow: hidden; background: #000; }
+    video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; background: #000; }
+    .veil { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom,rgba(0,0,0,.08),transparent 30%,transparent 70%,rgba(0,0,0,.18)); }
+    .hint { position: absolute; left: 50%; bottom: max(24px,env(safe-area-inset-bottom)); transform: translateX(-50%); color: #fff; font: 600 11px/1 system-ui,sans-serif; letter-spacing: .18em; text-transform: uppercase; opacity: .65; white-space: nowrap; transition: opacity .25s linear; }
+    .started .hint { opacity: 0; }
+  </style>
+</head>
+<body>
+  <section class="scroll-stage" id="stage">
+    <div class="sticky" id="sticky">
+      <video id="video" muted playsinline webkit-playsinline preload="auto" disablepictureinpicture src="/cinematic/scroll-bg-720.mp4"></video>
+      <div class="veil" aria-hidden="true"></div>
+      <div class="hint" aria-hidden="true">Desliza</div>
+    </div>
+  </section>
+  <script>
+    (() => {
+      const stage = document.getElementById('stage');
+      const sticky = document.getElementById('sticky');
+      const video = document.getElementById('video');
+      let duration = 10;
+      let targetTime = 0;
+      let seeking = false;
+      let ready = false;
+      let raf = 0;
+
+      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+      const getProgress = () => {
+        const rect = stage.getBoundingClientRect();
+        const travel = Math.max(1, stage.offsetHeight - window.innerHeight);
+        return clamp(-rect.top / travel, 0, 1);
+      };
+
+      const seekLatest = () => {
+        if (!ready || seeking) return;
+        if (Math.abs(video.currentTime - targetTime) < 0.012) return;
+        seeking = true;
+        try {
+          video.currentTime = targetTime;
+        } catch (_) {
+          seeking = false;
+        }
+      };
+
+      const update = () => {
+        raf = 0;
+        if (!ready) return;
+        const progress = getProgress();
+        targetTime = progress * Math.max(0, duration - 0.04);
+        sticky.classList.toggle('started', progress > 0.015);
+        seekLatest();
+      };
+
+      const schedule = () => {
+        if (!raf) raf = requestAnimationFrame(update);
+      };
+
+      video.addEventListener('loadedmetadata', () => {
+        duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 10;
+        ready = true;
+        targetTime = getProgress() * Math.max(0, duration - 0.04);
+        try { video.currentTime = targetTime; } catch (_) {}
+        seekLatest();
+      }, { once: true });
+
+      video.addEventListener('seeked', () => {
+        seeking = false;
+        seekLatest();
+      });
+
+      const unlock = () => {
+        if (!ready) return;
+        const playPromise = video.play();
+        if (playPromise && playPromise.then) {
+          playPromise.then(() => video.pause()).catch(() => {});
+        }
+      };
+
+      addEventListener('scroll', schedule, { passive: true });
+      addEventListener('resize', schedule, { passive: true });
+      addEventListener('orientationchange', schedule, { passive: true });
+      addEventListener('touchstart', unlock, { once: true, passive: true });
+      addEventListener('pointerdown', unlock, { once: true, passive: true });
+    })();
+  </script>
+</body>
+</html>
