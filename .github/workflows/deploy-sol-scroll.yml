@@ -1,10 +1,14 @@
-name: Deploy SOL scroll background
+name: Deploy SOL DESORDEN flow
 
 on:
   push:
     branches:
       - SOL
     paths:
+      - index.html
+      - static/gate.html
+      - static/face-rebuilt.html
+      - static/loader-48.js
       - static/scroll.html
       - static/cinematic/**
       - .github/workflows/deploy-sol-scroll.yml
@@ -13,7 +17,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: deploy-sol-scroll
+  group: deploy-sol-desorden-flow
   cancel-in-progress: true
 
 jobs:
@@ -40,12 +44,19 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Verify generated scroll files
+      - name: Verify DESORDEN flow files
         shell: bash
         run: |
           set -euo pipefail
+          test -s dist/index.html
+          test -s dist/gate.html
+          test -s dist/face-rebuilt.html
+          test -s dist/loader-48.js
           test -s dist/scroll.html
           test -s dist/cinematic/scroll-bg-720.mp4
+          grep -q "gate.html" dist/index.html
+          grep -q "MIN_VISUAL_MS=4700" dist/gate.html
+          grep -q "desorden-face-complete" dist/face-rebuilt.html
           grep -q "Cinematic Scroll Background" dist/scroll.html
           grep -q "frameCurrent" dist/scroll.html
 
@@ -60,19 +71,31 @@ jobs:
           test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
           npx wrangler deploy
 
-      - name: Verify public URL
+      - name: Verify public flow
         shell: bash
         run: |
           set -euo pipefail
+          ROOT=https://sol.desorden-help-76b.workers.dev/
+          GATE=https://sol.desorden-help-76b.workers.dev/gate.html
+          FACE=https://sol.desorden-help-76b.workers.dev/face-rebuilt.html
+          SCROLL=https://sol.desorden-help-76b.workers.dev/scroll.html
           for attempt in 1 2 3 4 5 6; do
-            if curl -fLsS --max-time 20 "https://sol.desorden-help-76b.workers.dev/scroll.html" -o /tmp/scroll.html; then
-              if grep -q "Cinematic Scroll Background" /tmp/scroll.html && grep -q "frameCurrent" /tmp/scroll.html; then
-                exit 0
-              fi
+            ok=1
+            curl -fLsS --max-time 20 "$ROOT" -o /tmp/root.html || ok=0
+            curl -fLsS --max-time 20 "$GATE" -o /tmp/gate.html || ok=0
+            curl -fLsS --max-time 20 "$FACE" -o /tmp/face.html || ok=0
+            curl -fLsS --max-time 20 "$SCROLL" -o /tmp/scroll.html || ok=0
+            if [ "$ok" = 1 ] \
+              && grep -q "gate.html" /tmp/root.html \
+              && grep -q "MIN_VISUAL_MS=4700" /tmp/gate.html \
+              && grep -q "desorden-face-complete" /tmp/face.html \
+              && grep -q "Cinematic Scroll Background" /tmp/scroll.html; then
+              echo "DESORDEN public flow verified"
+              exit 0
             fi
             sleep 5
           done
-          echo "Published page did not match the new scroll build" >&2
+          echo "Published DESORDEN flow did not match the SOL build" >&2
           exit 1
 
       - name: Record verified release
@@ -80,16 +103,19 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p static/release
-          cat > static/release/scroll-background.txt <<EOF
+          cat > static/release/desorden-flow.txt <<EOF
           STATUS=VERIFIED
           SOURCE_SHA=${GITHUB_SHA}
-          URL=https://sol.desorden-help-76b.workers.dev/scroll.html
-          FEATURES=frame-counter,cinematic-damping,darker-grade
+          ROOT=https://sol.desorden-help-76b.workers.dev/
+          GATE=https://sol.desorden-help-76b.workers.dev/gate.html
+          FACE=https://sol.desorden-help-76b.workers.dev/face-rebuilt.html
+          SCROLL=https://sol.desorden-help-76b.workers.dev/scroll.html
+          FLOW=loader-0-138,cookie-gate,face-interaction,scroll-64-240
           EOF
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add static/release/scroll-background.txt
+          git add static/release/desorden-flow.txt
           if ! git diff --cached --quiet; then
-            git commit -m "Record verified cinematic scroll release"
+            git commit -m "Record verified DESORDEN flow release"
             git push origin HEAD:SOL
           fi
