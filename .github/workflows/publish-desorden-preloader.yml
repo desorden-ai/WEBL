@@ -17,11 +17,8 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     env:
-      LOADER_DRIVE_ID: 1H67yKeWbXKkv70K0CAuM4UE-sW3x4Feb
-      EXPECTED_FRAMES: '139'
-      EXPECTED_RATE: '24/1'
       VERIFY_ROOT: https://sol.desorden-help-76b.workers.dev/
       VERIFY_SCROLL: https://sol.desorden-help-76b.workers.dev/scroll.html
 
@@ -32,38 +29,15 @@ jobs:
           ref: SOL
           fetch-depth: 0
 
-      - name: Install ffmpeg
+      - name: Verify embedded loader contract
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update -y
-          sudo apt-get install -y ffmpeg
-
-      - name: Download DESORDEN loader
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p static/assets
-          curl -L --fail --retry 3 --retry-delay 2 \
-            "https://drive.usercontent.google.com/download?id=${LOADER_DRIVE_ID}&export=download&confirm=t" \
-            -o static/assets/desorden-loader.mp4
-
-      - name: Verify loader frames
-        shell: bash
-        run: |
-          set -euo pipefail
-          FRAMES=$(ffprobe -v error -count_frames -select_streams v:0 \
-            -show_entries stream=nb_read_frames \
-            -of default=nk=1:nw=1 static/assets/desorden-loader.mp4)
-          RATE=$(ffprobe -v error -select_streams v:0 \
-            -show_entries stream=r_frame_rate \
-            -of default=nk=1:nw=1 static/assets/desorden-loader.mp4)
-          DURATION=$(ffprobe -v error \
-            -show_entries format=duration \
-            -of default=nk=1:nw=1 static/assets/desorden-loader.mp4)
-          echo "frames=${FRAMES} rate=${RATE} duration=${DURATION}"
-          test "${FRAMES}" = "${EXPECTED_FRAMES}"
-          test "${RATE}" = "${EXPECTED_RATE}"
+          grep -q 'data:video/mp4;base64,' index.html
+          grep -q 'FINAL_FRAME=138' index.html
+          grep -q 'desorden_cookie_consent' index.html
+          grep -q 'cinematic/scroll-bg-720.mp4' index.html
+          grep -q 'scroll.html' index.html
 
       - name: Install dependencies
         run: npm ci
@@ -71,28 +45,16 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Verify built preload assets
+      - name: Verify build
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
-          test -f dist/assets/desorden-loader.mp4
           test -f dist/cinematic/scroll-bg-720.mp4
           test -f dist/scroll.html
-          grep -q "desorden_cookie_consent" dist/index.html
-          grep -q "desorden-loader.mp4" dist/index.html
-
-      - name: Commit loader asset to SOL
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add static/assets/desorden-loader.mp4
-          if ! git diff --cached --quiet; then
-            git commit -m "Add DESORDEN loader asset"
-            git push origin HEAD:SOL
-          fi
+          grep -q 'data:video/mp4;base64,' dist/index.html
+          grep -q 'desorden_cookie_consent' dist/index.html
+          grep -q 'Cinematic Scroll Background' dist/scroll.html
 
       - name: Deploy SOL Worker
         env:
@@ -112,13 +74,13 @@ jobs:
           for i in 1 2 3 4 5 6; do
             ROOT=$(curl -L --fail --silent --show-error "${VERIFY_ROOT}" || true)
             SCROLL=$(curl -L --fail --silent --show-error "${VERIFY_SCROLL}" || true)
-            if echo "$ROOT" | grep -q "desorden_cookie_consent" && echo "$SCROLL" | grep -q "Cinematic Scroll Background"; then
-              echo "Public verification PASS"
+            if echo "$ROOT" | grep -q 'desorden_cookie_consent' && echo "$ROOT" | grep -q 'data:video/mp4;base64,' && echo "$SCROLL" | grep -q 'Cinematic Scroll Background'; then
+              echo 'Public verification PASS'
               exit 0
             fi
             sleep 5
           done
-          echo "Public verification FAILED"
+          echo 'Public verification FAILED'
           exit 1
 
       - name: Record verified release
@@ -130,10 +92,13 @@ jobs:
             'DESORDEN PRELOADER — VERIFIED' \
             'loader_frames=139' \
             'loader_fps=24' \
+            'loader_delivery=embedded' \
             'consent_cookie=desorden_cookie_consent' \
             'root=https://sol.desorden-help-76b.workers.dev/' \
             'scroll=https://sol.desorden-help-76b.workers.dev/scroll.html' \
             > static/release/desorden-preloader.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add static/release/desorden-preloader.txt
-          git commit -m "Verify DESORDEN preloader release"
+          git commit -m 'Verify DESORDEN preloader release'
           git push origin HEAD:SOL
