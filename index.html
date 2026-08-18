@@ -1,1 +1,107 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000"><title>DESORDEN</title><script>location.replace('/gate.html'+location.search+location.hash)</script></head><body style="margin:0;background:#000"></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="DESORDEN — experiencia cinematográfica">
+<title>DESORDEN</title>
+<style>
+:root{--bg:#000;--fg:#f5f5f5;--muted:rgba(255,255,255,.50);--line:rgba(255,255,255,.18);--accent:#E39400}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--fg);overscroll-behavior:none;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{position:fixed;inset:0;height:100svh}
+.layer{position:fixed;inset:0;width:100%;height:100svh;background:#000;opacity:0;pointer-events:none;transition:opacity .72s cubic-bezier(.2,.75,.2,1),transform .72s cubic-bezier(.2,.75,.2,1);will-change:opacity,transform}
+.layer.visible{opacity:1;pointer-events:auto;transform:scale(1)}
+.layer.exit{opacity:0!important;pointer-events:none!important;transform:scale(.985)}
+#cookieLayer{z-index:40;display:grid;place-items:center;opacity:1;pointer-events:auto}
+#cookiePanel{width:min(330px,86vw);padding:18px;border:1px solid var(--line);display:grid;gap:14px;background:#000}
+.cookieTitle{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:rgba(255,255,255,.78)}
+#cookieCopy{margin:0;font-size:10px;line-height:1.55;color:var(--muted)}
+.cookieActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cookieBtn{appearance:none;min-height:40px;border:1px solid var(--line);background:#000;color:#fff;font:650 9px/1 system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}
+.cookieBtn:active{transform:scale(.975)}
+#acceptCookies{border-color:rgba(227,148,0,.75);color:#f0aa31}
+#cookieState{min-height:11px;font-size:8px;line-height:1.4;letter-spacing:.08em;color:rgba(255,255,255,.36)}
+#loaderLayer{z-index:30;display:grid;place-items:center;transform:scale(1.015)}
+#loaderStack{display:grid;justify-items:center;gap:16px;transform:translateY(-1.5vh)}
+#loaderBox{width:min(112px,29vw);aspect-ratio:1;display:grid;place-items:center;overflow:hidden}
+#loaderVideo{width:100%;height:100%;object-fit:contain;display:block;background:#000;pointer-events:none}
+#loadMeta{min-width:112px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.48);font-variant-numeric:tabular-nums}
+#loadMeta strong{color:#f2ad39;font-weight:750}
+#faceLayer{z-index:20;transform:scale(1.015)}
+#experienceLayer{z-index:10;transform:scale(1.01)}
+.fullFrame{display:block;width:100%;height:100%;border:0;background:#000}
+#faceFrame,#experienceFrame{opacity:1}
+@media(prefers-reduced-motion:reduce){.layer{transition-duration:.18s}}
+</style>
+</head>
+<body>
+<section id="experienceLayer" class="layer" aria-hidden="true">
+  <iframe id="experienceFrame" class="fullFrame" title="DESORDEN cinematic experience" loading="eager"></iframe>
+</section>
+<section id="faceLayer" class="layer" aria-hidden="true">
+  <iframe id="faceFrame" class="fullFrame" title="DESORDEN portrait interaction" src="/face-rebuilt.html" loading="eager"></iframe>
+</section>
+<section id="loaderLayer" class="layer" aria-hidden="true">
+  <div id="loaderStack">
+    <div id="loaderBox"><video id="loaderVideo" muted playsinline webkit-playsinline preload="auto" src="/assets/desorden-loader.mp4"></video></div>
+    <div id="loadMeta"><strong id="loadLetter">D</strong> · <span id="loadPercent">000</span>%</div>
+  </div>
+</section>
+<section id="cookieLayer" class="layer visible" aria-label="Preferencias de cookies">
+  <div id="cookiePanel">
+    <div class="cookieTitle">Cookies</div>
+    <p id="cookieCopy">Utilizamos una cookie de preferencia para recordar tu elección. Acepta para cargar la experiencia.</p>
+    <div class="cookieActions">
+      <button id="rejectCookies" class="cookieBtn" type="button">Rechazar</button>
+      <button id="acceptCookies" class="cookieBtn" type="button">Aceptar</button>
+    </div>
+    <div id="cookieState" aria-live="polite"></div>
+  </div>
+</section>
+<script>
+(()=>{
+  const FPS=24;
+  const FINAL_FRAME=138;
+  const MIN_VISUAL_MS=3800;
+  const MAIN_VIDEO_URL='/cinematic/scroll-bg-720.mp4';
+  const LETTERS=['D','E','S','O','R','D','E','N'];
+  const STAGES=[0,14,29,43,57,71,86,100];
+  const cookieLayer=document.getElementById('cookieLayer');
+  const loaderLayer=document.getElementById('loaderLayer');
+  const faceLayer=document.getElementById('faceLayer');
+  const experienceLayer=document.getElementById('experienceLayer');
+  const loaderVideo=document.getElementById('loaderVideo');
+  const faceFrame=document.getElementById('faceFrame');
+  const experienceFrame=document.getElementById('experienceFrame');
+  const acceptCookies=document.getElementById('acceptCookies');
+  const rejectCookies=document.getElementById('rejectCookies');
+  const cookieCopy=document.getElementById('cookieCopy');
+  const cookieState=document.getElementById('cookieState');
+  const loadLetter=document.getElementById('loadLetter');
+  const loadPercent=document.getElementById('loadPercent');
+  let realProgress=0,displayProgress=0,startTs=0,loaderStarted=false,downloadDone=false,faceReady=false,experienceReady=false,transitionedToFace=false,lastFrame=-1,pendingSeek=null,seeking=false;
+  const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+  function getConsent(){const m=document.cookie.match(/(?:^|;\s*)desorden_cookie_consent=([^;]+)/);return m?decodeURIComponent(m[1]):null}
+  function setConsent(value){const p=[`desorden_cookie_consent=${encodeURIComponent(value)}`,'Max-Age=31536000','Path=/','SameSite=Lax'];if(location.protocol==='https:')p.push('Secure');document.cookie=p.join('; ')}
+  if(new URLSearchParams(location.search).get('reset-consent')==='1'){document.cookie='desorden_cookie_consent=; Max-Age=0; Path=/; SameSite=Lax'}
+  function stageFor(p){if(p>=.999)return 7;return Math.min(6,Math.floor(p*7))}
+  function seekLoader(time){pendingSeek=time;if(seeking||loaderVideo.readyState<1)return;const execute=()=>{if(pendingSeek===null)return;const t=pendingSeek;pendingSeek=null;seeking=true;const done=()=>{seeking=false;if(pendingSeek!==null)execute()};loaderVideo.addEventListener('seeked',done,{once:true});try{loaderVideo.currentTime=t}catch(_){seeking=false};setTimeout(()=>{if(seeking){seeking=false;if(pendingSeek!==null)execute()}},90)};execute()}
+  function renderLoader(now){if(!loaderStarted)return;const timeCap=clamp((now-startTs)/MIN_VISUAL_MS);const target=Math.min(realProgress,timeCap);displayProgress+=(target-displayProgress)*(1-Math.exp(-.016*10));if(target>=1&&1-displayProgress<.002)displayProgress=1;const frame=Math.min(FINAL_FRAME,Math.round(displayProgress*FINAL_FRAME));if(frame!==lastFrame){lastFrame=frame;seekLoader(frame/FPS)}const stage=stageFor(displayProgress);loadLetter.textContent=LETTERS[stage];loadPercent.textContent=String(Math.round(displayProgress*100)).padStart(3,'0');if(displayProgress>=1&&downloadDone){finishLoader();return}requestAnimationFrame(renderLoader)}
+  async function preloadMainVideo(){try{const response=await fetch(MAIN_VIDEO_URL,{cache:'force-cache'});if(!response.ok)throw new Error(`HTTP ${response.status}`);const total=Number(response.headers.get('content-length'))||0;if(!response.body){await response.blob();realProgress=1;downloadDone=true;prepareExperience();return}const reader=response.body.getReader();let received=0;while(true){const {done,value}=await reader.read();if(done)break;received+=value.byteLength;if(total>0)realProgress=clamp(received/total,0,.999);else realProgress=Math.min(.92,realProgress+.035)}realProgress=1;downloadDone=true;prepareExperience()}catch(error){console.error('DESORDEN preload error',error);cookieState.textContent='ERROR DE CARGA — RECARGA LA PÁGINA'}}
+  function prepareExperience(){if(!experienceFrame.src){experienceFrame.src='/scroll.html';experienceFrame.addEventListener('load',()=>{experienceReady=true},{once:true})}}
+  function showLoader(){cookieLayer.classList.add('exit');setTimeout(()=>{cookieLayer.style.display='none'},720);loaderLayer.setAttribute('aria-hidden','false');loaderLayer.classList.add('visible');startTs=performance.now();loaderStarted=true;realProgress=0;displayProgress=0;downloadDone=false;lastFrame=-1;try{loaderVideo.currentTime=0}catch(_){};preloadMainVideo();requestAnimationFrame(renderLoader)}
+  function finishLoader(){if(transitionedToFace)return;transitionedToFace=true;loadLetter.textContent='N';loadPercent.textContent='100';try{loaderVideo.currentTime=FINAL_FRAME/FPS}catch(_){};setTimeout(()=>{faceLayer.setAttribute('aria-hidden','false');faceLayer.classList.add('visible');loaderLayer.classList.add('exit');setTimeout(()=>{loaderLayer.style.display='none'},760)},320)}
+  function showExperience(){if(!experienceFrame.src)prepareExperience();experienceLayer.setAttribute('aria-hidden','false');experienceLayer.classList.add('visible');faceLayer.classList.add('exit');setTimeout(()=>{faceLayer.style.display='none'},760)}
+  faceFrame.addEventListener('load',()=>{faceReady=true},{once:true});
+  addEventListener('message',e=>{if(e.data&&e.data.type==='desorden-face-complete')showExperience()});
+  acceptCookies.addEventListener('click',()=>{setConsent('accepted');cookieState.textContent='PREFERENCIA GUARDADA: ACEPTADA';showLoader()});
+  rejectCookies.addEventListener('click',()=>{setConsent('rejected');cookieCopy.textContent='Has rechazado la preferencia. Puedes aceptar cuando quieras para cargar la experiencia.';cookieState.textContent='PREFERENCIA GUARDADA: RECHAZADA'});
+  loaderVideo.addEventListener('loadedmetadata',()=>{try{loaderVideo.currentTime=0}catch(_){}},{once:true});
+  const consent=getConsent();
+  if(consent==='accepted'){cookieLayer.style.display='none';cookieLayer.classList.remove('visible');showLoader()}else if(consent==='rejected'){cookieCopy.textContent='Has rechazado la preferencia. Puedes aceptar cuando quieras para cargar la experiencia.';cookieState.textContent='PREFERENCIA GUARDADA: RECHAZADA'}
+})();
+</script>
+</body>
+</html>
