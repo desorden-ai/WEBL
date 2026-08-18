@@ -2,31 +2,49 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <meta name="theme-color" content="#050505" />
   <title>DESORDEN — Cinematic Scroll</title>
   <!-- DESORDEN_SCROLL_PRELOADER_V2 -->
+  <!-- DESORDEN_SCROLL_LOCKED_V3 -->
   <style>
     *{box-sizing:border-box}
     :root{--gold:#f5b300;--gold-shadow:#b37e00;--bg:#050505;--hud-bg:rgba(0,0,0,.26);--hud-border:rgba(255,255,255,.12);--hud-text:rgba(255,255,255,.94);--hud-muted:rgba(255,255,255,.58)}
-    html,body{margin:0;width:100%;min-height:100%;background:#000;color:#fff}
-    body{overflow-x:hidden;overscroll-behavior-y:none;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    #loader-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;user-select:none;opacity:1;visibility:visible;transition:opacity .82s cubic-bezier(.16,1,.3,1),visibility 0s linear .82s}
+    html,body{margin:0;width:100%;height:100%;background:#000;color:#fff;overflow:hidden;overscroll-behavior:none;touch-action:none;-webkit-overflow-scrolling:auto}
+    html{position:fixed;inset:0}
+    body{position:fixed;inset:0;width:100%;height:100dvh;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+
+    #loader-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom));overflow:hidden;user-select:none;opacity:1;visibility:visible;transition:opacity .82s cubic-bezier(.16,1,.3,1),visibility 0s linear .82s}
     #loader-screen.loaded{opacity:0;visibility:hidden;pointer-events:none}
     .loader-stage{position:relative;width:min(52vw,230px);aspect-ratio:1;display:grid;place-items:center;perspective:950px}
     .letter-box{position:relative;width:100%;height:100%;display:grid;place-items:center;transform-style:preserve-3d;will-change:transform}
-    .letter-box.flip{animation:letterFlip .52s cubic-bezier(.65,0,.35,1)}
-    @keyframes letterFlip{0%{transform:rotateX(0)}48%{transform:rotateX(-90deg)}52%{transform:rotateX(-90deg)}100%{transform:rotateX(0)}}
+    .letter-box.flip-out{animation:flipOut .26s cubic-bezier(.55,.02,.75,.32) both}
+    .letter-box.flip-in{animation:flipIn .30s cubic-bezier(.16,1,.3,1) both}
+    @keyframes flipOut{from{transform:rotateX(0deg)}to{transform:rotateX(-90deg)}}
+    @keyframes flipIn{from{transform:rotateX(90deg)}to{transform:rotateX(0deg)}}
     .letter-face,.letter-reflection{font-family:Impact,"Arial Black","Archivo Black",sans-serif;font-size:clamp(105px,30vw,160px);font-weight:900;line-height:1;color:var(--gold);text-shadow:0 3px 0 var(--gold-shadow),0 8px 30px rgba(245,179,0,.24),0 0 45px rgba(245,179,0,.08)}
     .letter-reflection{position:absolute;top:78%;left:0;right:0;text-align:center;transform:scaleY(-.68) perspective(500px) rotateX(24deg);transform-origin:top;opacity:.18;filter:blur(2px) brightness(.75);-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.75),rgba(0,0,0,.15) 42%,transparent 78%);mask-image:linear-gradient(to bottom,rgba(0,0,0,.75),rgba(0,0,0,.15) 42%,transparent 78%);pointer-events:none}
     .loader-stage::after{content:"";position:absolute;width:180px;height:30px;top:87%;background:radial-gradient(ellipse,rgba(245,179,0,.14),transparent 68%);filter:blur(7px)}
-    .loader-meta{margin-top:52px;display:flex;flex-direction:column;align-items:center;gap:11px}
+    .loader-meta{margin-top:52px;display:flex;flex-direction:column;align-items:center;gap:11px;width:min(88vw,360px)}
     .loader-counter{font-family:"SFMono-Regular",Consolas,monospace;font-size:20px;font-weight:700;letter-spacing:.08em;font-variant-numeric:tabular-nums;color:#fff}
     .loader-bar-track{width:min(44vw,190px);height:2px;overflow:hidden;background:rgba(255,255,255,.12)}
     .loader-bar-fill{width:100%;height:100%;transform:scaleX(0);transform-origin:left center;background:var(--gold);box-shadow:0 0 12px rgba(245,179,0,.75);will-change:transform}
-    .loader-status{margin:2px 0 0;color:rgba(255,255,255,.38);font-size:9px;font-weight:600;letter-spacing:.32em;text-transform:uppercase}
-    .scroll-stage{position:relative;height:700vh;background:#000}
-    .sticky{position:sticky;top:0;width:100%;height:100svh;overflow:hidden;isolation:isolate;background:#000}
+    .loader-status{margin:2px 0 0;color:rgba(255,255,255,.38);font-size:9px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;text-align:center}
+
+    .cookie-gate{width:min(86vw,340px);margin-top:26px;padding-top:20px;border-top:1px solid rgba(255,255,255,.11);text-align:center;transition:opacity .3s ease,transform .3s ease}
+    .cookie-gate.accepted{opacity:.42;transform:translateY(3px)}
+    .cookie-copy{margin:0 auto 14px;max-width:310px;color:rgba(255,255,255,.64);font-size:11px;line-height:1.55;letter-spacing:.015em}
+    .cookie-copy strong{color:#fff;font-weight:700}
+    .cookie-accept{appearance:none;border:1px solid rgba(245,179,0,.78);border-radius:999px;background:var(--gold);color:#050505;min-width:174px;min-height:44px;padding:11px 19px;font:800 10px/1 Inter,system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;touch-action:manipulation;transition:transform .16s ease,opacity .2s ease,box-shadow .2s ease;box-shadow:0 8px 30px rgba(245,179,0,.14)}
+    .cookie-accept:active{transform:scale(.97)}
+    .cookie-accept:focus-visible{outline:2px solid #fff;outline-offset:4px}
+    .cookie-accept[disabled]{opacity:.38;cursor:default}
+    .cookie-state{display:none;margin:2px 0 0;color:var(--gold);font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+    .cookie-gate.accepted .cookie-accept{display:none}
+    .cookie-gate.accepted .cookie-state{display:block}
+
+    .scroll-stage,.sticky{position:fixed;inset:0;width:100%;height:100dvh;overflow:hidden;background:#000}
+    .sticky{isolation:isolate}
     video{position:absolute;inset:-2%;width:104%;height:104%;object-fit:cover;object-position:center;display:block;background:#000;transform:translate3d(0,0,0) scale(1.035);transform-origin:50% 50%;filter:brightness(.90) saturate(.96) contrast(1.05);will-change:transform,filter;pointer-events:none;backface-visibility:hidden}
     .dark-base,.veil,.vignette,.atmo,.motion-shade{position:absolute;inset:0;pointer-events:none}
     .dark-base{z-index:1;background:rgba(0,0,0,.035)}
@@ -40,71 +58,381 @@
     .hud-meta{display:flex;gap:10px;margin-top:9px;color:var(--hud-muted);font-size:10px;line-height:1;font-weight:650;letter-spacing:.08em;text-transform:uppercase;font-variant-numeric:tabular-nums}
     .hint{position:absolute;z-index:6;left:50%;bottom:max(26px,env(safe-area-inset-bottom));transform:translateX(-50%);color:rgba(255,255,255,.72);font-size:10px;line-height:1;font-weight:650;letter-spacing:.24em;text-transform:uppercase;white-space:nowrap;pointer-events:none;transition:opacity .32s linear,transform .32s ease}
     .started .hint{opacity:0;transform:translateX(-50%) translateY(8px)}
-    .story-overlays{position:fixed;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+
+    .story-overlays{position:fixed;inset:0;z-index:30;pointer-events:none;overflow:hidden}
     .story-card{--story-opacity:0;--story-y:44px;--story-blur:10px;--story-scale:.97;position:absolute;left:clamp(24px,7vw,120px);top:50%;width:min(82vw,570px);color:#fff;opacity:var(--story-opacity);transform:translate3d(0,calc(-50% + var(--story-y)),0) scale(var(--story-scale));filter:blur(var(--story-blur));will-change:opacity,transform,filter}
     .story-card--right{left:auto;right:clamp(24px,7vw,120px);text-align:right}
     .story-card .tag{display:inline-block;margin-bottom:15px;color:var(--gold);font-size:10px;font-weight:800;letter-spacing:.3em;text-transform:uppercase}
     .story-card h2{margin:0 0 17px;font-size:clamp(2.4rem,6vw,5.5rem);line-height:.94;font-weight:900;letter-spacing:-.045em;text-wrap:balance}
-    .story-card p{max-width:410px;margin:0;color:rgba(255,255,255,.68);font-size:clamp(.95rem,1.4vw,1.15rem);line-height:1.48}
+    .story-card p{max-width:410px;margin:0;color:rgba(255,255,255,.67);font-size:clamp(.95rem,1.4vw,1.15rem);line-height:1.48}
     .story-card--right p{margin-left:auto}
-    @media(max-width:700px){.story-card,.story-card--right{left:24px;right:24px;top:auto;bottom:max(10vh,calc(env(safe-area-inset-bottom) + 46px));width:auto;text-align:left;transform:translate3d(0,var(--story-y),0) scale(var(--story-scale))}.story-card--right p{margin-left:0}.story-card h2{font-size:clamp(2.45rem,12vw,4.4rem)}}
-    @media(prefers-reduced-motion:reduce){#loader-screen,.letter-box{transition:none!important;animation:none!important}.story-card{filter:none!important}}
+
+    @media(max-width:700px){
+      #loader-screen{justify-content:center;padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom))}
+      .loader-stage{width:min(47vw,188px)}
+      .letter-face,.letter-reflection{font-size:clamp(92px,27vw,136px)}
+      .loader-meta{margin-top:44px}
+      .cookie-gate{margin-top:22px;padding-top:17px}
+      .story-card,.story-card--right{left:24px;right:24px;top:auto;bottom:max(10vh,calc(env(safe-area-inset-bottom) + 46px));width:auto;text-align:left;transform:translate3d(0,var(--story-y),0) scale(var(--story-scale))}
+      .story-card--right p{margin-left:0}
+      .story-card h2{font-size:clamp(2.35rem,11.5vw,4.2rem)}
+    }
+    @media(prefers-reduced-motion:reduce){.letter-box.flip-out,.letter-box.flip-in{animation-duration:.01ms}.story-card{filter:none!important}}
   </style>
 </head>
 <body>
-  <div id="loader-screen" aria-live="polite">
+  <div id="loader-screen">
     <div class="loader-stage" aria-hidden="true">
-      <div class="letter-box" id="letterBox"><span class="letter-face" id="loaderLetter">D</span></div>
-      <div class="letter-reflection" id="loaderReflection">D</div>
+      <div class="letter-box" id="letter-box"><span class="letter-face" id="current-letter">D</span></div>
+      <div class="letter-reflection" id="letter-reflection">D</div>
     </div>
     <div class="loader-meta">
-      <div class="loader-counter"><span id="loaderPercent">0</span>%</div>
-      <div class="loader-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="loaderProgressbar"><div class="loader-bar-fill" id="loaderBar"></div></div>
-      <p class="loader-status" id="loaderStatus">PREPARANDO EXPERIENCIA</p>
+      <div class="loader-counter"><span id="loader-percent">0</span>%</div>
+      <div class="loader-bar-track" id="loader-progressbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Carga de la experiencia">
+        <div class="loader-bar-fill" id="loader-bar"></div>
+      </div>
+      <p class="loader-status" id="loader-status">DESCARGANDO EXPERIENCIA</p>
+      <div class="cookie-gate" id="cookie-gate">
+        <p class="cookie-copy"><strong>Cookies</strong> · Para acceder a la experiencia debes aceptar el uso de cookies de esta página.</p>
+        <button class="cookie-accept" id="cookie-accept" type="button">Aceptar y entrar</button>
+        <p class="cookie-state">Cookies aceptadas</p>
+      </div>
     </div>
-  </div>
-
-  <div class="story-overlays" aria-hidden="true">
-    <article class="story-card" data-start="0.05" data-end="0.25"><span class="tag">DESORDEN STUDIO</span><h2>Impacto visual directo al grano.</h2><p>Historias diseñadas para atrapar en los primeros segundos.</p></article>
-    <article class="story-card story-card--right" data-start="0.30" data-end="0.55"><span class="tag">PRODUCCIÓN</span><h2>Cinematografía vertical & ritmo milimétrico.</h2><p>Cada frame cuenta, cada transición tiene un porqué.</p></article>
-    <article class="story-card" data-start="0.60" data-end="0.85"><span class="tag">IDENTIDAD</span><h2>Rompe el feed. Destaca del resto.</h2><p>Contenido premium creado para generar retención y marca.</p></article>
   </div>
 
   <section class="scroll-stage" id="stage">
     <div class="sticky" id="sticky">
-      <video id="video" muted playsinline webkit-playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
-      <div class="dark-base" aria-hidden="true"></div><div class="veil" aria-hidden="true"></div><div class="vignette" id="vignette" aria-hidden="true"></div><div class="atmo" id="atmo" aria-hidden="true"></div><div class="motion-shade" id="motionShade" aria-hidden="true"></div>
-      <div class="hud" aria-hidden="true"><p class="hud-label">Frame master</p><p class="hud-frame"><span id="frameCurrent">064</span> / <span id="frameTotal">240</span></p><div class="hud-meta"><span id="hudTime">0.00s</span><span id="hudProgress">0%</span></div></div>
+      <video id="video" muted playsinline webkit-playsinline preload="auto" disablepictureinpicture data-src="/cinematic/scroll-bg-720.mp4" aria-hidden="true"></video>
+      <div class="dark-base" aria-hidden="true"></div>
+      <div class="veil" aria-hidden="true"></div>
+      <div class="vignette" id="vignette" aria-hidden="true"></div>
+      <div class="atmo" id="atmo" aria-hidden="true"></div>
+      <div class="motion-shade" id="motionShade" aria-hidden="true"></div>
+      <div class="hud" aria-hidden="true">
+        <p class="hud-label">Frame master</p>
+        <p class="hud-frame"><span id="frameCurrent">064</span> / <span id="frameTotal">240</span></p>
+        <div class="hud-meta"><span id="hudTime">0.00s</span><span id="hudProgress">0%</span></div>
+      </div>
       <div class="hint" aria-hidden="true">Desliza</div>
     </div>
   </section>
 
+  <div class="story-overlays" aria-hidden="true">
+    <article class="story-card" data-start="0.05" data-end="0.25"><span class="tag">DESORDEN STUDIO</span><h2>Impacto visual directo al grano.</h2><p>Historias diseñadas para atrapar en los primeros segundos.</p></article>
+    <article class="story-card story-card--right" data-start="0.30" data-end="0.55"><span class="tag">PRODUCCIÓN</span><h2>Cinematografía vertical &amp; ritmo milimétrico.</h2><p>Cada frame cuenta, cada transición tiene un porqué.</p></article>
+    <article class="story-card" data-start="0.60" data-end="0.85"><span class="tag">IDENTIDAD</span><h2>Rompe el feed. Destaca del resto.</h2><p>Contenido premium creado para generar retención y marca.</p></article>
+  </div>
+
   <script>
     (()=>{
+      'use strict';
+
+      const FPS=24;
+      const SOURCE_FRAME_START=64;
+      const SOURCE_FRAME_END=240;
+      const SOURCE_FRAME_COUNT=SOURCE_FRAME_END-SOURCE_FRAME_START+1;
+      const DAMPING_MS=92;
+      const SEEK_INTERVAL_MS=34;
+      const MIN_LOADER_MS=7200;
+      const FINAL_HOLD_MS=520;
       const VIDEO_URL='/cinematic/scroll-bg-720.mp4';
       const LETTERS=['D','E','S','O','R','D','E','N'];
-      const FPS=24,SOURCE_FRAME_START=64,SOURCE_FRAME_END=240,SOURCE_FRAME_COUNT=SOURCE_FRAME_END-SOURCE_FRAME_START+1,DAMPING_MS=92,SEEK_INTERVAL_MS=34;
-      const stage=document.getElementById('stage'),sticky=document.getElementById('sticky'),video=document.getElementById('video'),vignette=document.getElementById('vignette'),atmo=document.getElementById('atmo'),motionShade=document.getElementById('motionShade'),frameCurrent=document.getElementById('frameCurrent'),hudTime=document.getElementById('hudTime'),hudProgress=document.getElementById('hudProgress');
-      const loaderScreen=document.getElementById('loader-screen'),loaderPercent=document.getElementById('loaderPercent'),loaderBar=document.getElementById('loaderBar'),loaderProgressbar=document.getElementById('loaderProgressbar'),loaderStatus=document.getElementById('loaderStatus'),letterBox=document.getElementById('letterBox'),loaderLetter=document.getElementById('loaderLetter'),loaderReflection=document.getElementById('loaderReflection'),storyCards=[...document.querySelectorAll('.story-card')];
-      let duration=SOURCE_FRAME_COUNT/FPS,ready=false,seeking=false,raf=0,lastTick=performance.now(),lastSeekAt=0,lastTargetProgress=0,targetProgress=0,smoothProgress=0,targetTime=0,motion=0,currentLetterIndex=0,flipLocked=false,queuedIndex=null,blobUrl=null;
-      const clamp=(v,min,max)=>Math.max(min,Math.min(max,v)),lerp=(a,b,t)=>a+(b-a)*t,smoothstep=(a,b,v)=>{const t=clamp((v-a)/Math.max(.0001,b-a),0,1);return t*t*(3-2*t)};
-      const setLoaderProgress=(ratio)=>{const r=clamp(ratio,0,1),pct=Math.round(r*100);loaderPercent.textContent=String(pct);loaderBar.style.transform=`scaleX(${r})`;loaderProgressbar.setAttribute('aria-valuenow',String(pct));const idx=Math.min(LETTERS.length-1,Math.floor(r*LETTERS.length));if(idx!==currentLetterIndex)flipTo(idx)};
-      const flipTo=(idx)=>{if(flipLocked){queuedIndex=idx;return}flipLocked=true;letterBox.classList.remove('flip');void letterBox.offsetWidth;letterBox.classList.add('flip');setTimeout(()=>{const char=LETTERS[idx];loaderLetter.textContent=char;loaderReflection.textContent=char},250);setTimeout(()=>{letterBox.classList.remove('flip');currentLetterIndex=idx;flipLocked=false;if(queuedIndex!==null&&queuedIndex!==currentLetterIndex){const q=queuedIndex;queuedIndex=null;flipTo(q)}},540)};
-      const hideLoader=()=>{loaderStatus.textContent='EXPERIENCIA LISTA';setLoaderProgress(1);setTimeout(()=>loaderScreen.classList.add('loaded'),420)};
-      const installBlob=(blob)=>{blobUrl=URL.createObjectURL(blob);video.src=blobUrl;video.preload='auto';video.load()};
-      const preload=async()=>{try{loaderStatus.textContent='DESCARGANDO EXPERIENCIA';const response=await fetch(VIDEO_URL,{cache:'force-cache'});if(!response.ok)throw new Error(`HTTP ${response.status}`);if(!response.body){const blob=await response.blob();setLoaderProgress(1);installBlob(blob);return}const total=Number(response.headers.get('content-length'));const reader=response.body.getReader(),chunks=[];let loaded=0;while(true){const {done,value}=await reader.read();if(done)break;if(!value)continue;chunks.push(value);loaded+=value.byteLength;if(Number.isFinite(total)&&total>0)setLoaderProgress(loaded/total)}installBlob(new Blob(chunks,{type:'video/mp4'}))}catch(err){console.warn('[DESORDEN] preload fallback',err);loaderStatus.textContent='PREPARANDO EXPERIENCIA';video.src=VIDEO_URL;video.preload='auto';video.load()}};
-      const getProgress=()=>{const rect=stage.getBoundingClientRect(),travel=Math.max(1,stage.offsetHeight-window.innerHeight);return clamp(-rect.top/travel,0,1)};
-      const updateStories=(p)=>{storyCards.forEach(card=>{const start=Number(card.dataset.start),end=Number(card.dataset.end),local=(p-start)/(end-start),edge=.23,enter=clamp(local/edge,0,1),exit=clamp((1-local)/edge,0,1),intensity=Math.min(enter,exit),y=(1-intensity)*44,blur=(1-intensity)*10,scale=.97+intensity*.03;card.style.setProperty('--story-opacity',intensity.toFixed(3));card.style.setProperty('--story-y',`${y.toFixed(2)}px`);card.style.setProperty('--story-blur',`${blur.toFixed(2)}px`);card.style.setProperty('--story-scale',scale.toFixed(4))})};
-      const updateHud=()=>{const t=Number.isFinite(video.currentTime)?video.currentTime:0,localIndex=clamp(Math.round(t*FPS),0,SOURCE_FRAME_COUNT-1),sourceFrame=clamp(SOURCE_FRAME_START+localIndex,SOURCE_FRAME_START,SOURCE_FRAME_END);frameCurrent.textContent=String(sourceFrame).padStart(3,'0');hudTime.textContent=`${t.toFixed(2)}s`;hudProgress.textContent=`${Math.round(smoothProgress*100)}%`};
-      const applyCinematicLook=()=>{const p=smoothProgress,absMotion=Math.min(1,Math.abs(motion)*9),direction=Math.sign(motion),entrance=smoothstep(0,.16,p),ending=smoothstep(.78,1,p),scale=1.035+p*.045+absMotion*.010,x=direction*absMotion*6,y=-6-p*13,rotate=direction*absMotion*.08,brightness=.90-p*.025-absMotion*.010,saturation=.96+p*.025,contrast=1.05+p*.025;video.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${scale.toFixed(4)}) rotate(${rotate.toFixed(3)}deg)`;video.style.filter=`brightness(${brightness.toFixed(3)}) saturate(${saturation.toFixed(3)}) contrast(${contrast.toFixed(3)})`;vignette.style.opacity=String(.34+p*.07+ending*.03);atmo.style.opacity=String(.12+entrance*.05+ending*.05);atmo.style.transform=`translate3d(${(-direction*absMotion*4).toFixed(2)}px,${(p*-5).toFixed(2)}px,0) scale(${(1+p*.014).toFixed(4)})`;motionShade.style.opacity=String(absMotion*.11);motionShade.style.transform=`translateX(${(direction*absMotion*8).toFixed(2)}px)`;sticky.classList.toggle('started',p>.015);updateStories(p)};
-      const seekLatest=(force=false)=>{if(!ready||seeking)return;const now=performance.now();targetTime=smoothProgress*Math.max(0,duration-(1/FPS));const delta=Math.abs((video.currentTime||0)-targetTime);if(!force&&delta<.010)return;if(!force&&now-lastSeekAt<SEEK_INTERVAL_MS)return;lastSeekAt=now;seeking=true;try{video.currentTime=targetTime}catch(_){seeking=false}};
-      const tick=now=>{raf=0;if(!ready)return;const dt=Math.min(50,Math.max(1,now-lastTick));lastTick=now;const damping=1-Math.exp(-dt/DAMPING_MS);smoothProgress=lerp(smoothProgress,targetProgress,damping);motion*=Math.exp(-dt/118);if(Math.abs(targetProgress-smoothProgress)<.00008)smoothProgress=targetProgress;applyCinematicLook();updateHud();seekLatest();const pd=Math.abs(targetProgress-smoothProgress),td=Math.abs((video.currentTime||0)-targetTime);if(pd>.00008||td>.014||Math.abs(motion)>.001)raf=requestAnimationFrame(tick);else seekLatest(true)};
-      const schedule=()=>{const next=getProgress(),delta=next-lastTargetProgress;lastTargetProgress=next;targetProgress=next;motion=clamp(motion+delta*7.5,-.16,.16);if(!raf){lastTick=performance.now();raf=requestAnimationFrame(tick)}};
-      video.addEventListener('loadedmetadata',()=>{duration=Number.isFinite(video.duration)&&video.duration>0?video.duration:SOURCE_FRAME_COUNT/FPS;ready=true;targetProgress=getProgress();lastTargetProgress=targetProgress;smoothProgress=targetProgress;targetTime=smoothProgress*Math.max(0,duration-(1/FPS));try{video.currentTime=targetTime}catch(_){}applyCinematicLook();updateHud();seekLatest(true);hideLoader()},{once:true});
-      video.addEventListener('seeked',()=>{seeking=false;updateHud();if(Math.abs((video.currentTime||0)-targetTime)>.014&&!raf){lastTick=performance.now();raf=requestAnimationFrame(tick)}});
+      const COOKIE_NAME='desorden_cookie_consent';
+      const TOUCH_TRAVEL_SCREENS=4.4;
+      const WHEEL_TRAVEL_PX=3200;
+
+      const stage=document.getElementById('stage');
+      const sticky=document.getElementById('sticky');
+      const video=document.getElementById('video');
+      const vignette=document.getElementById('vignette');
+      const atmo=document.getElementById('atmo');
+      const motionShade=document.getElementById('motionShade');
+      const frameCurrent=document.getElementById('frameCurrent');
+      const hudTime=document.getElementById('hudTime');
+      const hudProgress=document.getElementById('hudProgress');
+      const storyCards=[...document.querySelectorAll('.story-card')];
+
+      const loaderScreen=document.getElementById('loader-screen');
+      const loaderPercent=document.getElementById('loader-percent');
+      const loaderBar=document.getElementById('loader-bar');
+      const loaderProgressBar=document.getElementById('loader-progressbar');
+      const loaderStatus=document.getElementById('loader-status');
+      const letterBox=document.getElementById('letter-box');
+      const currentLetter=document.getElementById('current-letter');
+      const letterReflection=document.getElementById('letter-reflection');
+      const cookieGate=document.getElementById('cookie-gate');
+      const cookieAccept=document.getElementById('cookie-accept');
+
+      const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+      const clamp01=v=>clamp(v,0,1);
+      const lerp=(a,b,t)=>a+(b-a)*t;
+      const smoothstep=(a,b,v)=>{const t=clamp((v-a)/Math.max(.0001,b-a),0,1);return t*t*(3-2*t)};
+
+      let duration=SOURCE_FRAME_COUNT/FPS;
+      let ready=false,seeking=false,raf=0,interactionEnabled=false;
+      let lastTick=performance.now(),lastSeekAt=0;
+      let targetProgress=0,smoothProgress=0,targetTime=0,motion=0;
+      let touchY=null,pointerY=null,pointerActive=false;
+
+      let blobUrl=null,downloadDone=false,videoReady=false,consentAccepted=false,loaderFinished=false;
+      let realLoadProgress=0,displayLoadProgress=0,loaderRaf=0,loaderStartedAt=performance.now();
+      let currentLetterIndex=0,letterAnimating=false,queuedLetterIndex=null;
+
+      const hasConsent=()=>document.cookie.split(';').some(v=>v.trim()===`${COOKIE_NAME}=accepted`);
+      const clearConsent=()=>{document.cookie=`${COOKIE_NAME}=; Max-Age=0; Path=/; SameSite=Lax`};
+      if(new URLSearchParams(location.search).get('reset-consent')==='1')clearConsent();
+
+      const setConsentUi=accepted=>{
+        consentAccepted=accepted;
+        cookieGate.classList.toggle('accepted',accepted);
+        cookieAccept.disabled=accepted;
+      };
+      setConsentUi(hasConsent());
+
+      const requestImmersive=()=>{
+        const root=document.documentElement;
+        if(!document.fullscreenElement&&root.requestFullscreen){
+          try{const p=root.requestFullscreen({navigationUI:'hide'});if(p&&typeof p.catch==='function')p.catch(()=>{})}catch(_){ }
+        }
+      };
+
+      cookieAccept.addEventListener('click',()=>{
+        const secure=location.protocol==='https:'?'; Secure':'';
+        document.cookie=`${COOKIE_NAME}=accepted; Max-Age=31536000; Path=/; SameSite=Lax${secure}`;
+        setConsentUi(true);
+        requestImmersive();
+        maybeRevealExperience();
+      });
+
+      const swapLetter=index=>{
+        if(index===currentLetterIndex)return;
+        if(letterAnimating){queuedLetterIndex=index;return}
+        letterAnimating=true;
+        letterBox.classList.remove('flip-in');
+        letterBox.classList.add('flip-out');
+        window.setTimeout(()=>{
+          currentLetterIndex=index;
+          currentLetter.textContent=LETTERS[index];
+          letterReflection.textContent=LETTERS[index];
+          letterBox.classList.remove('flip-out');
+          void letterBox.offsetWidth;
+          letterBox.classList.add('flip-in');
+          window.setTimeout(()=>{
+            letterAnimating=false;
+            letterBox.classList.remove('flip-in');
+            if(queuedLetterIndex!==null&&queuedLetterIndex!==currentLetterIndex){const queued=queuedLetterIndex;queuedLetterIndex=null;swapLetter(queued)}else{queuedLetterIndex=null}
+          },300);
+        },260);
+      };
+
+      const renderLoader=now=>{
+        loaderRaf=0;
+        if(loaderFinished)return;
+        const timeCap=clamp01((now-loaderStartedAt)/MIN_LOADER_MS);
+        const target=Math.min(realLoadProgress,timeCap);
+        const delta=target-displayLoadProgress;
+        if(delta>0){displayLoadProgress+=Math.max(.0008,delta*.12);displayLoadProgress=Math.min(displayLoadProgress,target)}
+        if(downloadDone&&timeCap>=1&&displayLoadProgress>.998)displayLoadProgress=1;
+
+        const pct=Math.round(displayLoadProgress*100);
+        loaderPercent.textContent=String(pct);
+        loaderBar.style.transform=`scaleX(${displayLoadProgress})`;
+        loaderProgressBar.setAttribute('aria-valuenow',String(pct));
+        const index=displayLoadProgress>=.999?7:Math.min(6,Math.floor(displayLoadProgress*8));
+        swapLetter(index);
+
+        if(downloadDone&&displayLoadProgress>=.999){loaderStatus.textContent=consentAccepted?'EXPERIENCIA LISTA':'ACEPTA LAS COOKIES PARA ENTRAR'};
+        maybeRevealExperience();
+        if(!loaderFinished)loaderRaf=requestAnimationFrame(renderLoader);
+      };
+
+      const maybeRevealExperience=()=>{
+        if(loaderFinished||!downloadDone||!videoReady||displayLoadProgress<.999||!consentAccepted)return;
+        loaderFinished=true;
+        loaderPercent.textContent='100';
+        loaderBar.style.transform='scaleX(1)';
+        currentLetter.textContent='N';
+        letterReflection.textContent='N';
+        loaderStatus.textContent='EXPERIENCIA LISTA';
+        window.setTimeout(()=>{
+          loaderScreen.classList.add('loaded');
+          interactionEnabled=true;
+          schedule();
+        },FINAL_HOLD_MS);
+      };
+
+      const preloadVideo=async()=>{
+        loaderStartedAt=performance.now();
+        realLoadProgress=0;
+        displayLoadProgress=0;
+        loaderStatus.textContent='DESCARGANDO EXPERIENCIA';
+        if(!loaderRaf)loaderRaf=requestAnimationFrame(renderLoader);
+        try{
+          const response=await fetch(VIDEO_URL,{cache:'force-cache'});
+          if(!response.ok)throw new Error(`HTTP ${response.status}`);
+          if(!response.body){
+            const blob=await response.blob();
+            realLoadProgress=1;
+            await installBlob(blob);
+            return;
+          }
+          const total=Number(response.headers.get('content-length'));
+          const reader=response.body.getReader();
+          const chunks=[];
+          let loaded=0;
+          while(true){
+            const {done,value}=await reader.read();
+            if(done)break;
+            if(!value)continue;
+            chunks.push(value);
+            loaded+=value.byteLength;
+            if(Number.isFinite(total)&&total>0)realLoadProgress=clamp01(loaded/total);
+          }
+          realLoadProgress=1;
+          await installBlob(new Blob(chunks,{type:'video/mp4'}));
+        }catch(error){
+          console.warn('[DESORDEN] Streaming preload fallback:',error);
+          loaderStatus.textContent='PREPARANDO EXPERIENCIA';
+          realLoadProgress=1;
+          await installNativeFallback();
+        }
+      };
+
+      const waitForMetadata=()=>new Promise((resolve,reject)=>{
+        if(video.readyState>=1&&Number.isFinite(video.duration)){resolve();return}
+        const ok=()=>{cleanup();resolve()};
+        const fail=()=>{cleanup();reject(video.error||new Error('No se pudo preparar el vídeo'))};
+        const cleanup=()=>{video.removeEventListener('loadedmetadata',ok);video.removeEventListener('error',fail)};
+        video.addEventListener('loadedmetadata',ok,{once:true});
+        video.addEventListener('error',fail,{once:true});
+      });
+
+      async function installBlob(blob){
+        if(blobUrl)URL.revokeObjectURL(blobUrl);
+        blobUrl=URL.createObjectURL(blob);
+        video.src=blobUrl;
+        video.preload='auto';video.muted=true;video.playsInline=true;video.load();
+        await waitForMetadata();
+        onVideoMetadata();
+        downloadDone=true;
+        realLoadProgress=1;
+      }
+
+      async function installNativeFallback(){
+        video.src=VIDEO_URL;video.preload='auto';video.muted=true;video.playsInline=true;video.load();
+        await waitForMetadata();
+        onVideoMetadata();
+        downloadDone=true;
+      }
+
+      function onVideoMetadata(){
+        duration=Number.isFinite(video.duration)&&video.duration>0?video.duration:SOURCE_FRAME_COUNT/FPS;
+        ready=true;videoReady=true;targetProgress=0;smoothProgress=0;targetTime=0;
+        try{video.currentTime=0}catch(_){ }
+        applyCinematicLook();updateHud();seekLatest(true);
+      }
+
+      const setStoryProgress=progress=>{
+        const p=clamp01(progress);
+        storyCards.forEach(card=>{
+          const start=Number(card.dataset.start),end=Number(card.dataset.end);
+          const local=(p-start)/(end-start),edge=.23;
+          const intensity=Math.min(clamp01(local/edge),clamp01((1-local)/edge));
+          card.style.setProperty('--story-opacity',intensity.toFixed(3));
+          card.style.setProperty('--story-y',`${((1-intensity)*44).toFixed(2)}px`);
+          card.style.setProperty('--story-blur',`${((1-intensity)*10).toFixed(2)}px`);
+          card.style.setProperty('--story-scale',(0.97+intensity*.03).toFixed(4));
+        });
+      };
+
+      const updateHud=()=>{
+        const t=Number.isFinite(video.currentTime)?video.currentTime:0;
+        const localIndex=clamp(Math.round(t*FPS),0,SOURCE_FRAME_COUNT-1);
+        const sourceFrame=clamp(SOURCE_FRAME_START+localIndex,SOURCE_FRAME_START,SOURCE_FRAME_END);
+        frameCurrent.textContent=String(sourceFrame).padStart(3,'0');
+        hudTime.textContent=`${t.toFixed(2)}s`;
+        hudProgress.textContent=`${Math.round(smoothProgress*100)}%`;
+      };
+
+      const applyCinematicLook=()=>{
+        const p=smoothProgress,absMotion=Math.min(1,Math.abs(motion)*9),direction=Math.sign(motion);
+        const entrance=smoothstep(0,.16,p),ending=smoothstep(.78,1,p);
+        const scale=1.035+p*.045+absMotion*.010,x=direction*absMotion*6,y=-6-p*13,rotate=direction*absMotion*.08;
+        const brightness=.90-p*.025-absMotion*.010,saturation=.96+p*.025,contrast=1.05+p*.025;
+        video.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) scale(${scale.toFixed(4)}) rotate(${rotate.toFixed(3)}deg)`;
+        video.style.filter=`brightness(${brightness.toFixed(3)}) saturate(${saturation.toFixed(3)}) contrast(${contrast.toFixed(3)})`;
+        vignette.style.opacity=String(.34+p*.07+ending*.03);
+        atmo.style.opacity=String(.12+entrance*.05+ending*.05);
+        atmo.style.transform=`translate3d(${(-direction*absMotion*4).toFixed(2)}px,${(p*-5).toFixed(2)}px,0) scale(${(1+p*.014).toFixed(4)})`;
+        motionShade.style.opacity=String(absMotion*.11);
+        motionShade.style.transform=`translateX(${(direction*absMotion*8).toFixed(2)}px)`;
+        sticky.classList.toggle('started',p>.015);
+        setStoryProgress(p);
+      };
+
+      const seekLatest=(force=false)=>{
+        if(!ready||seeking)return;
+        const now=performance.now();targetTime=smoothProgress*Math.max(0,duration-(1/FPS));
+        const delta=Math.abs((video.currentTime||0)-targetTime);
+        if(!force&&delta<.010)return;
+        if(!force&&now-lastSeekAt<SEEK_INTERVAL_MS)return;
+        lastSeekAt=now;seeking=true;try{video.currentTime=targetTime}catch(_){seeking=false}
+      };
+
+      const tick=now=>{
+        raf=0;if(!ready)return;
+        const dt=Math.min(50,Math.max(1,now-lastTick));lastTick=now;
+        const damping=1-Math.exp(-dt/DAMPING_MS);smoothProgress=lerp(smoothProgress,targetProgress,damping);motion*=Math.exp(-dt/118);
+        if(Math.abs(targetProgress-smoothProgress)<.00008)smoothProgress=targetProgress;
+        applyCinematicLook();updateHud();seekLatest();
+        const pd=Math.abs(targetProgress-smoothProgress),td=Math.abs((video.currentTime||0)-targetTime);
+        if(pd>.00008||td>.014||Math.abs(motion)>.001)raf=requestAnimationFrame(tick);else seekLatest(true);
+      };
+
+      const schedule=()=>{if(!interactionEnabled||!ready)return;if(!raf){lastTick=performance.now();raf=requestAnimationFrame(tick)}};
+      const nudgeProgress=delta=>{
+        if(!interactionEnabled||!ready)return;
+        const previous=targetProgress;
+        targetProgress=clamp01(targetProgress+delta);
+        const movement=targetProgress-previous;
+        motion=clamp(motion+movement*7.5,-.16,.16);
+        schedule();
+      };
+
+      const onWheel=e=>{e.preventDefault();nudgeProgress(e.deltaY/WHEEL_TRAVEL_PX)};
+      const onTouchStart=e=>{if(e.touches&&e.touches.length)touchY=e.touches[0].clientY};
+      const onTouchMove=e=>{
+        e.preventDefault();
+        if(!e.touches||!e.touches.length)return;
+        const y=e.touches[0].clientY;
+        if(touchY!==null){const delta=touchY-y;nudgeProgress(delta/Math.max(1,window.innerHeight*TOUCH_TRAVEL_SCREENS))}
+        touchY=y;
+      };
+      const onTouchEnd=()=>{touchY=null};
+      const onPointerDown=e=>{if(e.pointerType==='mouse'){pointerActive=true;pointerY=e.clientY;try{e.currentTarget?.setPointerCapture?.(e.pointerId)}catch(_){}}};
+      const onPointerMove=e=>{if(!pointerActive||e.pointerType!=='mouse')return;e.preventDefault();const delta=pointerY-e.clientY;pointerY=e.clientY;nudgeProgress(delta/Math.max(1,window.innerHeight*TOUCH_TRAVEL_SCREENS))};
+      const onPointerUp=()=>{pointerActive=false;pointerY=null};
+
+      video.addEventListener('seeked',()=>{seeking=false;updateHud();if(Math.abs((video.currentTime||0)-targetTime)>.014&&!raf)schedule()});
+      document.addEventListener('wheel',onWheel,{passive:false});
+      document.addEventListener('touchstart',onTouchStart,{passive:true});
+      document.addEventListener('touchmove',onTouchMove,{passive:false});
+      document.addEventListener('touchend',onTouchEnd,{passive:true});
+      document.addEventListener('touchcancel',onTouchEnd,{passive:true});
+      document.addEventListener('pointerdown',onPointerDown,{passive:true});
+      document.addEventListener('pointermove',onPointerMove,{passive:false});
+      document.addEventListener('pointerup',onPointerUp,{passive:true});
+      document.addEventListener('pointercancel',onPointerUp,{passive:true});
+      document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+      window.addEventListener('scroll',()=>window.scrollTo(0,0),{passive:true});
+
       const unlock=()=>{if(!ready)return;const p=video.play();if(p&&typeof p.then==='function')p.then(()=>video.pause()).catch(()=>{})};
-      addEventListener('scroll',schedule,{passive:true});addEventListener('resize',schedule,{passive:true});addEventListener('orientationchange',schedule,{passive:true});addEventListener('touchstart',unlock,{once:true,passive:true});addEventListener('pointerdown',unlock,{once:true,passive:true});addEventListener('pagehide',()=>{if(blobUrl)URL.revokeObjectURL(blobUrl)},{once:true});
-      setLoaderProgress(0);updateStories(0);preload();schedule();
+      document.addEventListener('touchstart',unlock,{once:true,passive:true});
+      document.addEventListener('pointerdown',unlock,{once:true,passive:true});
+
+      window.addEventListener('pagehide',()=>{if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl=null}},{once:true});
+      setStoryProgress(0);
+      preloadVideo();
     })();
   </script>
 </body>
