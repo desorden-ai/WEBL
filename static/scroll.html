@@ -53,7 +53,7 @@
     .scroll-stage,.sticky{position:fixed;inset:0;width:100%;height:100vh;overflow:hidden;background:#000;touch-action:none}
     @supports(height:100svh){.scroll-stage,.sticky{height:100svh}}
     .sticky{isolation:isolate;display:flex;align-items:flex-end;justify-content:center}
-    video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;background:#000;transform:translateZ(0);filter:brightness(.942) saturate(.78) grayscale(.08) contrast(1.02);will-change:filter;pointer-events:none;backface-visibility:hidden}
+    video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;background:#000;transform:translateZ(0);filter:brightness(.942) saturate(.78) grayscale(.08) contrast(1.12);will-change:filter;pointer-events:none;backface-visibility:hidden}
     .dark-base,.veil,.vignette,.atmo,.motion-shade{position:absolute;inset:0;pointer-events:none}
     .dark-base{z-index:1;background:rgba(0,0,0,.028)}
     .veil{z-index:2;background:linear-gradient(180deg,rgba(0,0,0,.14),rgba(0,0,0,.028) 24%,rgba(0,0,0,.005) 52%,rgba(0,0,0,.03) 80%,rgba(0,0,0,.12))}
@@ -616,7 +616,7 @@
         const p=smoothProgress,absMotion=Math.min(1,Math.abs(motion)*8);
         const brightness=.946-p*.013-absMotion*.003;
         const saturation=.78+p*.01;
-        const contrast=1.02+p*.006;
+        const contrast=1.12+p*.006;
         video.style.filter=`brightness(${brightness.toFixed(3)}) saturate(${saturation.toFixed(3)}) grayscale(.08) contrast(${contrast.toFixed(3)})`;
         vignette.style.opacity=String(.22+p*.04);
         atmo.style.opacity=String(.05+p*.025);
