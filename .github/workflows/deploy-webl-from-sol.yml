@@ -41,8 +41,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -R -q "DESORDEN" dist/assets/*.js
+          grep -R -q "project-loader__letter" dist/assets/*.js
           grep -R -q "project-loader__letter" dist/assets/*.css
+          grep -R -q "Carga de la experiencia" dist/assets/*.js
 
       - name: Deploy WEBL Worker
         env:
