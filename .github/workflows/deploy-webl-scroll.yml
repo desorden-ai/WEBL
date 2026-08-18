@@ -1,0 +1,97 @@
+name: Deploy WEBL scroll from SOL
+
+on:
+  push:
+    branches:
+      - SOL
+    paths:
+      - static/scroll.html
+      - static/cinematic/**
+      - .github/workflows/deploy-webl-scroll.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-webl-scroll
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout SOL
+        uses: actions/checkout@v4
+        with:
+          ref: SOL
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify WEBL scroll build
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dist/scroll.html
+          test -s dist/cinematic/scroll-bg-720.mp4
+          grep -q "DESORDEN_SCROLL_PRELOADER_V2" dist/scroll.html
+          grep -q "DESCARGANDO EXPERIENCIA" dist/scroll.html
+          grep -q "DESORDEN STUDIO" dist/scroll.html
+
+      - name: Deploy Worker webl
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
+          npx wrangler deploy --name webl
+
+      - name: Verify public WEBL scroll
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            if curl -fLsS --max-time 20 "https://webl.desorden-help-76b.workers.dev/scroll" -o /tmp/scroll.html; then
+              if grep -q "DESORDEN_SCROLL_PRELOADER_V2" /tmp/scroll.html; then
+                exit 0
+              fi
+            fi
+            sleep 5
+          done
+          echo "WEBL /scroll did not verify" >&2
+          exit 1
+
+      - name: Record verified WEBL release
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p static/release
+          cat > static/release/webl-scroll.txt <<EOF
+          STATUS=VERIFIED
+          SOURCE_SHA=${GITHUB_SHA}
+          URL=https://webl.desorden-help-76b.workers.dev/scroll
+          MARKER=DESORDEN_SCROLL_PRELOADER_V2
+          FLOW=stream-preload,3d-gold-letters,real-progress,story-overlays
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add static/release/webl-scroll.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Record verified WEBL scroll release"
+            git push origin HEAD:SOL
+          fi
