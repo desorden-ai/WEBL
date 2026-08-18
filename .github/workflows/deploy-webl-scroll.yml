@@ -1,5 +1,6 @@
 name: Deploy WEBL scroll from SOL
 
+# retrigger: 2026-08-18T21:33+02:00
 on:
   push:
     branches:
