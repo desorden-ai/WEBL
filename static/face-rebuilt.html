@@ -6,26 +6,26 @@
 <meta name="theme-color" content="#000000">
 <title>DESORDEN — Scroll Portrait</title>
 <style>
-:root{--accent:#E39400;--fg:#f5f5f5;--muted:rgba(255,255,255,.42)}
+:root{--accent:#E39400;--fg:#f5f5f5;--muted:rgba(255,255,255,.48)}
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--fg);touch-action:none;overscroll-behavior:none;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 body{position:fixed;inset:0;height:100svh}
 .stage{position:fixed;inset:0;overflow:hidden;background:#000;perspective:1000px;transform-style:preserve-3d;touch-action:none}
-.media{position:absolute;right:-2vw;top:50%;width:min(94.6vw,46.2vh);aspect-ratio:9/16;transform:translate3d(0,-50%,0) scale(.78);transform-origin:100% 50%;will-change:transform,filter;isolation:isolate;-webkit-mask-image:radial-gradient(ellipse at 62% 46%,#000 0%,#000 35%,rgba(0,0,0,.98) 49%,rgba(0,0,0,.82) 62%,rgba(0,0,0,.50) 74%,rgba(0,0,0,.18) 85%,transparent 97%);mask-image:radial-gradient(ellipse at 62% 46%,#000 0%,#000 35%,rgba(0,0,0,.98) 49%,rgba(0,0,0,.82) 62%,rgba(0,0,0,.50) 74%,rgba(0,0,0,.18) 85%,transparent 97%)}
-.portrait{position:absolute;inset:0;width:100%;height:100%;display:block;filter:contrast(1.16) brightness(.74) saturate(.88)}
-.lightSweep{position:absolute;inset:-8%;background:linear-gradient(108deg,transparent 24%,rgba(227,148,0,.03) 43%,rgba(227,148,0,.23) 51%,rgba(255,187,73,.07) 58%,transparent 72%);mix-blend-mode:screen;transform:translateX(-38%);opacity:.72;will-change:transform,opacity;pointer-events:none}
-.grain{position:absolute;inset:0;opacity:.08;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");mix-blend-mode:screen}
-.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 69% 47%,transparent 0 34%,rgba(0,0,0,.18) 52%,rgba(0,0,0,.78) 82%,#000 100%)}
+.media{position:absolute;right:-2vw;top:50%;width:min(94.6vw,46.2vh);aspect-ratio:9/16;transform:translate3d(0,-50%,0) scale(.78);transform-origin:100% 50%;will-change:transform,filter;isolation:isolate;-webkit-mask-image:radial-gradient(ellipse at 62% 46%,#000 0%,#000 40%,rgba(0,0,0,.98) 54%,rgba(0,0,0,.88) 68%,rgba(0,0,0,.64) 80%,rgba(0,0,0,.28) 91%,transparent 100%);mask-image:radial-gradient(ellipse at 62% 46%,#000 0%,#000 40%,rgba(0,0,0,.98) 54%,rgba(0,0,0,.88) 68%,rgba(0,0,0,.64) 80%,rgba(0,0,0,.28) 91%,transparent 100%)}
+.portrait{position:absolute;inset:0;width:100%;height:100%;display:block;filter:contrast(1.08) brightness(.94) saturate(.96)}
+.lightSweep{position:absolute;inset:-8%;background:linear-gradient(108deg,transparent 24%,rgba(227,148,0,.04) 43%,rgba(227,148,0,.20) 51%,rgba(255,187,73,.08) 58%,transparent 72%);mix-blend-mode:screen;transform:translateX(-38%);opacity:.70;will-change:transform,opacity;pointer-events:none}
+.grain{position:absolute;inset:0;opacity:.045;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");mix-blend-mode:screen}
+.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 69% 47%,transparent 0 40%,rgba(0,0,0,.08) 61%,rgba(0,0,0,.48) 86%,#000 100%)}
 .brand{position:absolute;left:max(18px,env(safe-area-inset-left));top:max(18px,env(safe-area-inset-top));font-weight:900;font-size:14px;line-height:.78;letter-spacing:-.06em;text-transform:uppercase;opacity:.94}
 .brand i{display:inline-block;width:5px;height:5px;background:var(--accent);border-radius:50%;margin-left:5px;vertical-align:top}
 .rail{position:absolute;right:max(18px,env(safe-area-inset-right));top:50%;height:min(42vh,320px);width:26px;transform:translateY(-50%);display:grid;grid-template-columns:1fr 4px;gap:8px;align-items:stretch}
-.railNumbers{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;font-size:8px;line-height:1;color:rgba(255,255,255,.28);font-variant-numeric:tabular-nums}
-.railTrack{position:relative;width:2px;margin:auto;background:rgba(255,255,255,.14);overflow:hidden}
+.railNumbers{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;font-size:8px;line-height:1;color:rgba(255,255,255,.34);font-variant-numeric:tabular-nums}
+.railTrack{position:relative;width:2px;margin:auto;background:rgba(255,255,255,.18);overflow:hidden}
 .railBar{position:absolute;left:0;right:0;bottom:0;height:100%;transform-origin:50% 100%;transform:scaleY(0);background:var(--accent);box-shadow:0 0 16px rgba(227,148,0,.28)}
-.counter{position:absolute;left:max(18px,env(safe-area-inset-left));bottom:max(24px,env(safe-area-inset-bottom));font-size:10px;font-weight:700;letter-spacing:.16em;color:rgba(255,255,255,.68);font-variant-numeric:tabular-nums}
-.hint{position:absolute;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);font-size:9px;font-weight:650;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.48);white-space:nowrap;transition:opacity .3s ease}
+.counter{position:absolute;left:max(18px,env(safe-area-inset-left));bottom:max(24px,env(safe-area-inset-bottom));font-size:10px;font-weight:700;letter-spacing:.16em;color:rgba(255,255,255,.76);font-variant-numeric:tabular-nums}
+.hint{position:absolute;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%);font-size:9px;font-weight:650;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.58);white-space:nowrap;transition:opacity .3s ease}
 .started .hint{opacity:0}
-.complete{position:absolute;inset:auto 0 max(18px,env(safe-area-inset-bottom)) 0;text-align:center;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:rgba(227,148,0,.74);opacity:0;transition:opacity .25s ease;pointer-events:none}
+.complete{position:absolute;inset:auto 0 max(18px,env(safe-area-inset-bottom)) 0;text-align:center;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:rgba(227,148,0,.80);opacity:0;transition:opacity .25s ease;pointer-events:none}
 .completed .complete{opacity:1}
 @media(max-width:520px){.media{right:-10vw;width:min(112vw,50vh)}.rail{right:12px}.brand{left:16px}.counter{left:16px}}
 </style>
@@ -34,74 +34,49 @@ body{position:fixed;inset:0;height:100svh}
 <main class="stage" id="stage" aria-label="Retrato interactivo DESORDEN">
   <div class="brand" aria-hidden="true">DES<br>OR<br>DEN<i></i></div>
   <div class="media" id="media" aria-hidden="true">
-    <svg class="portrait" viewBox="0 0 900 1600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Retrato abstracto en penumbra">
+    <svg class="portrait" viewBox="0 0 900 1600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Retrato abstracto DESORDEN">
       <defs>
-        <radialGradient id="bg" cx="70%" cy="44%" r="58%"><stop offset="0" stop-color="#1d1308"/><stop offset=".25" stop-color="#090807"/><stop offset="1" stop-color="#000"/></radialGradient>
-        <linearGradient id="skin" x1=".18" y1=".36" x2=".86" y2=".56"><stop offset="0" stop-color="#050505"/><stop offset=".46" stop-color="#0b0907"/><stop offset=".68" stop-color="#5e3414"/><stop offset=".78" stop-color="#c46d20"/><stop offset=".86" stop-color="#3b210e"/><stop offset="1" stop-color="#030303"/></linearGradient>
-        <linearGradient id="rim" x1=".2" y1=".5" x2="1" y2=".5"><stop offset="0" stop-color="#000"/><stop offset=".64" stop-color="#090604"/><stop offset=".82" stop-color="#E39400"/><stop offset=".9" stop-color="#75400f"/><stop offset="1" stop-color="#000"/></linearGradient>
+        <radialGradient id="bg" cx="70%" cy="44%" r="58%"><stop offset="0" stop-color="#33210f"/><stop offset=".26" stop-color="#11100d"/><stop offset="1" stop-color="#000"/></radialGradient>
+        <linearGradient id="skin" x1=".18" y1=".36" x2=".86" y2=".56"><stop offset="0" stop-color="#090909"/><stop offset=".42" stop-color="#15110d"/><stop offset=".66" stop-color="#74431a"/><stop offset=".79" stop-color="#db812b"/><stop offset=".88" stop-color="#583015"/><stop offset="1" stop-color="#060606"/></linearGradient>
+        <linearGradient id="rim" x1=".2" y1=".5" x2="1" y2=".5"><stop offset="0" stop-color="#000"/><stop offset=".62" stop-color="#100a06"/><stop offset=".82" stop-color="#E39400"/><stop offset=".92" stop-color="#8c4e16"/><stop offset="1" stop-color="#000"/></linearGradient>
         <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
         <filter id="glow"><feGaussianBlur stdDeviation="8"/></filter>
       </defs>
       <rect width="900" height="1600" fill="url(#bg)"/>
-      <ellipse cx="710" cy="650" rx="160" ry="360" fill="#E39400" opacity=".16" filter="url(#soft)"/>
+      <ellipse cx="710" cy="650" rx="180" ry="390" fill="#E39400" opacity=".22" filter="url(#soft)"/>
       <path d="M255 1290 C255 1110 330 995 422 948 C357 892 329 795 336 680 C346 517 441 373 589 336 C698 309 779 361 793 441 C805 509 774 559 740 603 C724 624 719 646 723 667 C730 699 751 735 736 775 C721 817 680 836 653 866 C620 903 617 948 622 995 C633 1100 696 1218 754 1325 L255 1290Z" fill="url(#skin)"/>
-      <path d="M468 427 C529 358 648 337 722 382 C763 407 783 445 781 480 C718 445 646 446 577 480 C531 504 497 545 469 588 C445 625 420 660 389 684 C377 585 404 500 468 427Z" fill="#020202"/>
-      <path d="M705 513 C737 548 759 586 759 617 C759 639 747 652 731 665 C716 676 708 690 708 708 C708 729 717 748 710 765 C701 785 678 792 657 791" fill="none" stroke="url(#rim)" stroke-width="13" stroke-linecap="round" opacity=".86"/>
-      <path d="M672 541 C700 548 719 562 728 581" fill="none" stroke="#f0b356" stroke-width="7" stroke-linecap="round" opacity=".78" filter="url(#glow)"/>
-      <ellipse cx="667" cy="558" rx="9" ry="5" fill="#ffe0a1" opacity=".88"/>
-      <path d="M658 789 C679 792 696 786 709 775" fill="none" stroke="#8d4e1b" stroke-width="5" stroke-linecap="round" opacity=".66"/>
-      <path d="M559 946 C570 1119 526 1270 453 1390" fill="none" stroke="#3a200c" stroke-width="19" opacity=".44"/>
-      <path d="M577 923 C602 1040 653 1142 731 1248" fill="none" stroke="#E39400" stroke-width="9" opacity=".23" filter="url(#glow)"/>
-      <rect x="0" y="0" width="900" height="1600" fill="url(#bg)" opacity=".20"/>
+      <path d="M468 427 C529 358 648 337 722 382 C763 407 783 445 781 480 C718 445 646 446 577 480 C531 504 497 545 469 588 C445 625 420 660 389 684 C377 585 404 500 468 427Z" fill="#030303"/>
+      <path d="M705 513 C737 548 759 586 759 617 C759 639 747 652 731 665 C716 676 708 690 708 708 C708 729 717 748 710 765 C701 785 678 792 657 791" fill="none" stroke="url(#rim)" stroke-width="13" stroke-linecap="round" opacity=".92"/>
+      <path d="M672 541 C700 548 719 562 728 581" fill="none" stroke="#ffd08a" stroke-width="7" stroke-linecap="round" opacity=".88" filter="url(#glow)"/>
+      <ellipse cx="667" cy="558" rx="9" ry="5" fill="#fff0c2" opacity=".94"/>
+      <path d="M658 789 C679 792 696 786 709 775" fill="none" stroke="#a96025" stroke-width="5" stroke-linecap="round" opacity=".74"/>
+      <path d="M559 946 C570 1119 526 1270 453 1390" fill="none" stroke="#4a2a10" stroke-width="19" opacity=".50"/>
+      <path d="M577 923 C602 1040 653 1142 731 1248" fill="none" stroke="#E39400" stroke-width="9" opacity=".30" filter="url(#glow)"/>
     </svg>
     <div class="lightSweep" id="lightSweep"></div>
     <div class="grain"></div>
   </div>
   <div class="vignette" aria-hidden="true"></div>
-  <aside class="rail" aria-hidden="true">
-    <div class="railNumbers"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span></div>
-    <div class="railTrack"><div class="railBar" id="railBar"></div></div>
-  </aside>
+  <aside class="rail" aria-hidden="true"><div class="railNumbers"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span></div><div class="railTrack"><div class="railBar" id="railBar"></div></div></aside>
   <div class="counter" id="counter">00 / 100</div>
   <div class="hint">Desliza para explorar</div>
   <div class="complete">Entrando en la experiencia</div>
 </main>
 <script>
 (()=>{
-  const stage=document.getElementById('stage');
-  const media=document.getElementById('media');
-  const bar=document.getElementById('railBar');
-  const counter=document.getElementById('counter');
-  const sweep=document.getElementById('lightSweep');
+  const stage=document.getElementById('stage'),media=document.getElementById('media'),bar=document.getElementById('railBar'),counter=document.getElementById('counter'),sweep=document.getElementById('lightSweep');
   let target=0,smooth=0,dragging=false,lastY=0,lastTs=performance.now(),completeTimer=0,sent=false;
   const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
   const addProgress=(delta)=>{target=clamp(target+delta);stage.classList.toggle('started',target>.02)};
-  function render(p){
-    const c=p-.5;
-    const ry=c*1.5,rx=-c*.45,scale=.778+Math.abs(c)*.0127;
-    media.style.transform=`translate3d(0,-50%,0) rotateY(${ry.toFixed(3)}deg) rotateX(${rx.toFixed(3)}deg) scale(${scale.toFixed(4)})`;
-    bar.style.transform=`scaleY(${p})`;
-    counter.textContent=`${String(Math.round(p*100)).padStart(2,'0')} / 100`;
-    sweep.style.transform=`translateX(${(-38+p*74).toFixed(2)}%)`;
-    sweep.style.opacity=String(.46+Math.sin(p*Math.PI)*.42);
-    if(p>.995 && !sent){
-      stage.classList.add('completed');
-      if(!completeTimer) completeTimer=setTimeout(()=>{sent=true;parent.postMessage({type:'desorden-face-complete'},'*')},900);
-    }else if(p<.97 && completeTimer){clearTimeout(completeTimer);completeTimer=0;stage.classList.remove('completed')}
-  }
-  function frame(ts){
-    const dt=Math.min(.05,Math.max(.001,(ts-lastTs)/1000));lastTs=ts;
-    if(!dragging){const a=1-Math.exp(-6.2*dt);smooth+=(target-smooth)*a;if(Math.abs(target-smooth)<.001)smooth=target}
-    render(smooth);requestAnimationFrame(frame)
-  }
+  function render(p){const c=p-.5,ry=c*1.5,rx=-c*.45,scale=.778+Math.abs(c)*.0127;media.style.transform=`translate3d(0,-50%,0) rotateY(${ry.toFixed(3)}deg) rotateX(${rx.toFixed(3)}deg) scale(${scale.toFixed(4)})`;bar.style.transform=`scaleY(${p})`;counter.textContent=`${String(Math.round(p*100)).padStart(2,'0')} / 100`;sweep.style.transform=`translateX(${(-38+p*74).toFixed(2)}%)`;sweep.style.opacity=String(.50+Math.sin(p*Math.PI)*.38);if(p>.995&&!sent){stage.classList.add('completed');if(!completeTimer)completeTimer=setTimeout(()=>{sent=true;parent.postMessage({type:'desorden-face-complete'},'*')},900)}else if(p<.97&&completeTimer){clearTimeout(completeTimer);completeTimer=0;stage.classList.remove('completed')}}
+  function frame(ts){const dt=Math.min(.05,Math.max(.001,(ts-lastTs)/1000));lastTs=ts;if(!dragging){const a=1-Math.exp(-6.2*dt);smooth+=(target-smooth)*a;if(Math.abs(target-smooth)<.001)smooth=target}render(smooth);requestAnimationFrame(frame)}
   addEventListener('wheel',e=>{e.preventDefault();addProgress(e.deltaY*.00072)},{passive:false});
   addEventListener('touchstart',e=>{if(!e.touches[0])return;dragging=true;lastY=e.touches[0].clientY},{passive:false});
-  addEventListener('touchmove',e=>{if(!dragging||!e.touches[0])return;e.preventDefault();const y=e.touches[0].clientY;const dy=lastY-y;lastY=y;target=clamp(target+dy/Math.max(520,innerHeight*.95));smooth=target;stage.classList.toggle('started',target>.02);render(smooth)},{passive:false});
+  addEventListener('touchmove',e=>{if(!dragging||!e.touches[0])return;e.preventDefault();const y=e.touches[0].clientY,dy=lastY-y;lastY=y;target=clamp(target+dy/Math.max(520,innerHeight*.95));smooth=target;stage.classList.toggle('started',target>.02);render(smooth)},{passive:false});
   addEventListener('touchend',()=>{dragging=false},{passive:true});
   addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'){dragging=true;lastY=e.clientY}},{passive:true});
   addEventListener('pointermove',e=>{if(!dragging||e.pointerType!=='mouse')return;const dy=lastY-e.clientY;lastY=e.clientY;target=clamp(target+dy/Math.max(520,innerHeight*.95));smooth=target;render(smooth)},{passive:true});
-  addEventListener('pointerup',()=>{dragging=false},{passive:true});
-  requestAnimationFrame(frame);
+  addEventListener('pointerup',()=>{dragging=false},{passive:true});requestAnimationFrame(frame);
 })();
 </script>
 </body>
