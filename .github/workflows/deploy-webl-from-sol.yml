@@ -1,0 +1,88 @@
+name: Deploy WEBL from SOL control
+
+on:
+  push:
+    branches:
+      - SOL
+    paths:
+      - .github/workflows/deploy-webl-from-sol.yml
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-webl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout WEBL source branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/immersive-3d-scroll
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify typographic loader build
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -R -q "DESORDEN" dist/assets/*.js
+          grep -R -q "project-loader__letter" dist/assets/*.css
+
+      - name: Deploy WEBL Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
+          npx wrangler deploy
+
+      - name: Verify public /scroll route
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            if curl -fLsS --max-time 20 "https://webl.desorden-help-76b.workers.dev/scroll" -o /tmp/scroll.html; then
+              grep -q "id=\"root\"" /tmp/scroll.html && exit 0
+            fi
+            sleep 5
+          done
+          exit 1
+
+      - name: Record verified WEBL release
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p static/release
+          cat > static/release/webl-typographic-loader.txt <<EOF
+          STATUS=VERIFIED
+          SOURCE_BRANCH=agent/immersive-3d-scroll
+          SOURCE_SHA=$(git rev-parse HEAD)
+          URL=https://webl.desorden-help-76b.workers.dev/scroll
+          LOADER=DESORDEN-8-STEPS-12.5-PERCENT
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add static/release/webl-typographic-loader.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Record verified WEBL typographic loader release"
+            git push origin HEAD:agent/immersive-3d-scroll
+          fi
