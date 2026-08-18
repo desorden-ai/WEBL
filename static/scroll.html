@@ -15,10 +15,6 @@
       --accent:#f5b300;
       --bg:#050505;
       --card-bg:rgba(15,15,15,.95);
-      --hud-bg:rgba(0,0,0,.24);
-      --hud-border:rgba(255,255,255,.12);
-      --hud-text:rgba(255,255,255,.94);
-      --hud-muted:rgba(255,255,255,.58);
       --font-mono:"SF Mono","Fira Code",Consolas,monospace;
     }
     html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none;background:#000;color:#fff}
@@ -65,11 +61,6 @@
     .atmo{z-index:4;opacity:.055;background:radial-gradient(ellipse at 50% 32%,rgba(170,190,200,.07),transparent 46%);mix-blend-mode:screen;will-change:opacity}
     .motion-shade{z-index:4;opacity:0;background:linear-gradient(90deg,rgba(0,0,0,.035),transparent 32%,transparent 68%,rgba(0,0,0,.035));will-change:opacity}
 
-    /* HUD */
-    .hud{position:absolute;z-index:6;top:max(16px,env(safe-area-inset-top));left:max(16px,env(safe-area-inset-left));min-width:156px;padding:12px 14px 11px;border:1px solid var(--hud-border);border-radius:14px;background:var(--hud-bg);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);pointer-events:none;user-select:none}
-    .hud-label{margin:0 0 7px;color:var(--hud-muted);font-size:9px;line-height:1;font-weight:700;letter-spacing:.22em;text-transform:uppercase}
-    .hud-frame{margin:0;color:var(--hud-text);font-size:clamp(21px,5vw,31px);line-height:.9;font-weight:750;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-    .hud-meta{display:flex;gap:10px;margin-top:9px;color:var(--hud-muted);font-size:10px;line-height:1;font-weight:650;letter-spacing:.08em;text-transform:uppercase;font-variant-numeric:tabular-nums}
     .hint{position:absolute;z-index:6;left:50%;bottom:max(26px,env(safe-area-inset-bottom));transform:translateX(-50%);color:rgba(255,255,255,.72);font-size:10px;line-height:1;font-weight:650;letter-spacing:.24em;text-transform:uppercase;white-space:nowrap;pointer-events:none;transition:opacity .32s linear,transform .32s ease}
     .started .hint{opacity:0;transform:translateX(-50%) translateY(8px)}
 
@@ -91,6 +82,12 @@
     .qa-debug button{min-height:32px;padding:5px 8px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:#151515;color:#fff;font:inherit;cursor:pointer;touch-action:manipulation}
     .qa-debug button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
+    #mobile-only-message{display:none;position:fixed;inset:0;z-index:10001;align-items:center;justify-content:center;padding:32px;background:#050505;color:#fff;text-align:center}
+    #mobile-only-message p{max-width:26rem;color:rgba(255,255,255,.68);font-size:1rem;line-height:1.5}
+    #mobile-only-message strong{display:block;margin-bottom:12px;color:var(--gold);font-size:.75rem;letter-spacing:.24em;text-transform:uppercase}
+    body.desktop-only>:not(#mobile-only-message){display:none!important}
+    body.desktop-only #mobile-only-message{display:flex}
+
     @media(max-width:700px){
       #loader-screen{justify-content:center;padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom))}
       .loader-stage{width:min(47vw,188px)}
@@ -109,6 +106,7 @@
   </style>
 </head>
 <body>
+  <main id="mobile-only-message" aria-live="polite"><p><strong>DESORDEN</strong>Esta experiencia está disponible únicamente en dispositivos móviles.</p></main>
   <div id="loader-screen" role="status" aria-live="polite">
     <div class="loader-stage" aria-hidden="true">
       <div class="letter-box" id="letter-box"><span class="letter-face" id="current-letter">D</span></div>
@@ -142,11 +140,6 @@
       <div class="vignette" id="vignette" aria-hidden="true"></div>
       <div class="atmo" id="atmo" aria-hidden="true"></div>
       <div class="motion-shade" id="motionShade" aria-hidden="true"></div>
-      <div class="hud" aria-hidden="true">
-        <p class="hud-label">Frame master</p>
-        <p class="hud-frame"><span id="frameCurrent">064</span> / <span id="frameTotal">240</span></p>
-        <div class="hud-meta"><span id="hudTime">0.00s</span><span id="hudProgress">0%</span></div>
-      </div>
       <div class="hint" aria-hidden="true">Desliza</div>
     </div>
   </section>
@@ -188,15 +181,14 @@
       const KEY_STEP=.07776;
       const urlParams=new URLSearchParams(location.search);
       const SCROLL_DEBUG=urlParams.get('scroll-debug')==='1';
+      const isMobileDevice=window.matchMedia('(pointer:coarse)').matches&&!window.matchMedia('(hover:hover)').matches;
+      if(!isMobileDevice){document.body.classList.add('desktop-only');return}
 
       const sticky=document.getElementById('sticky');
       const video=document.getElementById('video');
       const vignette=document.getElementById('vignette');
       const atmo=document.getElementById('atmo');
       const motionShade=document.getElementById('motionShade');
-      const frameCurrent=document.getElementById('frameCurrent');
-      const hudTime=document.getElementById('hudTime');
-      const hudProgress=document.getElementById('hudProgress');
       const storyCards=[...document.querySelectorAll('.story-card')];
       const qaDebug=document.getElementById('qaDebug');
       const qaDebugSummary=document.getElementById('qaDebugSummary');
@@ -613,15 +605,6 @@
         });
       };
 
-      const updateHud=()=>{
-        const t=Number.isFinite(video.currentTime)?video.currentTime:0;
-        const localIndex=clamp(Math.round(t*FPS),0,SOURCE_FRAME_COUNT-1);
-        const sourceFrame=clamp(SOURCE_FRAME_START+localIndex,SOURCE_FRAME_START,SOURCE_FRAME_END);
-        frameCurrent.textContent=String(sourceFrame).padStart(3,'0');
-        hudTime.textContent=`${t.toFixed(2)}s`;
-        hudProgress.textContent=`${Math.round(smoothProgress*100)}%`;
-      };
-
       const applyLook=()=>{
         const p=smoothProgress,absMotion=Math.min(1,Math.abs(motion)*8);
         const brightness=.968-p*.014-absMotion*.003;
@@ -659,7 +642,6 @@
         motion*=Math.exp(-dt/105);
         if(Math.abs(targetProgress-smoothProgress)<.00007)smoothProgress=targetProgress;
         applyLook();
-        updateHud();
         seekLatest();
         const pd=Math.abs(targetProgress-smoothProgress),td=Math.abs((video.currentTime||0)-targetTime);
         if(pd>.00007||td>.012||Math.abs(motion)>.001)raf=requestAnimationFrame(render);

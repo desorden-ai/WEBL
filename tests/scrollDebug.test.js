@@ -20,6 +20,9 @@ test('keeps the validated locked-scroll runtime constants and framing', () => {
   assert.match(html, /const KEY_STEP=\.07776;/)
   assert.match(html, /object-fit:contain;object-position:center bottom/)
   assert.match(html, /html,body\{[^}]*overflow:hidden;[^}]*overscroll-behavior:none/)
+  assert.match(html, /const isMobileDevice=window\.matchMedia\('\(pointer:coarse\)'\)\.matches&&!window\.matchMedia\('\(hover:hover\)'\)\.matches;/)
+  assert.doesNotMatch(html, /class="hud"/)
+  assert.doesNotMatch(html, /Frame master/)
   assert.doesNotMatch(html, /requestFullscreen|navigationUI/)
 })
 
