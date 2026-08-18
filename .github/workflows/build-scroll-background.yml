@@ -214,11 +214,34 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
-            echo "Cloudflare secrets are not configured. Push completed; manual deploy skipped."
+            echo "DEPLOYED=false" >> "$GITHUB_ENV"
+            echo "Cloudflare secrets are not configured."
             exit 0
           fi
           npx wrangler deploy
           sleep 4
           curl -fLsS "https://sol.desorden-help-76b.workers.dev/scroll.html" -o /tmp/scroll-published.html
           grep -q "SOL — Scroll Background" /tmp/scroll-published.html
+          echo "DEPLOYED=true" >> "$GITHUB_ENV"
           echo "Published: https://sol.desorden-help-76b.workers.dev/scroll.html"
+
+      - name: Record verified deployment
+        if: env.DEPLOYED == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --rebase origin SOL
+          mkdir -p static/release
+          cat > static/release/scroll-background.txt <<EOF
+          status=VERIFIED
+          url=https://sol.desorden-help-76b.workers.dev/scroll.html
+          source_drive_id=${SOURCE_DRIVE_ID}
+          generated_from=${PUBLISHED_SHA}
+          EOF
+          git add static/release/scroll-background.txt
+          if git diff --cached --quiet; then
+            echo "Deployment marker already current."
+          else
+            git commit -m "Record verified scroll background deployment"
+            git push origin HEAD:SOL
+          fi
