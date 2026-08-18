@@ -15,9 +15,9 @@ test('keeps the standalone inline runtime syntactically valid', () => {
 test('keeps the validated locked-scroll runtime constants and framing', () => {
   assert.match(html, /const DAMPING_MS=78;/)
   assert.match(html, /const SEEK_INTERVAL_MS=28;/)
-  assert.match(html, /const TOUCH_TRAVEL_SCREENS=3\.0556;/)
-  assert.match(html, /const WHEEL_TRAVEL_PX=2222;/)
-  assert.match(html, /const KEY_STEP=\.0648;/)
+  assert.match(html, /const TOUCH_TRAVEL_SCREENS=2\.5463;/)
+  assert.match(html, /const WHEEL_TRAVEL_PX=1851\.7;/)
+  assert.match(html, /const KEY_STEP=\.07776;/)
   assert.match(html, /object-fit:contain;object-position:center bottom/)
   assert.match(html, /html,body\{[^}]*overflow:hidden;[^}]*overscroll-behavior:none/)
   assert.doesNotMatch(html, /requestFullscreen|navigationUI/)
