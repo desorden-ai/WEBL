@@ -82,12 +82,6 @@
     .qa-debug button{min-height:32px;padding:5px 8px;border:1px solid rgba(255,255,255,.22);border-radius:4px;background:#151515;color:#fff;font:inherit;cursor:pointer;touch-action:manipulation}
     .qa-debug button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
-    #mobile-only-message{display:none;position:fixed;inset:0;z-index:10001;align-items:center;justify-content:center;padding:32px;background:#050505;color:#fff;text-align:center}
-    #mobile-only-message p{max-width:26rem;color:rgba(255,255,255,.68);font-size:1rem;line-height:1.5}
-    #mobile-only-message strong{display:block;margin-bottom:12px;color:var(--gold);font-size:.75rem;letter-spacing:.24em;text-transform:uppercase}
-    body.desktop-only>:not(#mobile-only-message){display:none!important}
-    body.desktop-only #mobile-only-message{display:flex}
-
     @media(max-width:700px){
       #loader-screen{justify-content:center;padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom))}
       .loader-stage{width:min(47vw,188px)}
@@ -102,11 +96,20 @@
       .consent-actions{flex-direction:column-reverse}
       .btn-consent{width:100%;text-align:center;min-height:44px}
     }
+    @media(min-width:769px) and (hover:hover) and (pointer:fine){
+      body{background:radial-gradient(circle at 50% 35%,#29200e 0%,#0b0b0b 38%,#030303 75%)}
+      body::before{content:"";position:fixed;inset:-12%;background:radial-gradient(ellipse at 50% 40%,rgba(245,179,0,.1),transparent 32%),radial-gradient(ellipse at 18% 82%,rgba(46,55,67,.18),transparent 38%);filter:blur(36px);pointer-events:none}
+      .scroll-stage{inset:auto;top:50%;left:50%;width:min(440px,calc(100vw - 48px));height:min(880px,calc(100vh - 48px));transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.14);border-radius:36px;box-shadow:0 30px 90px rgba(0,0,0,.7),0 0 0 9px rgba(255,255,255,.025);isolation:isolate}
+      .sticky{position:absolute;inset:0;width:100%;height:100%;border-radius:inherit}
+      video{border-radius:inherit}
+      .story-overlays{inset:auto;top:50%;left:50%;width:min(440px,calc(100vw - 48px));height:min(880px,calc(100vh - 48px));transform:translate(-50%,-50%);border-radius:36px}
+      #loader-screen{inset:auto;top:50%;left:50%;width:min(440px,calc(100vw - 48px));height:min(880px,calc(100vh - 48px));transform:translate(-50%,-50%);border-radius:36px;box-shadow:0 30px 90px rgba(0,0,0,.7)}
+      .consent-banner{width:min(400px,calc(100vw - 64px))}
+    }
     @media(prefers-reduced-motion:reduce){.story-card{filter:none!important}}
   </style>
 </head>
 <body>
-  <main id="mobile-only-message" aria-live="polite"><p><strong>DESORDEN</strong>Esta experiencia está disponible únicamente en dispositivos móviles.</p></main>
   <div id="loader-screen" role="status" aria-live="polite">
     <div class="loader-stage" aria-hidden="true">
       <div class="letter-box" id="letter-box"><span class="letter-face" id="current-letter">D</span></div>
@@ -132,7 +135,7 @@
     </div>
   </div>
 
-  <section class="scroll-stage" id="stage">
+  <main class="scroll-stage" id="stage" aria-label="Experiencia visual DESORDEN">
     <div class="sticky" id="sticky">
       <video id="video" muted playsinline webkit-playsinline preload="auto" disablepictureinpicture data-src="/cinematic/scroll-bg-720.mp4" aria-hidden="true"></video>
       <div class="dark-base" aria-hidden="true"></div>
@@ -142,9 +145,9 @@
       <div class="motion-shade" id="motionShade" aria-hidden="true"></div>
       <div class="hint" aria-hidden="true">Desliza</div>
     </div>
-  </section>
+  </main>
 
-  <div class="story-overlays" aria-hidden="true">
+  <div class="story-overlays">
     <article class="story-card" data-start="0.05" data-end="0.25"><span class="tag">DESORDEN STUDIO</span><h2>Impacto visual directo al grano.</h2><p>Historias diseñadas para atrapar en los primeros segundos.</p></article>
     <article class="story-card story-card--right" data-start="0.30" data-end="0.55"><span class="tag">PRODUCCIÓN</span><h2>Cinematografía vertical &amp; ritmo milimétrico.</h2><p>Cada frame cuenta, cada transición tiene un porqué.</p></article>
     <article class="story-card" data-start="0.60" data-end="0.85"><span class="tag">IDENTIDAD</span><h2>Rompe el feed. Destaca del resto.</h2><p>Contenido premium creado para generar retención y marca.</p></article>
@@ -180,9 +183,7 @@
       const WHEEL_TRAVEL_PX=1851.7;
       const KEY_STEP=.07776;
       const urlParams=new URLSearchParams(location.search);
-      const SCROLL_DEBUG=urlParams.get('scroll-debug')==='1';
-      const isMobileDevice=window.matchMedia('(pointer:coarse)').matches&&!window.matchMedia('(hover:hover)').matches;
-      if(!isMobileDevice){document.body.classList.add('desktop-only');return}
+      const SCROLL_DEBUG=urlParams.get('scroll-debug')==='1'||urlParams.get('debug')==='1';
 
       const sticky=document.getElementById('sticky');
       const video=document.getElementById('video');
@@ -602,6 +603,7 @@
           card.style.setProperty('--story-y',`${((1-intensity)*44).toFixed(2)}px`);
           card.style.setProperty('--story-blur',`${((1-intensity)*10).toFixed(2)}px`);
           card.style.setProperty('--story-scale',(0.97+intensity*.03).toFixed(4));
+          card.setAttribute('aria-hidden',String(intensity<.02));
         });
       };
 

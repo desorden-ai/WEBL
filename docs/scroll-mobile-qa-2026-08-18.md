@@ -6,7 +6,7 @@ Scope: measurement only; no runtime constants, media pipeline or production depl
 
 ## QA mode
 
-The instrumentation is disabled by default and activates only when the exact query parameter `scroll-debug=1` is present. It does not send data to an external service. The current report is available as `window.DESORDEN_SCROLL_QA.getReport()` and through the on-screen **Copiar JSON** / **Descargar** controls.
+The instrumentation is disabled by default and activates only with `scroll-debug=1` (or the compatible alias `debug=1`). It does not send data to an external service. The current report is available as `window.DESORDEN_SCROLL_QA.getReport()` and through the on-screen **Copiar JSON** / **Descargar** controls.
 
 Use identifying query parameters so every export is self-describing:
 
