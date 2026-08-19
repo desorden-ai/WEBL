@@ -107,10 +107,10 @@
     .marquee-slider::-webkit-scrollbar{display:none}
     .marquee-slider.is-dragging{cursor:grabbing}
     .logo-track{display:flex;align-items:center;gap:34px;padding-right:34px;width:max-content;flex:none}
-    .client-logo-button{display:grid;place-items:center;width:128px;height:76px;padding:4px;flex:none;border:0;background:transparent;cursor:pointer;opacity:.34;transition:opacity .3s ease,transform .3s ease,filter .3s ease;touch-action:manipulation}
+    .client-logo-button{position:relative;display:block;width:128px;height:76px;flex:none;border:0;background:transparent;cursor:pointer;opacity:.34;transition:opacity .3s ease,transform .3s ease,filter .3s ease;touch-action:manipulation}
     .client-logo-button:hover{opacity:.72;transform:scale(1.05)}
     .client-logo-button.is-selected{opacity:1;transform:scale(1.08);filter:brightness(0) saturate(100%) invert(67%) sepia(21%) saturate(1697%) hue-rotate(346deg) brightness(92%) contrast(93%)}
-    .client-logo-button img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center}
+    .client-logo-button img{position:absolute;inset:4px;display:block;width:calc(100% - 8px);height:calc(100% - 8px);object-fit:contain;object-position:center}
     .project-info{min-height:52px;margin-top:12px;opacity:0;transition:opacity .3s ease}
     .project-info.is-visible{opacity:1}
     .project-info h3{margin:0 0 4px;color:#fff;font-size:11px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
@@ -140,7 +140,8 @@
       .story-card--work h2{font-size:clamp(1.8rem,8.6vw,3rem);margin-bottom:12px}
       .contact-link{margin-bottom:12px}
       .logo-track{gap:24px;padding-right:24px}
-      .client-logo-button{width:108px;height:64px;padding:3px}
+      .client-logo-button{width:108px;height:64px}
+      .client-logo-button img{inset:3px;width:calc(100% - 6px);height:calc(100% - 6px)}
       .project-info{min-height:44px;margin-top:8px}
     }
     @media(max-width:480px){
