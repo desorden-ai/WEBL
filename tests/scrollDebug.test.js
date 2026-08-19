@@ -41,6 +41,14 @@ test('keeps vertical scrub available above copy and the project marquee', () => 
   assert.match(html, /filter:brightness\(0\) saturate\(0\) invert\(68%\)/)
 })
 
+test('renders the minimal initial cue and clean selected-logo feedback', () => {
+  assert.match(html, /class="hint" aria-hidden="true"><svg[^>]*viewBox="0 0 40 24"/)
+  assert.match(html, /@keyframes hint-pop/)
+  assert.doesNotMatch(html, />Desliza<|>Desplaza</)
+  assert.match(html, /-webkit-tap-highlight-color:transparent/)
+  assert.match(html, /\.client-logo-button\.is-selected\{[^}]*filter:brightness\(0\) saturate\(100%\)/)
+})
+
 test('gates QA instrumentation behind scroll-debug=1', () => {
   assert.match(html, /urlParams\.get\('scroll-debug'\)==='1'/)
   assert.match(html, /const scrollQa=SCROLL_DEBUG\?createScrollDebug\(\):null;/)
