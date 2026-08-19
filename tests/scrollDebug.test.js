@@ -20,7 +20,7 @@ test('keeps the validated locked-scroll runtime constants and framing', () => {
   assert.match(html, /const KEY_STEP=\.07776;/)
   assert.match(html, /object-fit:contain;object-position:center bottom/)
   assert.match(html, /filter:brightness\(\.942\) saturate\(\.78\) grayscale\(\.08\) contrast\(1\.12\)/)
-  assert.match(html, /const MIN_LOADER_MS=1800;/)
+  assert.doesNotMatch(html, /MIN_LOADER_MS|FINAL_HOLD_MS/)
   assert.match(html, /html,body\{[^}]*overflow:hidden;[^}]*overscroll-behavior:none/)
   assert.match(html, /const SCROLL_DEBUG=urlParams\.get\('scroll-debug'\)==='1'\|\|urlParams\.get\('debug'\)==='1';/)
   assert.match(html, /@media\(min-width:769px\) and \(hover:hover\) and \(pointer:fine\)/)
@@ -55,6 +55,15 @@ test('renders the final linked contact icon row', () => {
   assert.match(html, /href="https:\/\/wa\.me\/34640925788"[^>]*aria-label="Abrir WhatsApp de Desorden"/)
   assert.match(html, /href="https:\/\/www\.instagram\.com\/desorden\.cat\/"[^>]*aria-label="Abrir Instagram de Desorden"/)
   assert.match(html, /href="mailto:hola@desorden\.studio" aria-label="Enviar correo/)
+})
+
+test('uses real preload progress with letters only and explicit cookie choices', () => {
+  assert.match(html, /\.letter-face\{[^}]*font-size:clamp\(59px,16\.8vw,90px\)[^}]*transform:scaleX\(1\.16\)/)
+  assert.doesNotMatch(html, /loader-progressbar|loader-bar-track|loader-counter|loader-status/)
+  assert.doesNotMatch(html, /displayLoadProgress|loaderTick|loaderStartedAt/)
+  assert.match(html, /realLoadProgress=clamp01\(loaded\/total\);[\s\S]*paintLoader\(realLoadProgress\)/)
+  assert.match(html, /id="btnRejectConsent"[^>]*>Rechazar<\/button>/)
+  assert.match(html, /id="btnAcceptConsent"[^>]*>Aceptar<\/button>/)
 })
 
 test('gates QA instrumentation behind scroll-debug=1', () => {
