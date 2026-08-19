@@ -101,9 +101,12 @@
 
     /* WORK + CONTACT */
     .story-card--work{left:0;right:0;top:0;width:100%;height:100%;transform:translate3d(0,var(--story-y),0) scale(var(--story-scale));text-align:center}
-    .story-card--talk h2{margin-bottom:12px}
-    .contact-link{display:inline-block;margin:0 0 18px;color:var(--gold);font-size:clamp(.9rem,1.25vw,1.1rem);font-weight:750;letter-spacing:.12em;text-decoration:none;text-transform:uppercase;transition:color .25s ease}
-    .contact-link:hover{color:#fff}
+    .story-card--talk h2{margin-bottom:18px}
+    .contact-actions{display:flex;align-items:center;gap:12px}
+    .contact-icon{display:grid;width:48px;height:48px;place-items:center;border:1px solid rgba(212,154,54,.44);border-radius:50%;background:rgba(5,5,5,.34);color:var(--gold);text-decoration:none;transition:color .25s ease,border-color .25s ease,background .25s ease,transform .25s ease;touch-action:manipulation}
+    .contact-icon svg{width:21px;height:21px;display:block}
+    .contact-icon[href]:hover{color:#050505;border-color:var(--gold);background:var(--gold);transform:translateY(-2px)}
+    .contact-icon[aria-disabled="true"]{opacity:.72;cursor:default}
     .client-marquee{position:absolute;top:max(88px,11vh);left:50%;width:min(calc(100% - 40px),980px);overflow:hidden;transform:translateX(-50%)}
     .marquee-slider{display:flex;width:100%;overflow-x:auto;scrollbar-width:none;cursor:grab;overscroll-behavior:contain;touch-action:none}
     .marquee-slider::-webkit-scrollbar{display:none}
@@ -111,8 +114,16 @@
     .logo-track{display:flex;align-items:center;gap:34px;padding-right:34px;width:max-content;flex:none}
     .client-logo-button{position:relative;display:block;width:128px;height:76px;flex:none;border:0;background:transparent;cursor:pointer;opacity:.62;filter:brightness(0) saturate(0) invert(68%);transition:opacity .3s ease,transform .3s ease,filter .3s ease;touch-action:none}
     .client-logo-button:hover{opacity:.82;transform:scale(1.05)}
-    .client-logo-button.is-selected{opacity:1;transform:scale(1.08);filter:brightness(0) saturate(100%) invert(67%) sepia(21%) saturate(1697%) hue-rotate(346deg) brightness(92%) contrast(93%)}
-    .client-logo-button img{position:absolute;inset:4px;display:block;width:calc(100% - 8px);height:calc(100% - 8px);object-fit:contain;object-position:center}
+    .client-logo-button.is-selected{opacity:1;transform:scale(1.08);filter:none}
+    .client-logo-button img{position:absolute;inset:4px;display:block;width:calc(100% - 8px);height:calc(100% - 8px);object-fit:contain;object-position:center;transition:opacity .2s ease}
+    .client-logo-button.is-selected img{opacity:0}
+    .client-logo-button.is-selected::after{content:"";position:absolute;inset:4px;background:var(--gold);-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:contain;mask-size:contain;pointer-events:none}
+    .client-logo-button[data-client="ntk"]::after{-webkit-mask-image:url('/logos/clients/01-ntk.png');mask-image:url('/logos/clients/01-ntk.png')}
+    .client-logo-button[data-client="viu"]::after{-webkit-mask-image:url('/logos/clients/02-viu-svc.png');mask-image:url('/logos/clients/02-viu-svc.png')}
+    .client-logo-button[data-client="pata"]::after{-webkit-mask-image:url('/logos/clients/03-pata-negra.png');mask-image:url('/logos/clients/03-pata-negra.png')}
+    .client-logo-button[data-client="padel"]::after{-webkit-mask-image:url('/logos/clients/04-the-club-padel.png');mask-image:url('/logos/clients/04-the-club-padel.png')}
+    .client-logo-button[data-client="castellum"]::after{-webkit-mask-image:url('/logos/clients/05-castellum.png');mask-image:url('/logos/clients/05-castellum.png')}
+    .client-logo-button[data-client="pugnator"]::after{-webkit-mask-image:url('/logos/clients/06-pugnator-castellet.png');mask-image:url('/logos/clients/06-pugnator-castellet.png')}
     .project-info{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;justify-content:flex-end;min-height:34vh;padding:clamp(28px,5vw,72px) clamp(24px,8vw,128px) max(32px,calc(env(safe-area-inset-bottom) + 24px));background:linear-gradient(to top,rgba(5,5,5,.98) 16%,rgba(5,5,5,.9) 62%,rgba(5,5,5,0));text-align:left;opacity:0;visibility:hidden;transform:translateY(28px);transition:opacity .38s ease,transform .45s cubic-bezier(.16,1,.3,1),visibility 0s linear .45s}
     .project-info.is-visible{opacity:1;visibility:visible;transform:translateY(0);transition-delay:0s}
     .project-info h3{margin:0 0 10px;color:var(--gold);font-size:clamp(.75rem,1.1vw,.95rem);font-weight:750;letter-spacing:.16em;text-transform:uppercase}
@@ -139,7 +150,8 @@
       .story-card p{font-size:clamp(.78rem,3.5vw,.94rem)}
       .story-card--right .service-label{justify-content:flex-start}
       .story-card--work{left:0;right:0;top:0;bottom:auto;width:100%;height:100%;text-align:center}
-      .contact-link{margin-bottom:12px}
+      .contact-actions{gap:10px}
+      .contact-icon{width:46px;height:46px}
       .logo-track{gap:24px;padding-right:24px}
       .client-logo-button{width:108px;height:64px}
       .client-logo-button img{inset:3px;width:calc(100% - 6px);height:calc(100% - 6px)}
@@ -284,7 +296,11 @@
     </article>
     <article class="story-card story-card--talk" data-start="0.90" data-end="1.08" data-menu-index="6">
       <h2>Hablemos.</h2>
-      <a class="contact-link" href="mailto:hola@desorden.studio">hola@desorden.studio</a>
+      <div class="contact-actions" aria-label="Contacto y redes sociales">
+        <a class="contact-icon" href="https://wa.me/34640925788" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp de Desorden" title="WhatsApp +34 640 92 57 88"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L3.5 20.5l1.4-4.4A8.4 8.4 0 1 1 20.5 11.7Z"></path><path d="M8.3 7.8c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.8 1.8c.1.3.1.5-.1.7l-.7.8c-.2.2-.1.4 0 .6.6 1 1.4 1.8 2.4 2.4.2.1.4.2.6 0l.9-1c.2-.2.4-.3.7-.2l1.8.9c.3.1.4.3.4.5 0 .4-.2 1.4-.9 2-.6.6-1.5.9-2.4.7-1.1-.2-2.5-.7-4.2-2.2-1.4-1.3-2.4-2.8-2.7-4-.3-1.1 0-2.3.6-2.9.3-.3.7-.5 1.1-.5Z"></path></svg></a>
+        <a class="contact-icon" href="https://www.instagram.com/desorden.cat/" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram de Desorden" title="Instagram @desorden.cat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.4" cy="6.6" r=".8" fill="currentColor" stroke="none"></circle></svg></a>
+        <a class="contact-icon" href="mailto:hola@desorden.studio" aria-label="Enviar correo a hola@desorden.studio" title="Correo electrónico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg></a>
+      </div>
     </article>
   </div>
 

@@ -46,7 +46,15 @@ test('renders the minimal initial cue and clean selected-logo feedback', () => {
   assert.match(html, /@keyframes hint-pop/)
   assert.doesNotMatch(html, />Desliza<|>Desplaza</)
   assert.match(html, /-webkit-tap-highlight-color:transparent/)
-  assert.match(html, /\.client-logo-button\.is-selected\{[^}]*filter:brightness\(0\) saturate\(100%\)/)
+  assert.match(html, /\.client-logo-button\.is-selected::after\{[^}]*background:var\(--gold\)/)
+  assert.match(html, /\.client-logo-button\[data-client="pugnator"\]::after\{[^}]*06-pugnator-castellet\.png/)
+})
+
+test('renders the final linked contact icon row', () => {
+  assert.match(html, /class="contact-actions" aria-label="Contacto y redes sociales"/)
+  assert.match(html, /href="https:\/\/wa\.me\/34640925788"[^>]*aria-label="Abrir WhatsApp de Desorden"/)
+  assert.match(html, /href="https:\/\/www\.instagram\.com\/desorden\.cat\/"[^>]*aria-label="Abrir Instagram de Desorden"/)
+  assert.match(html, /href="mailto:hola@desorden\.studio" aria-label="Enviar correo/)
 })
 
 test('gates QA instrumentation behind scroll-debug=1', () => {
