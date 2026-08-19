@@ -2,6 +2,16 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "sol",
   "compatibility_date": "2026-07-31",
+  "routes": [
+    {
+      "pattern": "desorden.cat/*",
+      "zone_name": "desorden.cat"
+    },
+    {
+      "pattern": "www.desorden.cat/*",
+      "zone_name": "desorden.cat"
+    }
+  ],
   "assets": {
     "directory": "./dist"
   }

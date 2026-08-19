@@ -5,6 +5,9 @@ import vm from 'node:vm'
 
 const SCROLL_PATH = new URL('../static/scroll.html', import.meta.url)
 const html = await readFile(SCROLL_PATH, 'utf8')
+const wrangler = JSON.parse(await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8'))
+const redirects = await readFile(new URL('../static/_redirects', import.meta.url), 'utf8')
+const deployWorkflow = await readFile(new URL('../.github/workflows/deploy-webl-scroll.yml', import.meta.url), 'utf8')
 
 test('keeps the standalone inline runtime syntactically valid', () => {
   const match = html.match(/<script>([\s\S]*?)<\/script>/)
@@ -106,4 +109,15 @@ test('captures the required browser timing and media signals without external te
     assert.ok(html.includes(signal), `missing QA signal: ${signal}`)
   }
   assert.doesNotMatch(html, /sendBeacon\(|XMLHttpRequest\(|fetch\([^)]*scroll-debug/)
+})
+
+test('maps both DESORDEN hostnames to WEBL and serves scroll at the root URL', () => {
+  assert.deepEqual(wrangler.routes, [
+    { pattern: 'desorden.cat/*', zone_name: 'desorden.cat' },
+    { pattern: 'www.desorden.cat/*', zone_name: 'desorden.cat' },
+  ])
+  assert.equal(redirects.trim(), '/ /scroll 200')
+  assert.match(deployWorkflow, /static\/_redirects/)
+  assert.match(deployWorkflow, /wrangler\.jsonc/)
+  assert.match(deployWorkflow, /Verify DESORDEN custom domains/)
 })
