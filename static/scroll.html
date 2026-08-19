@@ -98,11 +98,12 @@
     .service-label svg{width:15px;height:15px;flex:none}
 
     /* WORK + CONTACT */
-    .story-card--work{width:min(92vw,820px)}
+    .story-card--work{left:0;right:0;top:0;width:100%;height:100%;transform:translate3d(0,var(--story-y),0) scale(var(--story-scale));text-align:center}
+    .story-card--work h2{position:absolute;top:max(88px,11vh);left:24px;right:24px;margin:0;font-size:clamp(1.75rem,3vw,2.8rem)}
     .story-card--talk h2{margin-bottom:12px}
     .contact-link{display:inline-block;margin:0 0 18px;color:var(--gold);font-size:clamp(.9rem,1.25vw,1.1rem);font-weight:750;letter-spacing:.12em;text-decoration:none;text-transform:uppercase;transition:color .25s ease}
     .contact-link:hover{color:#fff}
-    .client-marquee{position:relative;width:100%;max-width:760px;overflow:hidden}
+    .client-marquee{position:absolute;top:clamp(148px,22vh,220px);left:50%;width:min(100%,980px);overflow:hidden;transform:translateX(-50%)}
     .marquee-slider{display:flex;width:100%;overflow-x:auto;scrollbar-width:none;cursor:grab;overscroll-behavior-x:contain;touch-action:pan-x}
     .marquee-slider::-webkit-scrollbar{display:none}
     .marquee-slider.is-dragging{cursor:grabbing}
@@ -111,10 +112,10 @@
     .client-logo-button:hover{opacity:.72;transform:scale(1.05)}
     .client-logo-button.is-selected{opacity:1;transform:scale(1.08);filter:brightness(0) saturate(100%) invert(67%) sepia(21%) saturate(1697%) hue-rotate(346deg) brightness(92%) contrast(93%)}
     .client-logo-button img{position:absolute;inset:4px;display:block;width:calc(100% - 8px);height:calc(100% - 8px);object-fit:contain;object-position:center}
-    .project-info{min-height:52px;margin-top:12px;opacity:0;transition:opacity .3s ease}
-    .project-info.is-visible{opacity:1}
-    .project-info h3{margin:0 0 4px;color:#fff;font-size:11px;font-weight:750;letter-spacing:.14em;text-transform:uppercase}
-    .project-info p{max-width:620px;color:rgba(255,255,255,.55);font-size:11px;line-height:1.4}
+    .project-info{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;justify-content:flex-end;min-height:34vh;padding:clamp(28px,5vw,72px) clamp(24px,8vw,128px) max(32px,calc(env(safe-area-inset-bottom) + 24px));background:linear-gradient(to top,rgba(5,5,5,.98) 16%,rgba(5,5,5,.9) 62%,rgba(5,5,5,0));text-align:left;opacity:0;visibility:hidden;transform:translateY(28px);transition:opacity .38s ease,transform .45s cubic-bezier(.16,1,.3,1),visibility 0s linear .45s}
+    .project-info.is-visible{opacity:1;visibility:visible;transform:translateY(0);transition-delay:0s}
+    .project-info h3{margin:0 0 10px;color:var(--gold);font-size:clamp(.75rem,1.1vw,.95rem);font-weight:750;letter-spacing:.16em;text-transform:uppercase}
+    .project-info p{max-width:100%;color:rgba(255,255,255,.82);font-size:clamp(.92rem,1.45vw,1.2rem);line-height:1.55}
 
     /* QA METRICS — only rendered with ?scroll-debug=1 */
     .qa-debug{display:none;position:fixed;z-index:40;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));width:min(310px,calc(100vw - 24px));padding:12px;border:1px solid rgba(245,179,0,.38);border-radius:10px;background:rgba(5,5,5,.92);color:#fff;font-family:var(--font-mono);font-size:10px;line-height:1.45;box-shadow:0 12px 34px rgba(0,0,0,.55);user-select:text;-webkit-user-select:text}
@@ -136,13 +137,14 @@
       .story-card h2{font-size:clamp(2rem,9.5vw,3.35rem)}
       .story-card p{font-size:clamp(.78rem,3.5vw,.94rem)}
       .story-card--right .service-label{justify-content:flex-start}
-      .story-card--work{bottom:max(2.5vh,calc(env(safe-area-inset-bottom) + 14px))}
-      .story-card--work h2{font-size:clamp(1.8rem,8.6vw,3rem);margin-bottom:12px}
+      .story-card--work{left:0;right:0;top:0;bottom:auto;width:100%;height:100%;text-align:center}
+      .story-card--work h2{top:max(78px,10vh);left:20px;right:20px;font-size:clamp(1.7rem,7.8vw,2.7rem)}
       .contact-link{margin-bottom:12px}
       .logo-track{gap:24px;padding-right:24px}
       .client-logo-button{width:108px;height:64px}
       .client-logo-button img{inset:3px;width:calc(100% - 6px);height:calc(100% - 6px)}
-      .project-info{min-height:44px;margin-top:8px}
+      .client-marquee{top:clamp(138px,21vh,190px);width:100%}
+      .project-info{min-height:38vh;padding:46px 24px max(26px,calc(env(safe-area-inset-bottom) + 18px))}
     }
     @media(max-width:480px){
       .consent-banner{bottom:max(.8rem,env(safe-area-inset-bottom));padding:1.15rem}
@@ -159,8 +161,9 @@
       .story-card,.story-card--right{left:calc((100% - min(34vw,440px))/2);right:auto;top:50%;width:min(54vw,680px);text-align:center;transform:translate3d(-50%,calc(-50% + var(--story-y)),0) scale(var(--story-scale))}
       .story-card p,.story-card--right p{margin-left:auto;margin-right:auto}
       .story-card .service-label,.story-card--right .service-label{justify-content:center}
-      .story-card--work{width:min(62vw,820px)}
-      .client-marquee{margin-left:auto;margin-right:auto}
+      .story-card--work,.story-card--work.story-card--right{left:0;right:0;top:0;width:100%;height:100%;transform:translate3d(0,var(--story-y),0) scale(var(--story-scale));text-align:center}
+      .story-card--work h2{top:max(82px,10vh);left:40px;right:40px}
+      .client-marquee{top:clamp(250px,36vh,360px);left:auto;right:0;width:min(34vw,440px);transform:none}
       .consent-banner{width:min(400px,calc(100vw - 64px))}
     }
     @media(prefers-reduced-motion:reduce){.story-card{filter:none!important;transition:none!important}.hint{display:none}}
@@ -279,7 +282,7 @@
       </div>
         </div>
       </div>
-      <div class="project-info" id="projectInfo" aria-live="polite"><h3 id="projectTitle"></h3><p id="projectDescription"></p></div>
+      <div class="project-info" id="projectInfo" aria-live="polite" aria-hidden="true"><h3 id="projectTitle"></h3><p id="projectDescription"></p></div>
     </article>
     <article class="story-card story-card--talk" data-start="0.90" data-end="1.08" data-menu-index="6">
       <h2>Hablemos.</h2>
@@ -611,13 +614,26 @@
         if(active&&!marqueeRaf){marqueeLastAt=performance.now();marqueeRaf=requestAnimationFrame(marqueeTick)}
         if(!active&&marqueeRaf){cancelAnimationFrame(marqueeRaf);marqueeRaf=0}
       };
+      let selectedProjectId='';
       const selectProject=clientId=>{
-        logoButtons.forEach(button=>button.classList.toggle('is-selected',button.dataset.client===clientId));
+        const shouldClose=selectedProjectId===clientId&&projectInfo.classList.contains('is-visible');
+        selectedProjectId=shouldClose?'':clientId;
+        logoButtons.forEach(button=>{
+          const selected=!shouldClose&&button.dataset.client===clientId;
+          button.classList.toggle('is-selected',selected);
+          button.setAttribute('aria-expanded',String(selected));
+        });
+        if(shouldClose){
+          projectInfo.classList.remove('is-visible');
+          projectInfo.setAttribute('aria-hidden','true');
+          return;
+        }
         const project=projectData[clientId];
         if(!project)return;
         projectTitle.textContent=project.title;
         projectDescription.textContent=project.description;
         projectInfo.classList.add('is-visible');
+        projectInfo.setAttribute('aria-hidden','false');
       };
       menuToggle.addEventListener('click',()=>setMenuOpen(!menuOpen));
       brandHome.addEventListener('click',()=>{setMenuOpen(false);targetProgress=.08;motion=0;ensureRender()});
