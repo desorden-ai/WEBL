@@ -44,6 +44,7 @@ test('keeps vertical scrub available above copy and the project marquee', () => 
 test('renders the minimal initial cue and clean selected-logo feedback', () => {
   assert.match(html, /class="hint" aria-hidden="true"><svg[^>]*viewBox="0 0 40 24"/)
   assert.match(html, /@keyframes hint-pop/)
+  assert.match(html, /\.hint\{[^}]*color:#fff/)
   assert.doesNotMatch(html, />Desliza<|>Desplaza</)
   assert.match(html, /-webkit-tap-highlight-color:transparent/)
   assert.match(html, /\.client-logo-button\.is-selected::after\{[^}]*background:var\(--gold\)/)
@@ -55,6 +56,14 @@ test('renders the final linked contact icon row', () => {
   assert.match(html, /href="https:\/\/wa\.me\/34640925788"[^>]*aria-label="Abrir WhatsApp de Desorden"/)
   assert.match(html, /href="https:\/\/www\.instagram\.com\/desorden\.cat\/"[^>]*aria-label="Abrir Instagram de Desorden"/)
   assert.match(html, /href="mailto:hola@desorden\.studio" aria-label="Enviar correo/)
+  assert.match(html, /\.contact-icon\{[^}]*width:52px;height:52px[^}]*border:0;background:transparent/)
+  assert.match(html, /\.contact-icon svg\{width:30px;height:30px/)
+})
+
+test('increases section and project descriptions by twenty percent', () => {
+  assert.match(html, /\.story-card p\{[^}]*font-size:clamp\(\.984rem,1\.44vw,1\.2rem\)/)
+  assert.match(html, /\.project-info p\{[^}]*font-size:clamp\(1\.104rem,1\.74vw,1\.44rem\)/)
+  assert.match(html, /@media\(max-width:700px\)[\s\S]*\.story-card p\{font-size:clamp\(\.936rem,4\.2vw,1\.128rem\)/)
 })
 
 test('uses real preload progress with letters only and explicit cookie choices', () => {
