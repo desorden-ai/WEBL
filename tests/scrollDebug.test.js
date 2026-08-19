@@ -52,10 +52,10 @@ test('renders the minimal initial cue and clean selected-logo feedback', () => {
 })
 
 test('renders the final linked contact icon row', () => {
-  assert.match(html, /class="contact-actions" aria-label="Contacto y redes sociales"/)
-  assert.match(html, /href="https:\/\/wa\.me\/34640925788"[^>]*aria-label="Abrir WhatsApp de Desorden"/)
-  assert.match(html, /href="https:\/\/www\.instagram\.com\/desorden\.cat\/"[^>]*aria-label="Abrir Instagram de Desorden"/)
-  assert.match(html, /href="mailto:hola@desorden\.studio" aria-label="Enviar correo/)
+  assert.match(html, /class="contact-actions" aria-label="Contacte i xarxes socials"/)
+  assert.match(html, /href="https:\/\/wa\.me\/34640925788"[^>]*aria-label="Obrir el WhatsApp de Desorden"/)
+  assert.match(html, /href="https:\/\/www\.instagram\.com\/desorden\.cat\/"[^>]*aria-label="Obrir l’Instagram de Desorden"/)
+  assert.match(html, /href="mailto:hola@desorden\.studio" aria-label="Enviar un correu/)
   assert.match(html, /\.contact-icon\{[^}]*width:52px;height:52px[^}]*border:0;background:transparent/)
   assert.match(html, /\.contact-icon svg\{width:30px;height:30px/)
 })
@@ -71,8 +71,18 @@ test('uses real preload progress with letters only and explicit cookie choices',
   assert.doesNotMatch(html, /loader-progressbar|loader-bar-track|loader-counter|loader-status/)
   assert.doesNotMatch(html, /displayLoadProgress|loaderTick|loaderStartedAt/)
   assert.match(html, /realLoadProgress=clamp01\(loaded\/total\);[\s\S]*paintLoader\(realLoadProgress\)/)
-  assert.match(html, /id="btnRejectConsent"[^>]*>Rechazar<\/button>/)
-  assert.match(html, /id="btnAcceptConsent"[^>]*>Aceptar<\/button>/)
+  assert.match(html, /id="btnRejectConsent"[^>]*>Rebutjar<\/button>/)
+  assert.match(html, /id="btnAcceptConsent"[^>]*>Acceptar<\/button>/)
+})
+
+test('publishes the complete interface in Catalan and closes with Parlem without punctuation', () => {
+  assert.match(html, /<html lang="ca">/)
+  assert.match(html, /<title>Desorden Studio — Identitat i Producció Visual<\/title>/)
+  assert.match(html, />Treballs realitzats<\/button>/)
+  assert.match(html, /<h2>Parlem<\/h2>/)
+  assert.doesNotMatch(html, /Hablemos\.?|<h2>Parlem\.<\/h2>/)
+  assert.match(html, /Configuració de galetes/)
+  assert.match(html, /Creació d’identitat visual corporativa i desenvolupament de marca\./)
 })
 
 test('gates QA instrumentation behind scroll-debug=1', () => {
