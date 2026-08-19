@@ -24,11 +24,21 @@ test('keeps the validated locked-scroll runtime constants and framing', () => {
   assert.match(html, /html,body\{[^}]*overflow:hidden;[^}]*overscroll-behavior:none/)
   assert.match(html, /const SCROLL_DEBUG=urlParams\.get\('scroll-debug'\)==='1'\|\|urlParams\.get\('debug'\)==='1';/)
   assert.match(html, /@media\(min-width:769px\) and \(hover:hover\) and \(pointer:fine\)/)
-  assert.match(html, /card\.setAttribute\('aria-hidden',String\(intensity<\.02\)\);/)
+  assert.match(html, /card\.setAttribute\('aria-hidden',String\(!active\)\);/)
   assert.match(html, /const REDUCED_MOTION=window\.matchMedia\('\(prefers-reduced-motion: reduce\)'\)\.matches;/)
   assert.doesNotMatch(html, /class="hud"/)
   assert.doesNotMatch(html, /Frame master/)
   assert.doesNotMatch(html, /requestFullscreen|navigationUI/)
+})
+
+test('keeps vertical scrub available above copy and the project marquee', () => {
+  assert.match(html, /\.story-overlays\{[^}]*touch-action:none/)
+  assert.match(html, /\.marquee-slider\{[^}]*touch-action:none/)
+  assert.match(html, /window\.addEventListener\('pointermove',[\s\S]*\{capture:true,passive:false\}\)/)
+  assert.match(html, /pointerMode=pointerStartedInMarquee&&Math\.abs\(totalX\)>Math\.abs\(totalY\)\?'horizontal':'vertical'/)
+  assert.doesNotMatch(html, /sticky\.addEventListener\('pointerdown'/)
+  assert.doesNotMatch(html, /<h2>Trabajos realizados\.<\/h2>/)
+  assert.match(html, /filter:brightness\(0\) saturate\(0\) invert\(68%\)/)
 })
 
 test('gates QA instrumentation behind scroll-debug=1', () => {

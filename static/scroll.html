@@ -86,7 +86,7 @@
     .menu-item:hover,.menu-item.is-current{color:#fff}.menu-item:hover{transform:translateX(-10px)}.menu-item.is-current::before{content:"";display:inline-block;width:20px;height:2px;margin:0 12px .22em 0;background:var(--gold)}
 
     /* STORY */
-    .story-overlays{position:fixed;inset:0;z-index:30;pointer-events:none;overflow:hidden}
+    .story-overlays{position:fixed;inset:0;z-index:30;pointer-events:none;overflow:hidden;touch-action:none}
     .story-card{--story-opacity:0;--story-y:38px;--story-blur:8px;--story-scale:.98;position:absolute;left:clamp(24px,7vw,120px);top:50%;width:min(86vw,640px);color:#fff;opacity:var(--story-opacity);transform:translate3d(0,calc(-50% + var(--story-y)),0) scale(var(--story-scale));filter:blur(var(--story-blur));will-change:opacity,transform,filter}
     .story-card.is-active{pointer-events:auto}
     .story-card--right{left:auto;right:clamp(24px,7vw,120px);text-align:right}
@@ -99,17 +99,16 @@
 
     /* WORK + CONTACT */
     .story-card--work{left:0;right:0;top:0;width:100%;height:100%;transform:translate3d(0,var(--story-y),0) scale(var(--story-scale));text-align:center}
-    .story-card--work h2{position:absolute;top:max(88px,11vh);left:24px;right:24px;margin:0;font-size:clamp(1.75rem,3vw,2.8rem)}
     .story-card--talk h2{margin-bottom:12px}
     .contact-link{display:inline-block;margin:0 0 18px;color:var(--gold);font-size:clamp(.9rem,1.25vw,1.1rem);font-weight:750;letter-spacing:.12em;text-decoration:none;text-transform:uppercase;transition:color .25s ease}
     .contact-link:hover{color:#fff}
-    .client-marquee{position:absolute;top:clamp(148px,22vh,220px);left:50%;width:min(100%,980px);overflow:hidden;transform:translateX(-50%)}
-    .marquee-slider{display:flex;width:100%;overflow-x:auto;scrollbar-width:none;cursor:grab;overscroll-behavior-x:contain;touch-action:pan-x}
+    .client-marquee{position:absolute;top:max(88px,11vh);left:50%;width:min(calc(100% - 40px),980px);overflow:hidden;transform:translateX(-50%)}
+    .marquee-slider{display:flex;width:100%;overflow-x:auto;scrollbar-width:none;cursor:grab;overscroll-behavior:contain;touch-action:none}
     .marquee-slider::-webkit-scrollbar{display:none}
     .marquee-slider.is-dragging{cursor:grabbing}
     .logo-track{display:flex;align-items:center;gap:34px;padding-right:34px;width:max-content;flex:none}
-    .client-logo-button{position:relative;display:block;width:128px;height:76px;flex:none;border:0;background:transparent;cursor:pointer;opacity:.72;filter:brightness(0) saturate(100%) invert(67%) sepia(21%) saturate(1697%) hue-rotate(346deg) brightness(92%) contrast(93%);transition:opacity .3s ease,transform .3s ease;touch-action:manipulation}
-    .client-logo-button:hover{opacity:.9;transform:scale(1.05)}
+    .client-logo-button{position:relative;display:block;width:128px;height:76px;flex:none;border:0;background:transparent;cursor:pointer;opacity:.62;filter:brightness(0) saturate(0) invert(68%);transition:opacity .3s ease,transform .3s ease;touch-action:none}
+    .client-logo-button:hover{opacity:.82;transform:scale(1.05)}
     .client-logo-button.is-selected{opacity:1;transform:scale(1.08)}
     .client-logo-button img{position:absolute;inset:4px;display:block;width:calc(100% - 8px);height:calc(100% - 8px);object-fit:contain;object-position:center}
     .project-info{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;justify-content:flex-end;min-height:34vh;padding:clamp(28px,5vw,72px) clamp(24px,8vw,128px) max(32px,calc(env(safe-area-inset-bottom) + 24px));background:linear-gradient(to top,rgba(5,5,5,.98) 16%,rgba(5,5,5,.9) 62%,rgba(5,5,5,0));text-align:left;opacity:0;visibility:hidden;transform:translateY(28px);transition:opacity .38s ease,transform .45s cubic-bezier(.16,1,.3,1),visibility 0s linear .45s}
@@ -138,12 +137,11 @@
       .story-card p{font-size:clamp(.78rem,3.5vw,.94rem)}
       .story-card--right .service-label{justify-content:flex-start}
       .story-card--work{left:0;right:0;top:0;bottom:auto;width:100%;height:100%;text-align:center}
-      .story-card--work h2{top:max(78px,10vh);left:20px;right:20px;font-size:clamp(1.7rem,7.8vw,2.7rem)}
       .contact-link{margin-bottom:12px}
       .logo-track{gap:24px;padding-right:24px}
       .client-logo-button{width:108px;height:64px}
       .client-logo-button img{inset:3px;width:calc(100% - 6px);height:calc(100% - 6px)}
-      .client-marquee{top:clamp(138px,21vh,190px);width:100%}
+      .client-marquee{top:max(78px,10vh);width:100%}
       .project-info{min-height:38vh;padding:46px 24px max(26px,calc(env(safe-area-inset-bottom) + 18px))}
     }
     @media(max-width:480px){
@@ -162,8 +160,7 @@
       .story-card p,.story-card--right p{margin-left:auto;margin-right:auto}
       .story-card .service-label,.story-card--right .service-label{justify-content:center}
       .story-card--work,.story-card--work.story-card--right{left:0;right:0;top:0;width:100%;height:100%;transform:translate3d(0,var(--story-y),0) scale(var(--story-scale));text-align:center}
-      .story-card--work h2{top:max(82px,10vh);left:40px;right:40px}
-      .client-marquee{top:clamp(250px,36vh,360px);left:auto;right:0;width:min(34vw,440px);transform:none}
+      .client-marquee{top:max(82px,10vh);left:50%;right:auto;width:min(72vw,980px);transform:translateX(-50%)}
       .consent-banner{width:min(400px,calc(100vw - 64px))}
     }
     @media(prefers-reduced-motion:reduce){.story-card{filter:none!important;transition:none!important}.hint{display:none}}
@@ -252,8 +249,7 @@
       <p>Abarcamos el ecosistema visual completo de tu empresa. Desde el diseño de una nueva página web hasta la renovación y modernización de tu logotipo.</p>
       <div class="service-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg><span>Identidad, Web &amp; Logos</span></div>
     </article>
-    <article class="story-card story-card--work story-card--right" data-start="0.73" data-end="0.88" data-menu-index="5">
-      <h2>Trabajos realizados.</h2>
+    <article class="story-card story-card--work story-card--right" data-start="0.73" data-end="0.88" data-menu-index="5" aria-label="Trabajos realizados">
       <div class="client-marquee" aria-label="Clientes y proyectos">
         <div class="marquee-slider" id="marqueeSlider">
       <div class="logo-track">
@@ -573,7 +569,7 @@
       let blobUrl=null,downloadDone=false,videoReady=false,consentResolved=false,loaderFinished=false;
       let realLoadProgress=0,displayLoadProgress=0,loaderRaf=0,loaderStartedAt=performance.now();
       let currentLetterIndex=0,letterAnimating=false,queuedLetterIndex=null;
-      let menuOpen=false,marqueeActive=false,marqueeRaf=0,marqueeLastAt=0,marqueeDragging=false,marqueeStartX=0,marqueeStartScroll=0,marqueeStartClient='';
+      let menuOpen=false,marqueeActive=false,marqueeRaf=0,marqueeLastAt=0,marqueeDragging=false,marqueePointerPending=false,marqueeStartX=0,marqueeStartY=0,marqueeStartScroll=0,marqueeStartClient='';
       const scrollQa=SCROLL_DEBUG?createScrollDebug():null;
 
       const projectData={
@@ -601,7 +597,7 @@
       };
       const marqueeTick=now=>{
         if(!marqueeActive){marqueeRaf=0;return}
-        if(!marqueeDragging&&now-marqueeLastAt>=24){
+        if(!marqueeDragging&&!marqueePointerPending&&now-marqueeLastAt>=24){
           marqueeSlider.scrollLeft+=.7;
           const loopWidth=marqueeSlider.scrollWidth/3;
           if(marqueeSlider.scrollLeft>=loopWidth)marqueeSlider.scrollLeft-=loopWidth;
@@ -645,18 +641,30 @@
       }));
       window.addEventListener('keydown',event=>{if(event.key==='Escape'&&menuOpen){event.preventDefault();setMenuOpen(false)}});
       marqueeSlider.addEventListener('pointerdown',event=>{
-        marqueeDragging=true;marqueeStartX=event.clientX;marqueeStartScroll=marqueeSlider.scrollLeft;
+        marqueePointerPending=true;marqueeDragging=false;marqueeStartX=event.clientX;marqueeStartY=event.clientY;marqueeStartScroll=marqueeSlider.scrollLeft;
         marqueeStartClient=event.target.closest('.client-logo-button')?.dataset.client||'';
-        marqueeSlider.classList.add('is-dragging');
         try{marqueeSlider.setPointerCapture(event.pointerId)}catch(_){ }
       });
       marqueeSlider.addEventListener('pointermove',event=>{
-        if(!marqueeDragging)return;
+        if(!marqueePointerPending&&!marqueeDragging)return;
+        const deltaX=event.clientX-marqueeStartX;
+        const deltaY=event.clientY-marqueeStartY;
+        if(!marqueeDragging){
+          if(Math.max(Math.abs(deltaX),Math.abs(deltaY))<6)return;
+          if(Math.abs(deltaY)>=Math.abs(deltaX)){
+            marqueePointerPending=false;
+            marqueeStartClient='';
+            return;
+          }
+          marqueeDragging=true;
+          marqueeSlider.classList.add('is-dragging');
+        }
         event.preventDefault();
-        marqueeSlider.scrollLeft=marqueeStartScroll-(event.clientX-marqueeStartX);
+        marqueeSlider.scrollLeft=marqueeStartScroll-deltaX;
       },{passive:false});
       const endMarqueeDrag=event=>{
-        const isTap=event.type==='pointerup'&&marqueeDragging&&Math.abs(event.clientX-marqueeStartX)<8&&marqueeStartClient;
+        const isTap=event.type==='pointerup'&&marqueePointerPending&&Math.abs(event.clientX-marqueeStartX)<8&&Math.abs(event.clientY-marqueeStartY)<8&&marqueeStartClient;
+        marqueePointerPending=false;
         marqueeDragging=false;
         marqueeSlider.classList.remove('is-dragging');
         if(isTap)selectProject(marqueeStartClient);
@@ -923,24 +931,35 @@
         }
       },{passive:false});
 
-      sticky.addEventListener('pointerdown',event=>{
-        if(!interactionEnabled)return;
+      let pointerStartX=0,pointerStartY=0,pointerMode='idle',pointerStartedInMarquee=false;
+      window.addEventListener('pointerdown',event=>{
+        if(!interactionEnabled||(event.pointerType==='mouse'&&event.button!==0))return;
         pointerActive=true;
+        pointerStartX=event.clientX;
+        pointerStartY=event.clientY;
         pointerY=event.clientY;
-        try{sticky.setPointerCapture(event.pointerId)}catch(_){ }
-      });
-      sticky.addEventListener('pointermove',event=>{
+        pointerMode='pending';
+        pointerStartedInMarquee=Boolean(event.target.closest?.('.marquee-slider'));
+      },{capture:true});
+      window.addEventListener('pointermove',event=>{
         if(!pointerActive||!interactionEnabled)return;
+        const totalX=event.clientX-pointerStartX;
+        const totalY=event.clientY-pointerStartY;
+        if(pointerMode==='pending'){
+          if(Math.max(Math.abs(totalX),Math.abs(totalY))<6)return;
+          pointerMode=pointerStartedInMarquee&&Math.abs(totalX)>Math.abs(totalY)?'horizontal':'vertical';
+        }
+        if(pointerMode!=='vertical')return;
         event.preventDefault();
         const deltaY=pointerY-event.clientY;
         pointerY=event.clientY;
         const delta=deltaY/(Math.max(1,window.innerHeight)*TOUCH_TRAVEL_SCREENS);
         scrollQa?.noteInput(event,delta);
         nudgeProgress(delta);
-      },{passive:false});
-      const endPointer=()=>{pointerActive=false};
-      sticky.addEventListener('pointerup',endPointer);
-      sticky.addEventListener('pointercancel',endPointer);
+      },{capture:true,passive:false});
+      const endPointer=()=>{pointerActive=false;pointerMode='idle';pointerStartedInMarquee=false};
+      window.addEventListener('pointerup',endPointer,{capture:true});
+      window.addEventListener('pointercancel',endPointer,{capture:true});
 
       window.addEventListener('keydown',event=>{
         if(!interactionEnabled)return;
