@@ -1,0 +1,70 @@
+name: TEMP Deploy Panasonic SAT Worker
+
+on:
+  pull_request:
+    branches:
+      - SOL
+    paths:
+      - .github/workflows/temp-deploy-panasonic-sat-worker.yml
+      - worker/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout temporary deployment branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build dedicated Worker config
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s worker/index.js
+          grep -q "panasonic-sat-extractor" worker/index.js
+          cat > wrangler.panasonic-sat-temp.jsonc <<'EOF'
+          {
+            "$schema": "./node_modules/wrangler/config-schema.json",
+            "name": "panasonic-sat-api",
+            "compatibility_date": "2026-07-31",
+            "main": "./worker/index.js",
+            "workers_dev": true,
+            "ai": { "binding": "AI" }
+          }
+          EOF
+
+      - name: Deploy dedicated Panasonic SAT Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
+          npx --yes wrangler@4.121.0 deploy --config wrangler.panasonic-sat-temp.jsonc
+
+      - name: Verify dedicated Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://panasonic-sat-api.desorden-help-76b.workers.dev/api/sat/health"
+          for attempt in 1 2 3 4 5 6; do
+            if curl -fLsS --max-time 20 "$URL" -o /tmp/health.json; then
+              grep -q '"ok":true' /tmp/health.json
+              grep -q 'panasonic-sat-extractor' /tmp/health.json
+              cat /tmp/health.json
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 1
