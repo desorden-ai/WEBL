@@ -13,6 +13,14 @@ on:
       - worker/**
       - wrangler.jsonc
       - .github/workflows/deploy-sol-scroll.yml
+  pull_request:
+    branches:
+      - SOL
+    paths:
+      - worker/**
+      - wrangler.jsonc
+      - .github/workflows/deploy-sol-scroll.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
