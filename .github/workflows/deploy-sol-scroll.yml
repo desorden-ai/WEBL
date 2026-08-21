@@ -10,6 +10,8 @@ on:
       - static/scroll.html
       - static/assets/desorden-loader.mp4
       - static/cinematic/**
+      - worker/**
+      - wrangler.jsonc
       - .github/workflows/deploy-sol-scroll.yml
 
 permissions:
@@ -71,6 +73,7 @@ jobs:
           grep -q "desorden_cookie_consent" dist/index.html
           grep -q "desorden-face-complete" dist/index.html
           grep -q "brightness(.90)" dist/scroll.html
+          grep -q "panasonic-sat-extractor" worker/index.js
 
       - name: Deploy Worker
         env:
@@ -83,7 +86,7 @@ jobs:
           test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
           npx wrangler deploy
 
-      - name: Verify public unified flow
+      - name: Verify public unified flow and SAT API
         shell: bash
         run: |
           set -euo pipefail
@@ -92,12 +95,15 @@ jobs:
               if grep -q "MIN_VISUAL_MS=4700" /tmp/root.html && grep -q "desorden_cookie_consent" /tmp/root.html && grep -q "face-rebuilt.html" /tmp/root.html; then
                 curl -fLsS --max-time 20 "https://sol.desorden-help-76b.workers.dev/scroll.html" -o /tmp/scroll.html
                 grep -q "brightness(.90)" /tmp/scroll.html
+                curl -fLsS --max-time 20 "https://desorden.cat/api/sat/health" -o /tmp/sat-health.json
+                grep -q '"ok":true' /tmp/sat-health.json
+                grep -q 'panasonic-sat-extractor' /tmp/sat-health.json
                 exit 0
               fi
             fi
             sleep 5
           done
-          echo "Unified DESORDEN flow did not verify" >&2
+          echo "Unified DESORDEN flow or SAT API did not verify" >&2
           exit 1
 
       - name: Record verified release
@@ -112,6 +118,7 @@ jobs:
           LOADER=frames-0-138,139-frames,24fps,min-4700ms
           FLOW=cookies,loader,portrait,scroll,single-page
           SCROLL_GRADE=brightness-0.90,reduced-veil-vignette
+          SAT_API=https://desorden.cat/api/sat/extract-servicepro
           EOF
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
