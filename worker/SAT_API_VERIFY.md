@@ -2,4 +2,4 @@
 
 Temporary verification trigger for the Panasonic SAT endpoint on the existing DESORDEN Worker.
 
-Attempt: Workers Version promotion without route mutation.
+Attempt: direct workers.dev endpoint after version promotion.
