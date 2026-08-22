@@ -1,0 +1,9 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "webl",
+  "compatibility_date": "2026-07-31",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist"
+  }
+}
