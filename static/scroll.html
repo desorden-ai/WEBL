@@ -4,10 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#050505" />
+  <meta name="description" content="DESORDEN combina direcció d’art, producció audiovisual, dron, intel·ligència artificial i experiències web 3D." />
+  <meta property="og:title" content="Desorden Studio — Identitat i Producció Visual" />
+  <meta property="og:description" content="Direcció d’art, producció audiovisual, IA i experiències web per a marques i projectes amb identitat pròpia." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ca_ES" />
+  <meta property="og:url" content="https://www.desorden.cat/" />
+  <link rel="canonical" href="https://www.desorden.cat/" />
   <title>Desorden Studio — Identitat i Producció Visual</title>
   <!-- DESORDEN_SCROLL_PRELOADER_V2 -->
   <!-- DESORDEN_SCROLL_LOCKED_V5_CONSENT -->
   <!-- DESORDEN_SCROLL_WORKS_V1 -->
+  <!-- DESORDEN_SCROLL_SECTIONS_V1 -->
   <!-- DESORDEN STUDIO -->
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -79,7 +87,7 @@
     .menu-list{display:flex;flex-direction:column;align-items:flex-end;gap:clamp(4px,1.1vh,14px);width:min(92vw,720px)}
     .menu-item{border:0;background:transparent;padding:7px 0;color:#666;font:650 clamp(1.45rem,3vw,2.55rem)/1.08 Inter,system-ui,sans-serif;letter-spacing:.045em;text-transform:uppercase;text-align:right;cursor:pointer;opacity:0;transform:translateX(30px);transition:color .3s ease,transform .45s cubic-bezier(.16,1,.3,1),opacity .35s ease;touch-action:manipulation}
     .menu-overlay.is-open .menu-item{opacity:1;transform:translateX(0)}
-    .menu-overlay.is-open .menu-item:nth-child(1){transition-delay:.08s}.menu-overlay.is-open .menu-item:nth-child(2){transition-delay:.12s}.menu-overlay.is-open .menu-item:nth-child(3){transition-delay:.16s}.menu-overlay.is-open .menu-item:nth-child(4){transition-delay:.2s}.menu-overlay.is-open .menu-item:nth-child(5){transition-delay:.24s}.menu-overlay.is-open .menu-item:nth-child(6){transition-delay:.28s}.menu-overlay.is-open .menu-item:nth-child(7){transition-delay:.32s}
+    .menu-overlay.is-open .menu-item:nth-child(1){transition-delay:.06s}.menu-overlay.is-open .menu-item:nth-child(2){transition-delay:.09s}.menu-overlay.is-open .menu-item:nth-child(3){transition-delay:.12s}.menu-overlay.is-open .menu-item:nth-child(4){transition-delay:.15s}.menu-overlay.is-open .menu-item:nth-child(5){transition-delay:.18s}.menu-overlay.is-open .menu-item:nth-child(6){transition-delay:.21s}.menu-overlay.is-open .menu-item:nth-child(7){transition-delay:.24s}.menu-overlay.is-open .menu-item:nth-child(8){transition-delay:.27s}.menu-overlay.is-open .menu-item:nth-child(9){transition-delay:.3s}
     .menu-item:hover,.menu-item.is-current{color:#fff}.menu-item:hover{transform:translateX(-10px)}.menu-item.is-current::before{content:"";display:inline-block;width:20px;height:2px;margin:0 12px .22em 0;background:var(--gold)}
 
     /* STORY */
@@ -93,6 +101,12 @@
     .service-label{display:flex;align-items:center;gap:9px;margin-top:20px;color:#fff;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
     .story-card--right .service-label{justify-content:flex-end}
     .service-label svg{width:15px;height:15px;flex:none}
+    .method-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;width:min(100%,620px);margin-top:28px;background:rgba(212,154,54,.28);border:1px solid rgba(212,154,54,.28)}
+    .method-step{min-height:102px;padding:16px 18px;background:rgba(5,5,5,.9);text-align:left}
+    .method-step span{display:block;margin-bottom:18px;color:var(--gold);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.14em}
+    .method-step strong{display:block;color:#fff;font-size:12px;line-height:1.35;letter-spacing:.06em;text-transform:uppercase}
+    .studio-lines{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+    .studio-lines span{padding:8px 10px;border:1px solid rgba(212,154,54,.36);color:rgba(255,255,255,.78);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 
     /* WORK + CONTACT */
     .story-card--work{left:0;right:0;top:0;width:100%;height:100%;transform:translate3d(0,var(--story-y),0) scale(var(--story-scale));text-align:center}
@@ -142,6 +156,9 @@
       .story-card h2{font-size:clamp(2rem,9.5vw,3.35rem)}
       .story-card p{font-size:clamp(.936rem,4.2vw,1.128rem)}
       .story-card--right .service-label{justify-content:flex-start}
+      .method-steps{grid-template-columns:1fr;margin-top:20px}
+      .method-step{display:grid;grid-template-columns:32px 1fr;align-items:center;min-height:0;padding:11px 13px}
+      .method-step span{margin:0}
       .story-card--work{left:0;right:0;top:0;bottom:auto;width:100%;height:100%;text-align:center}
       .contact-actions{gap:10px}
       .contact-icon{width:50px;height:50px}
@@ -166,6 +183,8 @@
       .story-card,.story-card--right{left:calc((100% - min(34vw,440px))/2);right:auto;top:50%;width:min(54vw,680px);text-align:center;transform:translate3d(-50%,calc(-50% + var(--story-y)),0) scale(var(--story-scale))}
       .story-card p,.story-card--right p{margin-left:auto;margin-right:auto}
       .story-card .service-label,.story-card--right .service-label{justify-content:center}
+      .story-card .method-steps{margin-left:auto;margin-right:auto}
+      .story-card .studio-lines{justify-content:center}
       .story-card--work,.story-card--work.story-card--right{left:0;right:0;top:0;width:100%;height:100%;transform:translate3d(0,var(--story-y),0) scale(var(--story-scale));text-align:center}
       .client-marquee{top:max(82px,10vh);left:50%;right:auto;width:min(72vw,980px);transform:translateX(-50%)}
       .consent-banner{width:min(400px,calc(100vw - 64px))}
@@ -195,8 +214,10 @@
       <button type="button" class="menu-item" data-progress="0.365">Producció IA</button>
       <button type="button" class="menu-item" data-progress="0.505">Web 3D</button>
       <button type="button" class="menu-item" data-progress="0.645">Identitat i logotips</button>
+      <button type="button" class="menu-item" data-progress="0.695">Mètode</button>
       <button type="button" class="menu-item" data-progress="0.805">Treballs realitzats</button>
-      <button type="button" class="menu-item" data-progress="0.965">Parlem</button>
+      <button type="button" class="menu-item" data-progress="0.895">Estudi</button>
+      <button type="button" class="menu-item" data-progress="0.975">Parlem</button>
     </div>
   </div>
 
@@ -251,7 +272,16 @@
       <p>Abastem tot l’ecosistema visual de la teva empresa. Des del disseny d’una nova pàgina web fins a la renovació i modernització del teu logotip.</p>
       <div class="service-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg><span>Identitat, web i logotips</span></div>
     </article>
-    <article class="story-card story-card--work story-card--right" data-start="0.73" data-end="0.88" data-menu-index="5" aria-label="Treballs realitzats">
+    <article class="story-card story-card--right" data-start="0.665" data-end="0.755" data-menu-index="5">
+      <h2>De la idea<br>al resultat.</h2>
+      <p>Un procés directe per convertir una necessitat concreta en una peça visual coherent, útil i preparada per publicar.</p>
+      <div class="method-steps" aria-label="Mètode de treball en tres fases">
+        <div class="method-step"><span>01</span><strong>Direcció</strong></div>
+        <div class="method-step"><span>02</span><strong>Producció</strong></div>
+        <div class="method-step"><span>03</span><strong>Lliurament</strong></div>
+      </div>
+    </article>
+    <article class="story-card story-card--work story-card--right" data-start="0.75" data-end="0.865" data-menu-index="6" aria-label="Treballs realitzats">
       <div class="client-marquee" aria-label="Clients i projectes">
         <div class="marquee-slider" id="marqueeSlider">
       <div class="logo-track">
@@ -282,7 +312,12 @@
       </div>
       <div class="project-info" id="projectInfo" aria-live="polite" aria-hidden="true"><h3 id="projectTitle"></h3><p id="projectDescription"></p></div>
     </article>
-    <article class="story-card story-card--talk" data-start="0.90" data-end="1.08" data-menu-index="6">
+    <article class="story-card" data-start="0.85" data-end="0.94" data-menu-index="7">
+      <h2>Imatge, tecnologia<br>i criteri visual.</h2>
+      <p>DESORDEN connecta llenguatge cinematogràfic, eines digitals i producció híbrida per construir projectes amb una identitat clara.</p>
+      <div class="studio-lines" aria-label="Àrees de l’estudi"><span>Visual</span><span>IA</span><span>Web</span><span>Dron</span></div>
+    </article>
+    <article class="story-card story-card--talk story-card--right" data-start="0.925" data-end="1.08" data-menu-index="8">
       <h2>Parlem</h2>
       <div class="contact-actions" aria-label="Contacte i xarxes socials">
         <a class="contact-icon" href="https://wa.me/34640925788" target="_blank" rel="noopener noreferrer" aria-label="Obrir el WhatsApp de Desorden" title="WhatsApp +34 640 92 57 88"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L3.5 20.5l1.4-4.4A8.4 8.4 0 1 1 20.5 11.7Z"></path><path d="M8.3 7.8c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.8 1.8c.1.3.1.5-.1.7l-.7.8c-.2.2-.1.4 0 .6.6 1 1.4 1.8 2.4 2.4.2.1.4.2.6 0l.9-1c.2-.2.4-.3.7-.2l1.8.9c.3.1.4.3.4.5 0 .4-.2 1.4-.9 2-.6.6-1.5.9-2.4.7-1.1-.2-2.5-.7-4.2-2.2-1.4-1.3-2.4-2.8-2.7-4-.3-1.1 0-2.3.6-2.9.3-.3.7-.5 1.1-.5Z"></path></svg></a>
