@@ -88,6 +88,25 @@ test('publishes the complete interface in Catalan and closes with Parlem without
   assert.match(html, /Creació d’identitat visual corporativa i desenvolupament de marca\./)
 })
 
+test('adds method and studio sections without changing the visual identity', () => {
+  assert.match(html, /DESORDEN_SCROLL_SECTIONS_V1/)
+  assert.match(html, />Mètode<\/button>/)
+  assert.match(html, />Estudi<\/button>/)
+  assert.match(html, /Mètode de treball en tres fases/)
+  assert.match(html, /<strong>Direcció<\/strong>/)
+  assert.match(html, /<strong>Producció<\/strong>/)
+  assert.match(html, /<strong>Lliurament<\/strong>/)
+  assert.match(html, /Imatge, tecnologia<br>i criteri visual\./)
+  assert.match(html, /--gold:#D49A36;/)
+  assert.match(html, /--bg:#050505;/)
+})
+
+test('publishes canonical and social metadata for the public studio URL', () => {
+  assert.match(html, /<meta name="description" content="DESORDEN combina/)
+  assert.match(html, /<meta property="og:locale" content="ca_ES"/)
+  assert.match(html, /<link rel="canonical" href="https:\/\/www\.desorden\.cat\/"/)
+})
+
 test('gates QA instrumentation behind scroll-debug=1', () => {
   assert.match(html, /urlParams\.get\('scroll-debug'\)==='1'/)
   assert.match(html, /const scrollQa=SCROLL_DEBUG\?createScrollDebug\(\):null;/)
