@@ -85,7 +85,7 @@ test('publishes the complete interface in Catalan and closes with Parlem without
   assert.match(html, /<h2>Parlem<\/h2>/)
   assert.doesNotMatch(html, /Hablemos\.?|<h2>Parlem\.<\/h2>/)
   assert.match(html, /Configuració de galetes/)
-  assert.match(html, /Creació d’identitat visual corporativa i desenvolupament de marca\./)
+  assert.match(html, /Creació d’identitat visual corporativa, definició del llenguatge gràfic i desenvolupament de marca\./)
 })
 
 test('adds method and studio sections without changing the visual identity', () => {
@@ -99,6 +99,27 @@ test('adds method and studio sections without changing the visual identity', () 
   assert.match(html, /Imatge, tecnologia<br>i criteri visual\./)
   assert.match(html, /--gold:#D49A36;/)
   assert.match(html, /--bg:#050505;/)
+})
+
+test('replaces the portrait with a lightweight interactive 3D field in the middle act', () => {
+  assert.match(html, /DESORDEN_SCROLL_ALT3D_V1/)
+  assert.match(html, /class="mid-scene3d" id="midScene3d"/)
+  assert.match(html, /const midSceneEnvelope=progress=>Math\.min/)
+  assert.match(html, /clamp01\(\(progress-\.285\)\/\.075\)/)
+  assert.match(html, /clamp01\(\(\.805-progress\)\/\.075\)/)
+  assert.match(html, /video\.style\.opacity=\(1-alternateBackground\)\.toFixed\(3\)/)
+  assert.match(html, /MID_RING_COUNT=9,MID_SEGMENT_COUNT=28/)
+  assert.match(html, /midSceneDpr=Math\.min\(1\.5/)
+  assert.match(html, /midPointerPending/)
+  assert.doesNotMatch(html, /new THREE|OrbitControls/)
+})
+
+test('expands service and project information in Catalan', () => {
+  assert.match(html, /Planifiquem, gravem i editem peces verticals/)
+  assert.match(html, /desenvolupem personatges consistents/)
+  assert.match(html, /El públic pot explorar-los des del mòbil o l’ordinador/)
+  assert.match(html, /Cada fase es valida abans de passar a la següent/)
+  assert.match(html, /editat específicament per al llenguatge d’Instagram Reels/)
 })
 
 test('publishes canonical and social metadata for the public studio URL', () => {

@@ -54,6 +54,7 @@ jobs:
           grep -q "DESORDEN_SCROLL_PRELOADER_V2" dist/scroll.html
           grep -q "DESORDEN_SCROLL_LOCKED_V5_CONSENT" dist/scroll.html
           grep -q "DESORDEN_SCROLL_SECTIONS_V1" dist/scroll.html
+          grep -q "DESORDEN_SCROLL_ALT3D_V1" dist/scroll.html
           grep -q "DESORDEN STUDIO" dist/scroll.html
           grep -q '<html lang="ca">' dist/scroll.html
           grep -q "Configuració de galetes" dist/scroll.html
@@ -80,7 +81,8 @@ jobs:
           for attempt in 1 2 3 4 5 6; do
             if curl -fLsS --max-time 20 "https://webl.desorden-help-76b.workers.dev/scroll" -o /tmp/scroll.html; then
               if grep -q "DESORDEN_SCROLL_LOCKED_V5_CONSENT" /tmp/scroll.html \
-                && grep -q "DESORDEN_SCROLL_SECTIONS_V1" /tmp/scroll.html; then
+                && grep -q "DESORDEN_SCROLL_SECTIONS_V1" /tmp/scroll.html \
+                && grep -q "DESORDEN_SCROLL_ALT3D_V1" /tmp/scroll.html; then
                 exit 0
               fi
             fi
@@ -101,6 +103,7 @@ jobs:
                 "https://${host}/?verify=${GITHUB_SHA}" -o /tmp/domain.html; then
                 if grep -q "DESORDEN_SCROLL_LOCKED_V5_CONSENT" /tmp/domain.html \
                   && grep -q "DESORDEN_SCROLL_SECTIONS_V1" /tmp/domain.html \
+                  && grep -q "DESORDEN_SCROLL_ALT3D_V1" /tmp/domain.html \
                   && grep -q '<html lang="ca">' /tmp/domain.html \
                   && grep -q '<h2>Parlem</h2>' /tmp/domain.html; then
                   verified=1
