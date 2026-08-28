@@ -7,7 +7,7 @@ on:
       - SOL
     paths:
       - static/scroll.html
-      - static/lab/**
+      - static/lab.html
       - static/cinematic/**
       - static/_redirects
       - wrangler.jsonc
@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s dist/scroll.html
-          test -s dist/lab/index.html
+          test -s dist/lab.html
           test -s dist/cinematic/scroll-bg-720.mp4
           test -s dist/_redirects
           grep -q "DESORDEN_SCROLL_PRELOADER_V2" dist/scroll.html
@@ -61,8 +61,8 @@ jobs:
           grep -q '<html lang="ca">' dist/scroll.html
           grep -q "Configuració de galetes" dist/scroll.html
           grep -q '<h2>Parlem</h2>' dist/scroll.html
-          grep -q '<title>DESORDEN — LAB</title>' dist/lab/index.html
-          grep -q '<h1>desorden</h1>' dist/lab/index.html
+          grep -q '<title>DESORDEN — LAB</title>' dist/lab.html
+          grep -q '<h1>desorden</h1>' dist/lab.html
           grep -q '^/ /scroll 200$' dist/_redirects
 
       - name: Deploy Worker webl
@@ -87,7 +87,7 @@ jobs:
               if grep -q "DESORDEN_SCROLL_LOCKED_V5_CONSENT" /tmp/scroll.html \
                 && grep -q "DESORDEN_SCROLL_SECTIONS_V1" /tmp/scroll.html \
                 && grep -q "DESORDEN_SCROLL_ALT3D_V1" /tmp/scroll.html; then
-                curl -fLsS --max-time 20 "https://webl.desorden-help-76b.workers.dev/lab/" -o /tmp/lab.html
+                curl -fLsS --max-time 20 "https://webl.desorden-help-76b.workers.dev/lab" -o /tmp/lab.html
                 grep -q '<title>DESORDEN — LAB</title>' /tmp/lab.html
                 grep -q '<h1>desorden</h1>' /tmp/lab.html
                 exit 0
@@ -115,7 +115,7 @@ jobs:
                   && grep -q '<h2>Parlem</h2>' /tmp/domain.html; then
                   if curl -fLsS --max-time 20 \
                     -A "Mozilla/5.0 (compatible; DESORDEN-Deploy-Check/1.0)" \
-                    "https://${host}/lab/?verify=${GITHUB_SHA}" -o /tmp/domain-lab.html \
+                    "https://${host}/lab?verify=${GITHUB_SHA}" -o /tmp/domain-lab.html \
                     && grep -q '<title>DESORDEN — LAB</title>' /tmp/domain-lab.html \
                     && grep -q '<h1>desorden</h1>' /tmp/domain-lab.html; then
                     verified=1
@@ -139,7 +139,7 @@ jobs:
           STATUS=VERIFIED
           SOURCE_SHA=${GITHUB_SHA}
           URL=https://desorden.cat/
-          LAB_URL=https://desorden.cat/lab/
+          LAB_URL=https://desorden.cat/lab
           WWW_URL=https://www.desorden.cat/
           WORKER_URL=https://webl.desorden-help-76b.workers.dev/scroll
           MARKER=DESORDEN_SCROLL_LOCKED_V5_CONSENT
