@@ -1,7 +1,9 @@
 STATUS=VERIFIED
-SOURCE_SHA=63065ac8938a246fe03950a5a25bccbaf8a9b51a
+SOURCE_SHA=b205475e17859b16b4ce1d540a34006ee37a3ede
 URL=https://desorden.cat/
+LAB_URL=https://desorden.cat/lab/
 WWW_URL=https://www.desorden.cat/
 WORKER_URL=https://webl.desorden-help-76b.workers.dev/scroll
 MARKER=DESORDEN_SCROLL_LOCKED_V5_CONSENT
+LAB=title-DESORDEN-LAB,h1-desorden
 FLOW=stream-preload,consent-mode-v2,virtual-scroll,no-fullscreen,video-bottom-contain,scrub-120
